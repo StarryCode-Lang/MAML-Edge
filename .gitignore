@@ -21,13 +21,5 @@ env/
 lib/
 data/
 checkpoints/
-images/
 models/
 results/
-
-# Test file
-testing_notebook.ipynb
-test.ipynb
-
-train_prefine.py
-train_pronet.py
