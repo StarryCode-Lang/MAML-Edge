@@ -4,6 +4,7 @@ import torch
 import pywt
 import logging
 import h5py
+import random
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,6 +12,112 @@ import matplotlib.pyplot as plt
 from scipy.signal import stft
 from PIL import Image
 
+
+def get_dataset_labels(dataset):
+    if hasattr(dataset, 'labels'):
+        return np.asarray(dataset.labels)
+    if hasattr(dataset, 'img_list'):
+        return np.asarray([int(img_name.split('_')[0]) for img_name in dataset.img_list])
+    raise ValueError('Unable to infer labels from dataset type.')
+
+
+def split_support_query(data, labels, ways, shots, query_shots):
+    sort = torch.sort(labels)
+    data = data[sort.indices]
+    labels = labels[sort.indices]
+
+    support_indices = np.zeros(data.size(0), dtype=bool)
+    selection = np.arange(ways) * (shots + query_shots)
+    for offset in range(shots):
+        support_indices[selection + offset] = True
+
+    support_indices = torch.from_numpy(support_indices)
+    query_indices = ~support_indices
+    support_data = data[support_indices]
+    support_labels = labels[support_indices]
+    query_data = data[query_indices]
+    query_labels = labels[query_indices]
+    return support_data, support_labels, query_data, query_labels
+
+
+def create_class_pools(dataset, support_ratio=0.5):
+    labels = get_dataset_labels(dataset)
+    unique_labels = sorted(set(labels.tolist()))
+    support_pools = {}
+    query_pools = {}
+
+    for label in unique_labels:
+        class_indices = np.where(labels == label)[0]
+        split_index = max(1, int(len(class_indices) * support_ratio))
+        split_index = min(split_index, len(class_indices) - 1)
+        if split_index <= 0:
+            raise ValueError('Each class must contain at least two samples for strict evaluation.')
+        support_pools[label] = class_indices[:split_index].tolist()
+        query_pools[label] = class_indices[split_index:].tolist()
+
+    return support_pools, query_pools
+
+
+def sample_fixed_pool_episode(dataset, support_pools, query_pools, ways, shots, query_shots):
+    available_labels = [label for label in sorted(support_pools.keys())
+                        if len(support_pools[label]) >= shots and len(query_pools[label]) >= query_shots]
+    if len(available_labels) < ways:
+        raise ValueError('Not enough classes with sufficient support/query samples for evaluation.')
+
+    selected_labels = np.random.choice(available_labels, size=ways, replace=False)
+    batch_samples = []
+    batch_labels = []
+
+    for new_label, original_label in enumerate(selected_labels):
+        support_indices = np.random.choice(support_pools[original_label], size=shots, replace=False)
+        query_indices = np.random.choice(query_pools[original_label], size=query_shots, replace=False)
+        for index in np.concatenate([support_indices, query_indices]):
+            sample, _ = dataset[int(index)]
+            batch_samples.append(sample)
+            batch_labels.append(new_label)
+
+    return torch.stack(batch_samples), torch.tensor(batch_labels, dtype=torch.int64)
+
+
+def deterministic_domain_index(seed, iteration, episode, domain_count):
+    rng = np.random.RandomState(seed + iteration * 1000 + episode)
+    return int(rng.randint(domain_count))
+
+
+def deterministic_task_sample(taskset, seed):
+    python_state = random.getstate()
+    numpy_state = np.random.get_state()
+    torch_state = torch.random.get_rng_state()
+    random.seed(seed)
+    np.random.seed(seed % (2**32 - 1))
+    torch.manual_seed(seed)
+    batch = taskset.sample()
+    random.setstate(python_state)
+    np.random.set_state(numpy_state)
+    torch.random.set_rng_state(torch_state)
+    return batch
+
+
+def deterministic_fixed_pool_episode(dataset, support_pools, query_pools, ways, shots, query_shots, seed):
+    rng = np.random.RandomState(seed)
+    available_labels = [label for label in sorted(support_pools.keys())
+                        if len(support_pools[label]) >= shots and len(query_pools[label]) >= query_shots]
+    if len(available_labels) < ways:
+        raise ValueError('Not enough classes with sufficient support/query samples for evaluation.')
+
+    selected_labels = rng.choice(available_labels, size=ways, replace=False)
+    batch_samples = []
+    batch_labels = []
+
+    for new_label, original_label in enumerate(selected_labels):
+        support_indices = rng.choice(support_pools[original_label], size=shots, replace=False)
+        query_indices = rng.choice(query_pools[original_label], size=query_shots, replace=False)
+        for index in np.concatenate([support_indices, query_indices]):
+            sample, _ = dataset[int(index)]
+            batch_samples.append(sample)
+            batch_labels.append(new_label)
+
+    return torch.stack(batch_samples), torch.tensor(batch_labels, dtype=torch.int64)
 
 
 def setup_logger(log_path, experiment_title):
@@ -34,17 +141,15 @@ def accuracy(predictions, targets):
     return (predictions == targets).sum().float() / targets.size(0)
 
 
-def fast_adapt(batch, learner, loss, adaptation_steps, shots, ways, device):
+def fast_adapt(batch, learner, loss, adaptation_steps, shots, ways, device, query_shots=None):
     data, labels = batch
     data, labels = data.to(device), labels.to(device)
+    if query_shots is None:
+        query_shots = shots
 
-    # Separate data into adaptation/evalutation sets
-    adaptation_indices = np.zeros(data.size(0), dtype=bool)
-    adaptation_indices[np.arange(shots*ways) * 2] = True
-    evaluation_indices = torch.from_numpy(~adaptation_indices)
-    adaptation_indices = torch.from_numpy(adaptation_indices)
-    adaptation_data, adaptation_labels = data[adaptation_indices], labels[adaptation_indices]
-    evaluation_data, evaluation_labels = data[evaluation_indices], labels[evaluation_indices]
+    adaptation_data, adaptation_labels, evaluation_data, evaluation_labels = split_support_query(
+        data, labels, ways, shots, query_shots
+    )
 
     # Adapt the model
     for step in range(adaptation_steps):
@@ -58,39 +163,29 @@ def fast_adapt(batch, learner, loss, adaptation_steps, shots, ways, device):
     return valid_error, valid_accuracy
 
 
+def protonet_fast_adapt(batch, model, loss, ways, shots, query_shots, device):
+    data, labels = batch
+    data, labels = data.to(device), labels.to(device)
+
+    support_data, _, query_data, query_labels = split_support_query(data, labels, ways, shots, query_shots)
+    support_embeddings = model(support_data)
+    query_embeddings = model(query_data)
+    support = support_embeddings.reshape(ways, shots, -1).mean(dim=1)
+    query = query_embeddings
+    query_labels = query_labels.long()
+
+    logits = pairwise_distances_logits(query, support)
+    valid_error = loss(logits, query_labels)
+    valid_accuracy = accuracy(logits, query_labels)
+    return valid_error, valid_accuracy
+
+
 def pairwise_distances_logits(a, b):
     n = a.shape[0]
     m = b.shape[0]
     logits = -((a.unsqueeze(1).expand(n, m, -1) -
                 b.unsqueeze(0).expand(n, m, -1))**2).sum(dim=2)
     return logits
-
-
-def fast_adapt_protonet(batch, model, loss, shots, ways, device):
-    data, labels = batch
-    data, labels = data.to(device), labels.to(device)
-
-    sort = torch.sort(labels)
-    data = data[sort.indices]
-    labels = labels[sort.indices]
-
-    support_indices = np.zeros(data.size(0), dtype=bool)
-    selection = np.arange(ways) * (2 * shots)
-    for offset in range(shots):
-        support_indices[selection + offset] = True
-    query_indices = torch.from_numpy(~support_indices)
-    support_indices = torch.from_numpy(support_indices)
-
-    embeddings = model(data)
-    support = embeddings[support_indices]
-    support = support.reshape(ways, shots, -1).mean(dim=1)
-    query = embeddings[query_indices]
-    query_labels = labels[query_indices].long()
-
-    logits = pairwise_distances_logits(query, support)
-    error = loss(logits, query_labels)
-    acc = accuracy(logits, query_labels)
-    return error, acc
 
 def print_logs(iteration, meta_train_error, meta_train_accuracy, meta_test_error, meta_test_accuracy):
     logging.info('Iteration {}:'.format(iteration))

@@ -18,8 +18,4 @@ logs/
 
 # Dependency directories
 env/
-lib/
 data/
-checkpoints/
-models/
-results/

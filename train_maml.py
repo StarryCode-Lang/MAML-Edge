@@ -18,6 +18,8 @@ def parse_args():
                         help='Number of classes per task, default=10')
     parser.add_argument('--shots', type=int, default=5,
                         help='Number of support examples per class, default=1')
+    parser.add_argument('--query_shots', type=int, default=None,
+                        help='Number of query examples per class, default=same as shots')
     
     # Meta-learning parameters
     parser.add_argument('--meta_lr', type=float, default=0.001,
@@ -26,15 +28,12 @@ def parse_args():
                         help='Inner loop learning rate, default=0.1')
     parser.add_argument('--adapt_steps', type=int, default=5,
                         help='Number of inner loop steps for adaptation, default=5')
-    parser.add_argument('--meta_batch_size', type=int, default=32,
+    parser.add_argument('--meta_batch_size', type=int, default=64,
                         help='Number of outer loop iterations, \
                               i.e. no. of meta-tasks for each batch, \
-                              default=32')
-    parser.add_argument('--meta_test_batch_size', type=int, default=None,
-                        help='Number of meta-test tasks for each iteration. \
-                              If None, uses meta_batch_size to keep the original Yifei20 behavior.')
-    parser.add_argument('--iters', type=int, default=300,
-                        help='Number of outer-loop iterations, default=300')
+                              default=64')
+    parser.add_argument('--iters', type=int, default=1000,
+                        help='Number of outer-loop iterations, default=1000')
     parser.add_argument('--first_order', type=bool, default=True,
                         help='Use the first-order approximation, default=True')
     
@@ -63,14 +62,16 @@ def parse_args():
                         help='Number of samples per domain for training, default=200')
     parser.add_argument('--test_task_num', type=int, default=100,
                         help='Number of samples per domain for testing, default=100')
+    parser.add_argument('--eval_support_ratio', type=float, default=0.5,
+                        help='Fixed support-pool ratio for target-domain evaluation, default=0.5')
     
     # Curve plotting parameters
     parser.add_argument('--plot', type=bool, default=True,
                         help='Plot the learning curve, default=True')
     parser.add_argument('--plot_path', type=str, default='./images',
                         help='Directory to save the learning curve, default=./images')
-    parser.add_argument('--plot_step', type=int, default=50,
-                        help='Step for plotting the learning curve, default=50')
+    parser.add_argument('--plot_step', type=int, default=200,
+                        help='Step for plotting the learning curve, default=200')
     
     # Logging parameters
     parser.add_argument('--log', type=bool, default=True,
@@ -83,8 +84,8 @@ def parse_args():
                         help='Save the model checkpoints, default=True')
     parser.add_argument('--checkpoint_path', type=str, default='./checkpoints',
                         help='Directory to save the model checkpoints, default=./checkpoints')
-    parser.add_argument('--checkpoint_step', type=int, default=50,
-                        help='Step for saving the model checkpoints, default=50')
+    parser.add_argument('--checkpoint_step', type=int, default=100,
+                        help='Step for saving the model checkpoints, default=100')
     
     return parser.parse_args()
 
@@ -95,14 +96,16 @@ if __name__ == "__main__":
         raise ValueError('Dataset must be either CWRU or HST.')
     if args.preprocess not in ['WT', 'STFT', 'FFT']:
         raise ValueError('Preprocessing technique must be either WT, STFT, or FFT.')
+    if args.query_shots is None:
+        args.query_shots = args.shots
+    if not 0.0 < args.eval_support_ratio < 1.0:
+        raise ValueError('eval_support_ratio must be between 0 and 1.')
     
     args.train_domains = args.train_domains.split(',')
     train_domains_str = ''
     for i in range(len(args.train_domains)):
         train_domains_str += str(args.train_domains[i])
     args.train_domains = [int(i) for i in args.train_domains]
-    if args.meta_test_batch_size is None:
-        args.meta_test_batch_size = args.meta_batch_size
 
     # Experiment title in the format:
     # MAML_"dataset name"_"number of ways" + "number of shots"_"source domains"_"target domain".log

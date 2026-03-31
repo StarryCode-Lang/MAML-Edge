@@ -1,23 +1,28 @@
-from fault_datasets import CWRU_FFT
-from models import ProtoNet1D
-from utils import (
-    print_logs,
-    fast_adapt_protonet,
-)
-
 import logging
-import torch
 import random
-import numpy as np
+
 import learn2learn as l2l
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
 
 from torch import nn
 from learn2learn.data.transforms import (
+    ConsecutiveLabels,
     FusedNWaysKShots,
     LoadData,
     RemapLabels,
-    ConsecutiveLabels,
+)
+
+from fault_datasets import CWRU, CWRU_FFT, HST, HST_FFT
+from models import CNN1DEncoder, CNN2DEncoder
+from utils import (
+    create_class_pools,
+    deterministic_domain_index,
+    deterministic_fixed_pool_episode,
+    deterministic_task_sample,
+    print_logs,
+    protonet_fast_adapt,
 )
 
 
@@ -36,111 +41,128 @@ def train(args, experiment_title):
         device = torch.device('cpu')
         logging.info('Training ProtoNet with CPU.')
 
-    train_tasks, test_tasks = create_datasets(args)
+    train_tasks, test_dataset, test_pools = create_datasets(args)
     model, opt, loss = create_model(args, device)
 
-    train_model(args, model, opt, loss, train_tasks, test_tasks, device, experiment_title)
+    train_model(args, model, opt, loss, train_tasks, test_dataset, test_pools, device, experiment_title)
 
 
 def create_datasets(args):
-    if args.dataset != 'CWRU':
-        raise ValueError('ProtoNet comparison is implemented on CWRU only.')
-    if args.preprocess != 'FFT':
-        raise ValueError('ProtoNet comparison is implemented on the FFT route only.')
-
     logging.info('Training domains: {}.'.format(args.train_domains))
     logging.info('Testing domain: {}.'.format(args.test_domain))
-    train_datasets = []
-    train_transforms = []
+
+    query_shots = args.query_shots
     train_tasks = []
 
-    for i in range(len(args.train_domains)):
-        train_datasets.append(CWRU_FFT(args.train_domains[i], args.data_dir_path))
-        train_datasets[i] = l2l.data.MetaDataset(train_datasets[i])
-        train_transforms.append([
-            FusedNWaysKShots(train_datasets[i], n=args.ways, k=2*args.shots),
-            LoadData(train_datasets[i]),
-            RemapLabels(train_datasets[i]),
-            ConsecutiveLabels(train_datasets[i]),
-        ])
+    for domain in args.train_domains:
+        dataset = build_dataset(args.dataset, args.preprocess, domain, args.data_dir_path)
+        meta_dataset = l2l.data.MetaDataset(dataset)
+        transforms = [
+            FusedNWaysKShots(meta_dataset, n=args.ways, k=args.shots + query_shots),
+            LoadData(meta_dataset),
+            RemapLabels(meta_dataset),
+            ConsecutiveLabels(meta_dataset),
+        ]
         train_tasks.append(l2l.data.Taskset(
-            train_datasets[i],
-            task_transforms=train_transforms[i],
+            meta_dataset,
+            task_transforms=transforms,
             num_tasks=args.train_task_num,
         ))
 
-    test_dataset = CWRU_FFT(args.test_domain, args.data_dir_path)
-    test_dataset = l2l.data.MetaDataset(test_dataset)
-    test_transforms = [
-        FusedNWaysKShots(test_dataset, n=args.ways, k=2*args.shots),
-        LoadData(test_dataset),
-        RemapLabels(test_dataset),
-        ConsecutiveLabels(test_dataset),
-    ]
-    test_tasks = l2l.data.Taskset(
-        test_dataset,
-        task_transforms=test_transforms,
-        num_tasks=args.test_task_num,
-    )
+    test_dataset = build_dataset(args.dataset, args.preprocess, args.test_domain, args.data_dir_path)
+    test_pools = create_class_pools(test_dataset, support_ratio=args.eval_support_ratio)
 
-    return train_tasks, test_tasks
+    return train_tasks, test_dataset, test_pools
+
+
+def build_dataset(dataset_name, preprocess, domain, data_dir_path):
+    if preprocess == 'FFT':
+        if dataset_name == 'HST':
+            return HST_FFT(domain, data_dir_path)
+        return CWRU_FFT(domain, data_dir_path)
+
+    if dataset_name == 'HST':
+        return HST(domain, data_dir_path, preprocess)
+    return CWRU(domain, data_dir_path, preprocess)
 
 
 def create_model(args, device):
-    model = ProtoNet1D()
+    if args.preprocess == 'FFT':
+        model = CNN1DEncoder()
+    else:
+        model = CNN2DEncoder()
+
     model.to(device)
     opt = torch.optim.Adam(model.parameters(), args.meta_lr)
     loss = nn.CrossEntropyLoss(reduction='mean')
-
     return model, opt, loss
 
 
-def train_model(args,
-                model, opt, loss,
-                train_tasks, test_tasks,
-                device,
-                experiment_title):
+def train_model(args, model, opt, loss, train_tasks, test_dataset, test_pools, device, experiment_title):
     train_acc_list = []
     train_err_list = []
     test_acc_list = []
     test_err_list = []
 
-    for iteration in range(1, args.iters+1):
+    for iteration in range(1, args.iters + 1):
+        model.train()
         opt.zero_grad()
         meta_train_err_sum = 0.0
         meta_train_acc_sum = 0.0
+
+        for episode in range(args.meta_batch_size):
+            train_index = deterministic_domain_index(args.seed, iteration, episode, len(train_tasks))
+            batch_seed = args.seed + iteration * 100000 + episode
+            batch = deterministic_task_sample(train_tasks[train_index], batch_seed)
+            train_error, train_accuracy = protonet_fast_adapt(
+                batch,
+                model,
+                loss,
+                args.ways,
+                args.shots,
+                args.query_shots,
+                device,
+            )
+            train_error.backward()
+            meta_train_err_sum += train_error.item()
+            meta_train_acc_sum += train_accuracy.item()
+
+        for p in model.parameters():
+            if p.grad is not None:
+                p.grad.data.mul_(1.0 / args.meta_batch_size)
+        opt.step()
+
+        model.eval()
         meta_test_err_sum = 0.0
         meta_test_acc_sum = 0.0
-
-        train_index = random.randint(0, len(args.train_domains)-1)
-
-        for task in range(args.meta_batch_size):
-            batch = train_tasks[train_index].sample()
-            evaluation_error, evaluation_accuracy = fast_adapt_protonet(batch,
-                                                                        model,
-                                                                        loss,
-                                                                        args.shots,
-                                                                        args.ways,
-                                                                        device)
-            evaluation_error.backward()
-            meta_train_err_sum += evaluation_error.item()
-            meta_train_acc_sum += evaluation_accuracy.item()
-
-        for task in range(args.meta_test_batch_size):
-            batch = test_tasks.sample()
-            evaluation_error, evaluation_accuracy = fast_adapt_protonet(batch,
-                                                                        model,
-                                                                        loss,
-                                                                        args.shots,
-                                                                        args.ways,
-                                                                        device)
-            meta_test_err_sum += evaluation_error.item()
-            meta_test_acc_sum += evaluation_accuracy.item()
+        with torch.no_grad():
+            for episode in range(args.test_task_num):
+                batch_seed = args.seed + 50000000 + iteration * 100000 + episode
+                batch = deterministic_fixed_pool_episode(
+                    test_dataset,
+                    test_pools[0],
+                    test_pools[1],
+                    args.ways,
+                    args.shots,
+                    args.query_shots,
+                    batch_seed,
+                )
+                test_error, test_accuracy = protonet_fast_adapt(
+                    batch,
+                    model,
+                    loss,
+                    args.ways,
+                    args.shots,
+                    args.query_shots,
+                    device,
+                )
+                meta_test_err_sum += test_error.item()
+                meta_test_acc_sum += test_accuracy.item()
 
         meta_train_acc = meta_train_acc_sum / args.meta_batch_size
         meta_train_err = meta_train_err_sum / args.meta_batch_size
-        meta_test_err = meta_test_err_sum / args.meta_test_batch_size
-        meta_test_acc = meta_test_acc_sum / args.meta_test_batch_size
+        meta_test_err = meta_test_err_sum / args.test_task_num
+        meta_test_acc = meta_test_acc_sum / args.test_task_num
 
         train_acc_list.append(meta_train_acc)
         test_acc_list.append(meta_test_acc)
@@ -148,50 +170,42 @@ def train_model(args,
         test_err_list.append(meta_test_err)
 
         if args.plot and iteration % args.plot_step == 0:
-            plot_metrics(args,
-                         iteration,
-                         train_acc_list, test_acc_list,
-                         train_err_list, test_err_list,
-                         experiment_title)
+            plot_metrics(
+                args,
+                iteration,
+                train_acc_list,
+                test_acc_list,
+                train_err_list,
+                test_err_list,
+                experiment_title,
+            )
 
         if args.checkpoint and iteration % args.checkpoint_step == 0:
-            torch.save(model.state_dict(),
-                       args.checkpoint_path + '/' +
-                       experiment_title +
-                       '_{}.pt'.format(iteration))
+            torch.save(
+                model.state_dict(),
+                args.checkpoint_path + '/' + experiment_title + '_{}.pt'.format(iteration),
+            )
 
         if args.log:
             print_logs(iteration, meta_train_err, meta_train_acc, meta_test_err, meta_test_acc)
 
-        for p in model.parameters():
-            p.grad.data.mul_(1.0 / args.meta_batch_size)
-        opt.step()
 
-
-def plot_metrics(args,
-                 iteration,
-                 train_acc, test_acc,
-                 train_loss, test_loss,
-                 experiment_title):
-    if (iteration % args.plot_step == 0):
+def plot_metrics(args, iteration, train_acc, test_acc, train_loss, test_loss, experiment_title):
+    if iteration % args.plot_step == 0:
         plt.figure(figsize=(12, 4))
         plt.subplot(121)
-        plt.plot(train_acc, '-o', label="train acc")
-        plt.plot(test_acc, '-o', label="test acc")
+        plt.plot(train_acc, '-o', label='train acc')
+        plt.plot(test_acc, '-o', label='test acc')
         plt.xlabel('Iteration')
         plt.ylabel('Accuracy')
-        plt.title("Accuracy Curve by Iteration")
+        plt.title('Accuracy Curve by Iteration')
         plt.legend()
         plt.subplot(122)
-        plt.plot(train_loss, '-o', label="train loss")
-        plt.plot(test_loss, '-o', label="test loss")
+        plt.plot(train_loss, '-o', label='train loss')
+        plt.plot(test_loss, '-o', label='test loss')
         plt.xlabel('Iteration')
         plt.ylabel('Loss')
-        plt.title("Loss Curve by Iteration")
+        plt.title('Loss Curve by Iteration')
         plt.legend()
         plt.savefig(args.plot_path + '/' + experiment_title + '_{}.png'.format(iteration))
         plt.show()
-
-
-if __name__ == '__main__':
-    train()

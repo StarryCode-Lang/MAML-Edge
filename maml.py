@@ -1,6 +1,10 @@
 from fault_datasets import CWRU, CWRU_FFT, HST, HST_FFT
-from models import CNN1D
+from models import CNN1D, CNN2D
 from utils import (
+    create_class_pools,
+    deterministic_domain_index,
+    deterministic_fixed_pool_episode,
+    deterministic_task_sample,
     print_logs,
     fast_adapt,
 )
@@ -42,10 +46,10 @@ def train(args, experiment_title):
         device = torch.device('cpu')
         logging.info('Training MAML with CPU.')
     
-    train_tasks, test_tasks = create_datasets(args)
+    train_tasks, test_dataset, test_pools = create_datasets(args)
     model, maml, opt, loss = create_model(args, device)
 
-    train_model(args, model, maml, opt, loss, train_tasks, test_tasks, device, experiment_title)
+    train_model(args, model, maml, opt, loss, train_tasks, test_dataset, test_pools, device, experiment_title)
 
 
 def create_datasets(args):
@@ -61,70 +65,36 @@ def create_datasets(args):
     """
     logging.info('Training domains: {}.'.format(args.train_domains))
     logging.info('Testing domain: {}.'.format(args.test_domain))
-    train_datasets = []
-    train_transforms = []
     train_tasks = []
 
-
-    for i in range(len(args.train_domains)):
-        if args.preprocess == 'FFT':
-            if args.dataset == 'HST':
-                train_datasets.append(HST_FFT(args.train_domains[i], 
-                                              args.data_dir_path))
-            else:
-                train_datasets.append(CWRU_FFT(args.train_domains[i], 
-                                               args.data_dir_path))
-        else:
-            if args.dataset == 'HST':
-                train_datasets.append(HST(args.train_domains[i], 
-                                           args.data_dir_path, 
-                                           args.preprocess))
-            else: 
-                train_datasets.append(CWRU(args.train_domains[i], 
-                                           args.data_dir_path, 
-                                           args.preprocess)) 
-        train_datasets[i] = l2l.data.MetaDataset(train_datasets[i])
-        train_transforms.append([
-            FusedNWaysKShots(train_datasets[i], n=args.ways, k=2*args.shots),
-            LoadData(train_datasets[i]),
-            RemapLabels(train_datasets[i]),
-            ConsecutiveLabels(train_datasets[i]),
-        ])
+    for domain in args.train_domains:
+        train_dataset = build_dataset(args, domain)
+        meta_dataset = l2l.data.MetaDataset(train_dataset)
+        train_transforms = [
+            FusedNWaysKShots(meta_dataset, n=args.ways, k=args.shots + args.query_shots),
+            LoadData(meta_dataset),
+            RemapLabels(meta_dataset),
+            ConsecutiveLabels(meta_dataset),
+        ]
         train_tasks.append(l2l.data.Taskset(
-            train_datasets[i],
-            task_transforms=train_transforms[i],
+            meta_dataset,
+            task_transforms=train_transforms,
             num_tasks=args.train_task_num,
         ))
+    test_dataset = build_dataset(args, args.test_domain)
+    test_pools = create_class_pools(test_dataset, support_ratio=args.eval_support_ratio)
+
+    return train_tasks, test_dataset, test_pools
+
+
+def build_dataset(args, domain):
     if args.preprocess == 'FFT':
         if args.dataset == 'HST':
-            test_dataset = HST_FFT(args.test_domain, 
-                                   args.data_dir_path)
-        else:
-            test_dataset = CWRU_FFT(args.test_domain, 
-                                    args.data_dir_path)
-    else:
-        if args.dataset == 'HST':
-            test_dataset = HST(args.test_domain, 
-                               args.data_dir_path,
-                               args.preprocess)
-        else:
-            test_dataset = CWRU(args.test_domain, 
-                                args.data_dir_path,
-                                args.preprocess)
-    test_dataset = l2l.data.MetaDataset(test_dataset)
-    test_transforms = [
-        FusedNWaysKShots(test_dataset, n=args.ways, k=2*args.shots),
-        LoadData(test_dataset),
-        RemapLabels(test_dataset),
-        ConsecutiveLabels(test_dataset),
-    ]
-    test_tasks = l2l.data.Taskset(
-        test_dataset,
-        task_transforms=test_transforms,
-        num_tasks=args.test_task_num,
-    )
-
-    return train_tasks, test_tasks
+            return HST_FFT(domain, args.data_dir_path)
+        return CWRU_FFT(domain, args.data_dir_path)
+    if args.dataset == 'HST':
+        return HST(domain, args.data_dir_path, args.preprocess)
+    return CWRU(domain, args.data_dir_path, args.preprocess)
 
 
 def create_model(args, device):
@@ -146,7 +116,7 @@ def create_model(args, device):
     if args.preprocess == 'FFT':
         model = CNN1D(output_size=output_size)
     else:
-        model = l2l.vision.models.CNN4(output_size=output_size)
+        model = CNN2D(output_size=output_size)
     model.to(device)
     maml = l2l.algorithms.MAML(model, lr=args.fast_lr, first_order=args.first_order)
     opt = torch.optim.Adam(model.parameters(), args.meta_lr)
@@ -156,7 +126,7 @@ def create_model(args, device):
 
 
 def train_model(args, model, maml, opt, loss, 
-                train_tasks, test_tasks, 
+                train_tasks, test_dataset, test_pools,
                 device, 
                 experiment_title):
     train_acc_list = []
@@ -174,41 +144,57 @@ def train_model(args, model, maml, opt, loss,
         meta_test_err_sum = 0.0
         meta_test_acc_sum = 0.0
 
-        train_index = random.randint(0, len(args.train_domains)-1)
-
-        for task in range(args.meta_batch_size):
+        for episode in range(args.meta_batch_size):
             # Compute meta-training loss
+            train_index = deterministic_domain_index(args.seed, iteration, episode, len(train_tasks))
             learner = maml.clone()
-            batch = train_tasks[train_index].sample()
+            batch_seed = args.seed + iteration * 100000 + episode
+            batch = deterministic_task_sample(train_tasks[train_index], batch_seed)
             evaluation_error, evaluation_accuracy = fast_adapt(batch,
                                                                learner,
                                                                loss,
                                                                args.adapt_steps,
                                                                args.shots,
                                                                args.ways,
-                                                               device)
+                                                               device,
+                                                               args.query_shots)
             evaluation_error.backward()
             meta_train_err_sum += evaluation_error.item()
             meta_train_acc_sum += evaluation_accuracy.item()
 
-        for task in range(args.meta_test_batch_size):
-            # Compute meta-testing loss
+        # Compute meta-testing loss using a fixed target-domain support/query split
+        for episode in range(args.test_task_num):
+            batch_seed = args.seed + 50000000 + iteration * 100000 + episode
+            batch = deterministic_fixed_pool_episode(
+                test_dataset,
+                test_pools[0],
+                test_pools[1],
+                args.ways,
+                args.shots,
+                args.query_shots,
+                batch_seed,
+            )
             learner = maml.clone()
-            batch = test_tasks.sample()
             evaluation_error, evaluation_accuracy = fast_adapt(batch,
                                                                learner,
                                                                loss,
                                                                args.adapt_steps,
                                                                args.shots,
                                                                args.ways,
-                                                               device)
+                                                               device,
+                                                               args.query_shots)
             meta_test_err_sum += evaluation_error.item()
             meta_test_acc_sum += evaluation_accuracy.item()
 
+        # Log some metrics
+        if args.log:
+            print_logs(iteration, meta_train_err_sum / args.meta_batch_size, meta_train_acc_sum / args.meta_batch_size,
+                       meta_test_err_sum / args.test_task_num, meta_test_acc_sum / args.test_task_num)
+
         meta_train_acc = meta_train_acc_sum / args.meta_batch_size
         meta_train_err = meta_train_err_sum / args.meta_batch_size
-        meta_test_err = meta_test_err_sum / args.meta_test_batch_size
-        meta_test_acc = meta_test_acc_sum / args.meta_test_batch_size
+        meta_test_err = meta_test_err_sum / args.test_task_num
+        meta_test_acc = meta_test_acc_sum / args.test_task_num
 
         train_acc_list.append(meta_train_acc)
         test_acc_list.append(meta_test_acc)
@@ -229,13 +215,11 @@ def train_model(args, model, maml, opt, loss,
                        args.checkpoint_path + '/' +
                        experiment_title + 
                        '_{}.pt'.format(iteration))
-        # Log some metrics
-        if args.log:
-            print_logs(iteration, meta_train_err, meta_train_acc, meta_test_err, meta_test_acc)
 
         # Average the accumulated gradients and optimize
         for p in model.parameters():
-            p.grad.data.mul_(1.0 / args.meta_batch_size)
+            if p.grad is not None:
+                p.grad.data.mul_(1.0 / args.meta_batch_size)
         opt.step()
 
 
