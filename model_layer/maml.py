@@ -10,8 +10,7 @@ import torch
 from torch import nn
 from learn2learn.data.transforms import ConsecutiveLabels, FusedNWaysKShots, LoadData, RemapLabels
 
-from data_layer.fault_datasets import CWRU, CWRU_FFT, HST, HST_FFT
-from .models import CNN1D, CNN2D
+from .experiment import build_classifier_from_args, build_dataset_from_args, get_model_config
 from .utils import (
     clone_state_dict_to_cpu,
     create_class_pools,
@@ -78,7 +77,7 @@ def create_datasets(args):
     train_tasks = []
 
     for domain in args.train_domains:
-        train_dataset = build_dataset(args, domain)
+        train_dataset = build_dataset_from_args(args, domain)
         meta_dataset = l2l.data.MetaDataset(train_dataset)
         train_transforms = [
             FusedNWaysKShots(meta_dataset, n=args.ways, k=args.shots + args.query_shots),
@@ -91,48 +90,18 @@ def create_datasets(args):
             task_transforms=train_transforms,
             num_tasks=args.train_task_num,
         ))
-    test_dataset = build_dataset(args, args.test_domain)
+    test_dataset = build_dataset_from_args(args, args.test_domain)
     test_pools = create_class_pools(test_dataset, support_ratio=args.eval_support_ratio)
     return train_tasks, test_dataset, test_pools
 
 
-def build_dataset(args, domain):
-    if args.preprocess == 'FFT':
-        if args.dataset == 'HST':
-            return HST_FFT(domain, args.data_dir_path, labels=args.fault_labels)
-        return CWRU_FFT(domain, args.data_dir_path, label_subset=args.fault_labels)
-    if args.dataset == 'HST':
-        return HST(domain, args.data_dir_path, args.preprocess, label_subset=range(len(args.fault_labels)))
-    return CWRU(domain, args.data_dir_path, args.preprocess, label_subset=args.fault_labels)
-
-
 def create_model(args, device):
-    output_size = len(args.fault_labels)
-    if args.preprocess == 'FFT':
-        model = CNN1D(output_size=output_size)
-    else:
-        model = CNN2D(output_size=output_size)
+    model = build_classifier_from_args(args, output_size=len(args.fault_labels))
     model.to(device)
     maml_wrapper = l2l.algorithms.MAML(model, lr=args.fast_lr, first_order=args.first_order)
     opt = torch.optim.Adam(model.parameters(), args.meta_lr)
     loss = nn.CrossEntropyLoss(reduction='mean')
     return model, maml_wrapper, opt, loss
-
-
-def get_model_config(model, args):
-    if args.preprocess == 'FFT':
-        return {
-            'model_type': 'CNN1D',
-            'output_size': model.fc.out_features,
-            'channels': list(model.encoder.channels),
-            'pooled_length': model.encoder.pooled_length,
-        }
-    return {
-        'model_type': 'CNN2D',
-        'output_size': model.fc.out_features,
-        'channels': list(model.encoder.channels),
-        'in_channels': model.encoder.in_channels,
-    }
 
 
 def train_model(args, model, maml_wrapper, opt, loss, train_tasks, test_dataset, test_pools, device, experiment_title):
@@ -266,7 +235,7 @@ def train_model(args, model, maml_wrapper, opt, loss, train_tasks, test_dataset,
         'best_record': best_record,
         'best_state_dict': best_state_dict,
         'best_checkpoint_path': best_checkpoint_path,
-        'model_config': get_model_config(model, args),
+        'model_config': get_model_config(model),
     }
 
 

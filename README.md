@@ -1,43 +1,53 @@
 # MAML-Edge
 
-面向工业故障诊断的小样本元学习项目，当前聚焦 4 个层次：
+Few-shot industrial fault diagnosis project built around four layers:
 
-- 数据层：CWRU 与 HST 数据加载、预处理、5 类故障子集组织
-- 模型层：MAML、ProtoNet、传统 CNN 基线
-- 部署层：结构化剪枝、恢复微调、ONNX 导出、INT8 PTQ、可选 QAT
-- 测试层：部署结果读取与指标阈值检查脚手架
+- `data_layer`: CWRU and HST data loading, preprocessing, and fault subset control
+- `model_layer`: MAML, ProtoNet, and traditional CNN baseline
+- `deploy_layer`: structured pruning, recovery fine-tuning, ONNX export, INT8 PTQ, optional QAT
+- `test_layer`: benchmark summary checking
 
-## 项目结构
+This branch follows the final project scheme:
+
+```text
+Structured pruning (~40%, channel level)
+-> recovery fine-tuning
+-> INT8 post-training quantization
+-> ONNX Runtime deployment
+```
+
+## Project Layout
 
 ```text
 MAML-Edge/
-├─ data_layer/
-│  ├─ fault_datasets.py
-│  ├─ preprocess_cwru.py
-│  └─ preprocess_hst.py
-├─ model_layer/
-│  ├─ models.py
-│  ├─ utils.py
-│  ├─ maml.py
-│  ├─ protonet.py
-│  ├─ cnn_baseline.py
-│  ├─ train_maml.py
-│  ├─ train_protonet.py
-│  └─ train_cnn.py
-├─ deploy_layer/
-│  └─ compression.py
-├─ test_layer/
-│  └─ benchmark.py
-├─ train_maml.py
-├─ train_protonet.py
-├─ train_cnn.py
-├─ requirements.txt
-└─ README.md
+|-- data_layer/
+|   |-- fault_datasets.py
+|   |-- preprocess_cwru.py
+|   `-- preprocess_hst.py
+|-- model_layer/
+|   |-- experiment.py
+|   |-- models.py
+|   |-- utils.py
+|   |-- maml.py
+|   |-- protonet.py
+|   |-- cnn_baseline.py
+|   |-- train_maml.py
+|   |-- train_protonet.py
+|   `-- train_cnn.py
+|-- deploy_layer/
+|   `-- compression.py
+|-- test_layer/
+|   `-- benchmark.py
+|-- train_maml.py
+|-- train_protonet.py
+|-- train_cnn.py
+|-- requirements.txt
+`-- README.md
 ```
 
-根目录只保留训练入口脚本，实际实现全部在四层目录中。
+Only the three train entry scripts are kept at repo root. Real implementation stays inside the four layers.
 
-## 环境安装
+## Environment
 
 ```bash
 conda create -n maml-edge python=3.9 -y
@@ -45,47 +55,72 @@ conda activate maml-edge
 pip install -r requirements.txt
 ```
 
-## 数据准备
+## Data
 
-默认数据根目录为 `./data`。
+Default data root is `./data`.
 
 ### CWRU
 
 ```text
 data/
-└─ CWRU_12k/
-   ├─ Drive_end_0/
-   ├─ Drive_end_1/
-   ├─ Drive_end_2/
-   └─ Drive_end_3/
+`-- CWRU_12k/
+    |-- Drive_end_0/
+    |-- Drive_end_1/
+    |-- Drive_end_2/
+    `-- Drive_end_3/
 ```
 
 ### HST
 
 ```text
 data/
-└─ HST/
-   ├─ 0/
-   ├─ 1/
-   └─ 2/
+`-- HST/
+    |-- 0/
+    |-- 1/
+    `-- 2/
 ```
 
-## 默认实验设定
+## Default Experiment Setup
 
-- 默认 `5-way`
-- 默认故障子集：
-  - CWRU: `0,1,2,3,4`
-  - HST: `0,2,3,5,6`
-- 支持 `5 / 10 / 15 shot`
-- 默认使用目标域固定 support/query 池评估
+- `ways = 5`
+- `shots = 5`
+- `query_shots = shots`
+- default fault subsets:
+  - `CWRU: 0,1,2,3,4`
+  - `HST: 0,2,3,5,6`
+- target-domain evaluation uses fixed support/query pools
 
-如需自定义故障类，可通过 `--fault_labels` 指定，例如：
+You can override the fault subset with:
 
 ```bash
 python train_maml.py --fault_labels 0,1,2,3,4
 ```
 
-## 训练
+## Controlled Variables
+
+The current branch standardizes the comparison setup for `CNN / MAML / ProtoNet` as much as possible without changing each algorithm's nature.
+
+Shared across all three:
+
+- same dataset and same selected fault subset
+- same `train_domains` and `test_domain`
+- same `ways / shots / query_shots`
+- same target-domain fixed support/query pool evaluation rule
+- same backbone width configuration
+- same best-checkpoint selection rule
+
+Shared backbone defaults:
+
+- `FFT`: `32,64,64` with `AdaptiveAvgPool1d(64)`
+- `STFT/WT`: `64,64,64,64`
+
+Algorithm-specific parts intentionally remain different:
+
+- `MAML`: `fast_lr`, `adapt_steps`, `first_order`
+- `ProtoNet`: prototype-based distance classification
+- `CNN`: supervised source training, but target evaluation is now also few-shot episodic for fairer comparison
+
+## Training
 
 ### MAML
 
@@ -113,7 +148,7 @@ python train_protonet.py \
   --iters 1500
 ```
 
-### 传统 CNN 基线
+### CNN Baseline
 
 ```bash
 python train_cnn.py \
@@ -121,24 +156,27 @@ python train_cnn.py \
   --preprocess FFT \
   --ways 5 \
   --shots 5 \
+  --query_shots 5 \
   --train_domains 0,1,2 \
   --test_domain 3 \
   --epochs 50
 ```
 
-## 压缩与导出
+## Shared Backbone Parameters
 
-压缩流程已经接入训练入口，符合当前项目的最终方案：
+All three algorithms support the same backbone control arguments:
 
-```text
-结构化剪枝（约 40%，通道级）
-→ 短周期恢复微调
-→ ONNX 导出
-→ INT8 PTQ
-→ 必要时短周期 QAT
+```bash
+--fft_channels 32,64,64
+--image_channels 64,64,64,64
+--fft_pooled_length 64
 ```
 
-开启方式：
+This lets you change backbone capacity once and keep the comparison aligned.
+
+## Compression and Export
+
+Enable the compression pipeline from the training entry:
 
 ```bash
 python train_maml.py \
@@ -153,49 +191,48 @@ python train_maml.py \
   --prune_ratio 0.4
 ```
 
-压缩结果默认输出到：
+Artifacts are written to:
 
 ```text
 deploy_artifacts/<experiment_title>/
 ```
 
-其中包含：
+Typical outputs:
 
-- 最终浮点 ONNX 模型
-- INT8 ONNX 模型
-- ProtoNet 原型文件
+- float ONNX model
+- INT8 ONNX model
+- ProtoNet prototype file
 - `compression_summary.json`
 
-## 最佳模型策略
+## Best Model Selection
 
-训练过程中不再只保留固定步长的粗放导出，而是会根据以下指标自动记录最佳模型：
+Training keeps the best model using:
 
-- `meta_test_acc` 优先
-- `meta_test_loss` 次优先
-- `meta_train_acc` 作为补充参考
+1. `meta_test_acc`
+2. `meta_test_loss`
+3. `meta_train_acc`
 
-默认只保留最佳模型；如需保留所有中间 checkpoint，可显式传入：
+By default only the best checkpoint is kept. To keep all intermediate checkpoints:
 
 ```bash
 --keep_all_checkpoints True
 ```
 
-## 测试层脚手架
-
-当前没有自动跑完整测试流程，但已提供阈值检查入口：
+## Benchmark Helper
 
 ```bash
-python test_layer/benchmark.py --summary_path deploy_artifacts/<experiment_title>/compression_summary.json
+python test_layer/benchmark.py \
+  --summary_path deploy_artifacts/<experiment_title>/compression_summary.json
 ```
 
-默认检查：
+Default checks:
 
-- 准确率是否达到 `0.95`
-- 平均推理时延是否不高于 `100 ms`
+- accuracy >= `0.95`
+- average latency <= `100 ms`
 
-## 依赖
+## Dependencies
 
-核心依赖见 `requirements.txt`：
+Core packages are listed in `requirements.txt`, including:
 
 - `torch`
 - `learn2learn`

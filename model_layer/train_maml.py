@@ -1,8 +1,11 @@
 import argparse
 import os
 
-from . import maml
-from .utils import resolve_fault_labels, setup_logger
+from .experiment import (
+    DEFAULT_FFT_POOLED_LENGTH,
+    normalize_shared_args,
+)
+from .utils import setup_logger
 
 
 def str2bool(value):
@@ -51,6 +54,12 @@ def parse_args():
                         help='Which preprocessing technique to use, options=[WT, STFT, FFT]')
     parser.add_argument('--fault_labels', type=str, default=None,
                         help='Fault labels to keep. Defaults to project 5-class subset.')
+    parser.add_argument('--fft_channels', type=str, default='32,64,64',
+                        help='Shared 1D backbone channels, default=32,64,64')
+    parser.add_argument('--image_channels', type=str, default='64,64,64,64',
+                        help='Shared 2D backbone channels, default=64,64,64,64')
+    parser.add_argument('--fft_pooled_length', type=int, default=DEFAULT_FFT_POOLED_LENGTH,
+                        help='Shared 1D adaptive pooled length, default=64')
     parser.add_argument('--train_domains', type=str, default='0,1,2',
                         help='Training domains, integers separated by commas, default=0,1,2')
     parser.add_argument('--test_domain', type=int, default=3,
@@ -108,23 +117,7 @@ def parse_args():
 
 
 def normalize_args(args):
-    if args.dataset not in ['CWRU', 'HST']:
-        raise ValueError('Dataset must be either CWRU or HST.')
-    if args.preprocess not in ['WT', 'STFT', 'FFT']:
-        raise ValueError('Preprocessing technique must be either WT, STFT, or FFT.')
-    if args.query_shots is None:
-        args.query_shots = args.shots
-    if not 0.0 < args.eval_support_ratio < 1.0:
-        raise ValueError('eval_support_ratio must be between 0 and 1.')
-    if not 0.0 <= args.prune_ratio < 1.0:
-        raise ValueError('prune_ratio must be between 0 and 1.')
-
-    args.fault_labels = resolve_fault_labels(args.dataset, args.fault_labels)
-    if args.ways > len(args.fault_labels):
-        raise ValueError('ways cannot exceed the number of selected fault labels.')
-
-    args.train_domains = [int(item) for item in args.train_domains.split(',') if item.strip()]
-    return args
+    return normalize_shared_args(args, require_query_shots=True)
 
 
 def build_experiment_title(args):
@@ -154,6 +147,8 @@ def prepare_runtime_dirs(args, experiment_title):
 
 
 def main():
+    from . import maml
+
     args = normalize_args(parse_args())
     experiment_title = build_experiment_title(args)
     prepare_runtime_dirs(args, experiment_title)

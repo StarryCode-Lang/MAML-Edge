@@ -10,9 +10,15 @@ import torch
 from torch import nn
 from torch.utils.data import ConcatDataset, DataLoader
 
-from data_layer.fault_datasets import CWRU, CWRU_FFT, HST, HST_FFT
-from .models import CNN1D, CNN2D
-from .utils import accuracy, clone_state_dict_to_cpu, create_class_pools, is_better_model_record, write_json
+from .experiment import build_classifier_from_args, build_dataset_from_args, get_model_config
+from .utils import (
+    accuracy,
+    clone_state_dict_to_cpu,
+    create_class_pools,
+    deterministic_fixed_pool_episode_split,
+    is_better_model_record,
+    write_json,
+)
 
 
 def train(args, experiment_title):
@@ -61,51 +67,21 @@ def train(args, experiment_title):
     return training_result
 
 
-def build_dataset(args, domain):
-    if args.preprocess == 'FFT':
-        if args.dataset == 'HST':
-            return HST_FFT(domain, args.data_dir_path, labels=args.fault_labels)
-        return CWRU_FFT(domain, args.data_dir_path, label_subset=args.fault_labels)
-    if args.dataset == 'HST':
-        return HST(domain, args.data_dir_path, args.preprocess, label_subset=range(len(args.fault_labels)))
-    return CWRU(domain, args.data_dir_path, args.preprocess, label_subset=args.fault_labels)
-
-
 def create_datasets(args):
-    source_datasets = [build_dataset(args, domain) for domain in args.train_domains]
+    source_datasets = [build_dataset_from_args(args, domain) for domain in args.train_domains]
     source_dataset = ConcatDataset(source_datasets)
     source_loader = DataLoader(source_dataset, batch_size=args.batch_size, shuffle=True, num_workers=0)
-    test_dataset = build_dataset(args, args.test_domain)
+    test_dataset = build_dataset_from_args(args, args.test_domain)
     test_pools = create_class_pools(test_dataset, support_ratio=args.eval_support_ratio)
     return source_loader, test_dataset, test_pools
 
 
 def create_model(args, device):
-    output_size = len(args.fault_labels)
-    if args.preprocess == 'FFT':
-        model = CNN1D(output_size=output_size)
-    else:
-        model = CNN2D(output_size=output_size)
+    model = build_classifier_from_args(args, output_size=len(args.fault_labels))
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     criterion = nn.CrossEntropyLoss(reduction='mean')
     return model, optimizer, criterion
-
-
-def get_model_config(model, args):
-    if args.preprocess == 'FFT':
-        return {
-            'model_type': 'CNN1D',
-            'output_size': model.fc.out_features,
-            'channels': list(model.encoder.channels),
-            'pooled_length': model.encoder.pooled_length,
-        }
-    return {
-        'model_type': 'CNN2D',
-        'output_size': model.fc.out_features,
-        'channels': list(model.encoder.channels),
-        'in_channels': model.encoder.in_channels,
-    }
 
 
 def train_model(args, model, optimizer, criterion, source_loader, test_dataset, test_pools, device, experiment_title):
@@ -205,40 +181,8 @@ def train_model(args, model, optimizer, criterion, source_loader, test_dataset, 
         'best_record': best_record,
         'best_state_dict': best_state_dict,
         'best_checkpoint_path': best_checkpoint_path,
-        'model_config': get_model_config(model, args),
+        'model_config': get_model_config(model),
     }
-
-
-def build_fixed_deployment_split(dataset, support_pools, query_pools, ways, shots, seed):
-    rng = np.random.RandomState(seed)
-    available_labels = [
-        label for label in sorted(support_pools.keys())
-        if len(support_pools[label]) >= shots and len(query_pools[label]) > 0
-    ]
-    selected_labels = available_labels[:ways]
-    support_samples = []
-    support_labels = []
-    query_samples = []
-    query_labels = []
-
-    for new_label, original_label in enumerate(selected_labels):
-        sampled_support_indices = rng.choice(support_pools[original_label], size=shots, replace=False)
-        for sample_index in sampled_support_indices:
-            sample, _ = dataset[int(sample_index)]
-            support_samples.append(sample)
-            support_labels.append(new_label)
-
-        for sample_index in query_pools[original_label]:
-            sample, _ = dataset[int(sample_index)]
-            query_samples.append(sample)
-            query_labels.append(new_label)
-
-    return (
-        torch.stack(support_samples),
-        torch.tensor(support_labels, dtype=torch.int64),
-        torch.stack(query_samples),
-        torch.tensor(query_labels, dtype=torch.int64),
-    )
 
 
 def fine_tune_classifier(model, support_data, support_labels, lr, epochs, device):
@@ -260,23 +204,31 @@ def fine_tune_classifier(model, support_data, support_labels, lr, epochs, device
 
 
 def evaluate_target_deployment(args, model, test_dataset, test_pools, device):
-    support_data, support_labels, query_data, query_labels = build_fixed_deployment_split(
-        test_dataset,
-        test_pools[0],
-        test_pools[1],
-        args.ways,
-        args.shots,
-        args.seed,
-    )
-    tuned_model = fine_tune_classifier(model, support_data, support_labels, args.finetune_lr, args.finetune_epochs, device)
-    query_data = query_data.to(device)
-    query_labels = query_labels.to(device)
     criterion = nn.CrossEntropyLoss(reduction='mean')
-    with torch.no_grad():
-        logits = tuned_model(query_data)
-        loss_value = criterion(logits, query_labels).item()
-        accuracy_value = accuracy(logits, query_labels).item()
-    return {'loss': loss_value, 'accuracy': accuracy_value}
+    loss_sum = 0.0
+    accuracy_sum = 0.0
+
+    for episode in range(args.test_task_num):
+        support_data, support_labels, query_data, query_labels, _ = deterministic_fixed_pool_episode_split(
+            test_dataset,
+            test_pools[0],
+            test_pools[1],
+            args.ways,
+            args.shots,
+            args.query_shots,
+            args.seed + 70000000 + episode,
+        )
+        tuned_model = fine_tune_classifier(model, support_data, support_labels, args.finetune_lr, args.finetune_epochs, device)
+        query_data = query_data.to(device)
+        query_labels = query_labels.to(device)
+        with torch.no_grad():
+            logits = tuned_model(query_data)
+            loss_sum += criterion(logits, query_labels).item()
+            accuracy_sum += accuracy(logits, query_labels).item()
+    return {
+        'loss': loss_sum / args.test_task_num,
+        'accuracy': accuracy_sum / args.test_task_num,
+    }
 
 
 def plot_metrics(args, iteration, train_acc, test_acc, train_loss, test_loss, experiment_title):
