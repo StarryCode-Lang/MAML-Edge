@@ -580,7 +580,9 @@ def adapt_maml_for_deployment(args, model, support_data, support_labels, device)
     for _ in range(args.adapt_steps):
         adaptation_loss = loss(learner(support_data), support_labels)
         learner.adapt(adaptation_loss)
-    return copy.deepcopy(learner.module).cpu().eval()
+    deployment_model = build_model_from_config(infer_deployment_model_config(learner.module))
+    deployment_model.load_state_dict(clone_state_dict_to_cpu(learner.module))
+    return deployment_model.cpu().eval()
 
 
 def fine_tune_classifier_for_deployment(model, support_data, support_labels, lr, epochs, device):

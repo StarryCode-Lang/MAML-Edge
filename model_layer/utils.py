@@ -53,7 +53,22 @@ def is_better_model_record(candidate_record, best_record):
 
 def write_json(path, payload):
     with open(path, 'w', encoding='utf-8') as file_pointer:
-        json.dump(payload, file_pointer, indent=2, ensure_ascii=False)
+        json.dump(make_json_serializable(payload), file_pointer, indent=2, ensure_ascii=False)
+
+
+def make_json_serializable(value):
+    if isinstance(value, torch.Tensor):
+        detached = value.detach().cpu()
+        return detached.item() if detached.ndim == 0 else detached.tolist()
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, dict):
+        return {key: make_json_serializable(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [make_json_serializable(item) for item in value]
+    return value
 
 
 def get_dataset_labels(dataset):
