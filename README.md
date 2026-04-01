@@ -67,12 +67,19 @@ data/
 - `CWRU` 默认标签池：`0,1,2,3,4,5,6,7,8,9`
 - `HST` 默认标签池：`0,2,3,5,6`
 - `plot_step`、`checkpoint_step` 默认按总步数的 `1/5` 自动设置
+- `runtime_backend` 默认使用 `onnxruntime`
 
 固定 5 类标签时可显式传入：
 
 ```bash
 --fault_labels 0,1,2,3,4
 ```
+
+## 部署后端
+
+- `onnxruntime`：默认主方案
+- `tensorrt`：NVIDIA 平台可选
+- `openvino`：Intel 平台可选
 
 ## 从头训练并完成压缩导出
 
@@ -95,6 +102,7 @@ data/
 
 ```bash
 python train.py --mode train --algorithm maml \
+  --runtime_backend onnxruntime \
   --dataset CWRU \
   --preprocess FFT \
   --ways 5 \
@@ -110,6 +118,7 @@ python train.py --mode train --algorithm maml \
 
 ```bash
 python train.py --mode train --algorithm protonet \
+  --runtime_backend onnxruntime \
   --dataset CWRU \
   --preprocess FFT \
   --ways 5 \
@@ -125,6 +134,7 @@ python train.py --mode train --algorithm protonet \
 
 ```bash
 python train.py --mode train --algorithm cnn \
+  --runtime_backend onnxruntime \
   --dataset CWRU \
   --preprocess FFT \
   --ways 5 \
@@ -143,6 +153,7 @@ python train.py --mode train --algorithm cnn \
 
 ```bash
 python train.py --mode train --algorithm maml \
+  --runtime_backend onnxruntime \
   --dataset CWRU \
   --preprocess STFT \
   --ways 5 \
@@ -158,6 +169,7 @@ python train.py --mode train --algorithm maml \
 
 ```bash
 python train.py --mode train --algorithm protonet \
+  --runtime_backend onnxruntime \
   --dataset CWRU \
   --preprocess STFT \
   --ways 5 \
@@ -173,6 +185,7 @@ python train.py --mode train --algorithm protonet \
 
 ```bash
 python train.py --mode train --algorithm cnn \
+  --runtime_backend onnxruntime \
   --dataset CWRU \
   --preprocess STFT \
   --ways 5 \
@@ -193,6 +206,7 @@ python train.py --mode train --algorithm cnn \
 
 ```bash
 python train.py --mode deploy --algorithm maml \
+  --runtime_backend onnxruntime \
   --dataset CWRU \
   --preprocess STFT \
   --ways 5 \
@@ -207,6 +221,7 @@ python train.py --mode deploy --algorithm maml \
 
 ```bash
 python train.py --mode deploy --algorithm protonet \
+  --runtime_backend onnxruntime \
   --dataset CWRU \
   --preprocess STFT \
   --ways 5 \
