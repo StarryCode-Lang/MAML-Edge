@@ -1,19 +1,19 @@
 # MAML-Edge
 
-Few-shot industrial fault diagnosis project with four layers:
+面向工业设备少样本故障诊断的元学习项目，按四层结构组织：
 
-- `data_layer`: CWRU / HST loading and preprocessing
-- `model_layer`: `MAML`, `ProtoNet`, `CNN`
-- `deploy_layer`: pruning, recovery fine-tuning, ONNX export, INT8 PTQ
-- `test_layer`: benchmark summary checking
+- `data_layer`：CWRU / HST 数据加载与预处理
+- `model_layer`：`MAML`、`ProtoNet`、`CNN`
+- `deploy_layer`：结构化剪枝、恢复微调、ONNX 导出、INT8 PTQ
+- `test_layer`：部署结果指标检查
 
-Unified root entry:
+统一训练入口：
 
 ```bash
 python train.py --algorithm {maml|protonet|cnn} ...
 ```
 
-## Structure
+## 项目结构
 
 ```text
 MAML-Edge/
@@ -27,7 +27,7 @@ MAML-Edge/
 `-- README.md
 ```
 
-## Environment
+## 环境安装
 
 ```bash
 conda create -n maml-edge python=3.9 -y
@@ -35,9 +35,9 @@ conda activate maml-edge
 pip install -r requirements.txt
 ```
 
-## Data
+## 数据目录
 
-Default data root: `./data`
+默认数据根目录：`./data`
 
 ### CWRU
 
@@ -60,27 +60,27 @@ data/
     `-- 2/
 ```
 
-## Defaults
+## 默认实验设置
 
 - `ways = 5`
 - `shots = 5`
 - `query_shots = shots`
-- default label pool:
+- 默认标签池：
   - `CWRU: 0,1,2,3,4,5,6,7,8,9`
   - `HST: 0,2,3,5,6`
-- `CWRU` default behavior is: sample `5-way` episodes from the full `10-label` pool
+- `CWRU` 默认行为是：从 10 类标签池中采样 `5-way` 任务
 
-If you need a fixed 5-class experiment:
+如果你要固定 5 类实验，可以显式传：
 
 ```bash
 python train.py --algorithm maml --fault_labels 0,1,2,3,4 ...
 ```
 
-## Training
+## 训练命令
 
 ### FFT
 
-Recommended when you want a lighter 1D model and longer training.
+适合轻量化 1D 模型，通常训练轮次更长。
 
 #### MAML
 
@@ -124,7 +124,7 @@ python train.py --algorithm cnn \
 
 ### STFT
 
-Recommended when you want stronger time-frequency representation and usually fewer iterations.
+适合时频表征更强的设定，通常迭代数可以更低。
 
 #### MAML
 
@@ -166,38 +166,38 @@ python train.py --algorithm cnn \
   --epochs 50
 ```
 
-## Auto Schedule
+## 自动输出周期
 
-If `plot_step` and `checkpoint_step` are not passed, they are set automatically to one-fifth of total training steps:
+如果不显式传 `plot_step` 和 `checkpoint_step`，系统会自动取总训练步数的五分之一：
 
-- `MAML / ProtoNet`: `iters // 5`
-- `CNN`: `epochs // 5`
+- `MAML / ProtoNet`：`iters // 5`
+- `CNN`：`epochs // 5`
 
-Examples:
+示例：
 
-- `FFT, iters=1500` -> `plot_step=300`, `checkpoint_step=300`
-- `STFT, iters=200` -> `plot_step=40`, `checkpoint_step=40`
-- `CNN, epochs=50` -> `plot_step=10`, `checkpoint_step=10`
+- `FFT, iters=1500` -> `plot_step=300`，`checkpoint_step=300`
+- `STFT, iters=200` -> `plot_step=40`，`checkpoint_step=40`
+- `CNN, epochs=50` -> `plot_step=10`，`checkpoint_step=10`
 
-## Backbone
+## 骨干网络参数
 
-Shared backbone defaults:
+共享默认配置：
 
-- `FFT`: `--fft_channels 32,64,64 --fft_pooled_length 64`
-- `STFT/WT`: `--image_channels 64,64,64,64`
+- `FFT`：`--fft_channels 32,64,64 --fft_pooled_length 64`
+- `STFT/WT`：`--image_channels 64,64,64,64`
 
-## Compression
+## 压缩与导出
 
-Compression pipeline matches the final scheme:
+压缩流程对应最终方案：
 
 ```text
-Structured pruning (~40%, channel level)
--> recovery fine-tuning
+结构化剪枝（约 40%，通道级）
+-> 恢复微调
 -> INT8 PTQ
--> ONNX Runtime deployment
+-> ONNX Runtime 部署
 ```
 
-Example:
+示例：
 
 ```bash
 python train.py --algorithm maml \
@@ -212,40 +212,52 @@ python train.py --algorithm maml \
   --prune_ratio 0.4
 ```
 
-Outputs are written to:
+输出目录：
 
 ```text
 deploy_artifacts/<experiment_title>/
 ```
 
-Main artifacts:
+主要文件：
 
-- float ONNX model
-- INT8 ONNX model
-- ProtoNet prototype file
+- 浮点 ONNX 模型
+- INT8 ONNX 模型
+- ProtoNet 原型文件
 - `compression_summary.json`
 
-## Benchmark
+## 测试脚手架
 
 ```bash
 python test_layer/benchmark.py \
   --summary_path deploy_artifacts/<experiment_title>/compression_summary.json
 ```
 
-Default checks:
+默认检查：
 
-- accuracy >= `0.95`
-- average latency <= `100 ms`
+- 准确率 `>= 0.95`
+- 平均时延 `<= 100 ms`
 
-## Dependencies
+## 依赖
 
-Core packages in `requirements.txt`:
+`requirements.txt` 中的核心依赖包括：
 
 - `torch`
 - `learn2learn`
 - `matplotlib`
 - `onnx`
 - `onnxruntime`
+
+## 参考资料
+
+### 开源仓库
+
+- [fyancy/MetaFD](https://github.com/fyancy/MetaFD)
+- [Yifei20/Few-shot-Fault-Diagnosis-MAML](https://github.com/Yifei20/Few-shot-Fault-Diagnosis-MAML)
+
+### 论文
+
+- [Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks](https://arxiv.org/abs/1703.03400)
+- [Meta-learning as a promising approach for few-shot cross-domain fault diagnosis: Algorithms, applications, and prospects](https://doi.org/10.1016/j.knosys.2021.107646)
 
 ## Contributors
 
