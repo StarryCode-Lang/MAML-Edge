@@ -1,0 +1,85 @@
+{
+  "experiment_title": "ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789",
+  "algorithm": "protonet",
+  "best_training_record": {
+    "iteration": 54,
+    "meta_train_acc": 1.0,
+    "meta_train_loss": 0.001057868757094127,
+    "meta_test_acc": 0.9987999993562698,
+    "meta_test_loss": 0.010969723711514234
+  },
+  "meta_eval_before_prune": {
+    "loss": 0.011636946566941333,
+    "accuracy": 0.9975999987125397
+  },
+  "meta_eval_after_recovery": {
+    "loss": 0.022636368790699635,
+    "accuracy": 0.9939999967813492
+  },
+  "deployment_float_metrics": {
+    "loss": 0.00961173977702856,
+    "accuracy": 0.9978924989700317
+  },
+  "deployment_int8_metrics": {
+    "loss": 0.010648536495864391,
+    "accuracy": 0.9978925184404637,
+    "avg_latency_ms": 2.189448209296916
+  },
+  "qat_float_metrics": null,
+  "prune_metadata": {
+    "kept_channels": [
+      38,
+      38,
+      38,
+      38
+    ],
+    "last_indices": [
+      0,
+      1,
+      3,
+      4,
+      6,
+      11,
+      13,
+      15,
+      16,
+      18,
+      20,
+      22,
+      23,
+      24,
+      25,
+      28,
+      30,
+      31,
+      32,
+      33,
+      34,
+      36,
+      37,
+      38,
+      39,
+      41,
+      45,
+      49,
+      51,
+      52,
+      53,
+      54,
+      56,
+      57,
+      59,
+      61,
+      62,
+      63
+    ]
+  },
+  "float_model_path": "./deploy_artifacts/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_float.onnx",
+  "int8_model_path": "./deploy_artifacts/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_int8.onnx",
+  "prototype_path": "./deploy_artifacts/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_float_prototypes.npz",
+  "quantization_warning": null,
+  "model_profile": {
+    "baseline_params": 113088,
+    "pruned_params": 40470
+  }
+}

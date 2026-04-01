@@ -1,0 +1,45 @@
+{
+  "experiment_title": "MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789",
+  "algorithm": "maml",
+  "best_training_record": {
+    "iteration": 64,
+    "meta_train_acc": 1.0,
+    "meta_train_loss": 0.07970203988952562,
+    "meta_test_acc": 0.994799997806549,
+    "meta_test_loss": 0.1029098017886281
+  },
+  "meta_eval_before_prune": {
+    "loss": 0.12662721280008554,
+    "accuracy": 0.985599993467331
+  },
+  "meta_eval_after_recovery": {
+    "loss": 0.18696740563958883,
+    "accuracy": 0.9851999938488006
+  },
+  "deployment_float_metrics": {
+    "loss": 0.06975891441106796,
+    "accuracy": 0.9989461898803711
+  },
+  "deployment_int8_metrics": {
+    "loss": 0.07268625497817993,
+    "accuracy": 0.9989462592202318,
+    "avg_latency_ms": 1.5249450831380609
+  },
+  "qat_float_metrics": null,
+  "prune_metadata": {
+    "kept_channels": [
+      38,
+      38,
+      38,
+      38
+    ]
+  },
+  "float_model_path": "./deploy_artifacts/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_float.onnx",
+  "int8_model_path": "./deploy_artifacts/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_int8.onnx",
+  "prototype_path": null,
+  "quantization_warning": null,
+  "model_profile": {
+    "baseline_params": 113738,
+    "pruned_params": 40860
+  }
+}
