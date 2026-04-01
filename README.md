@@ -43,15 +43,13 @@ MAML-Edge/
 |-- test_layer/
 |   |-- benchmark.py
 |   `-- __init__.py
-|-- train_maml.py
-|-- train_protonet.py
-|-- train_cnn.py
+|-- train.py
 |-- requirements.txt
 |-- LICENSE
 `-- README.md
 ```
 
-Only the three training entry scripts are kept at the repository root. Main implementation stays inside the four layers.
+The repository root keeps a unified `train.py` entry. Main implementation stays inside the four layers.
 
 ## Environment
 
@@ -99,7 +97,7 @@ data/
 You can override the fault subset with:
 
 ```bash
-python train_maml.py --fault_labels 0,1,2,3,4
+python train.py --algorithm maml --fault_labels 0,1,2,3,4
 ```
 
 ## Controlled Variables
@@ -134,10 +132,18 @@ Algorithm-specific parts intentionally remain different:
 
 ## Training
 
+Unified entry:
+
+```bash
+python train.py --algorithm maml ...
+python train.py --algorithm protonet ...
+python train.py --algorithm cnn ...
+```
+
 ### MAML
 
 ```bash
-python train_maml.py \
+python train.py --algorithm maml \
   --dataset CWRU \
   --preprocess FFT \
   --ways 5 \
@@ -150,7 +156,7 @@ python train_maml.py \
 ### ProtoNet
 
 ```bash
-python train_protonet.py \
+python train.py --algorithm protonet \
   --dataset CWRU \
   --preprocess FFT \
   --ways 5 \
@@ -163,7 +169,7 @@ python train_protonet.py \
 ### CNN Baseline
 
 ```bash
-python train_cnn.py \
+python train.py --algorithm cnn \
   --dataset CWRU \
   --preprocess FFT \
   --ways 5 \
@@ -173,6 +179,19 @@ python train_cnn.py \
   --test_domain 3 \
   --epochs 50
 ```
+
+## Auto Schedule
+
+If `plot_step` and `checkpoint_step` are not passed explicitly, they are set automatically to one-fifth of total training steps:
+
+- `MAML / ProtoNet`: `iters // 5`
+- `CNN`: `epochs // 5`
+
+Examples:
+
+- `FFT, iters=1500` -> `plot_step=300`, `checkpoint_step=300`
+- `STFT, iters=200` -> `plot_step=40`, `checkpoint_step=40`
+- `CNN, epochs=50` -> `plot_step=10`, `checkpoint_step=10`
 
 ## Shared Backbone Parameters
 
@@ -189,7 +208,7 @@ All three algorithms support the same backbone control arguments:
 Enable the compression pipeline from the training entry:
 
 ```bash
-python train_maml.py \
+python train.py --algorithm maml \
   --dataset CWRU \
   --preprocess FFT \
   --ways 5 \

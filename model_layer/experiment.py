@@ -9,6 +9,13 @@ DEFAULT_IMAGE_CHANNELS = (64, 64, 64, 64)
 DEFAULT_FFT_POOLED_LENGTH = 64
 
 
+def default_schedule_step(total_steps):
+    total_steps = int(total_steps)
+    if total_steps <= 0:
+        raise ValueError('total_steps must be positive.')
+    return max(1, total_steps // 5)
+
+
 def parse_channel_config(value, expected_length, default_channels):
     if value is None or value == '':
         return tuple(default_channels)
@@ -55,6 +62,14 @@ def normalize_shared_args(args, require_query_shots=False):
     args.fft_pooled_length = int(getattr(args, 'fft_pooled_length', DEFAULT_FFT_POOLED_LENGTH))
     if args.fft_pooled_length <= 0:
         raise ValueError('fft_pooled_length must be positive.')
+    return args
+
+
+def apply_default_schedule(args, total_steps):
+    if hasattr(args, 'plot_step') and getattr(args, 'plot_step', None) is None:
+        args.plot_step = default_schedule_step(total_steps)
+    if hasattr(args, 'checkpoint_step') and getattr(args, 'checkpoint_step', None) is None:
+        args.checkpoint_step = default_schedule_step(total_steps)
     return args
 
 

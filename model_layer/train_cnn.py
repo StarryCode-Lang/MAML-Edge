@@ -3,6 +3,7 @@ import os
 
 from .experiment import (
     DEFAULT_FFT_POOLED_LENGTH,
+    apply_default_schedule,
     normalize_shared_args,
 )
 from .utils import setup_logger
@@ -19,7 +20,7 @@ def str2bool(value):
     raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
-def parse_args():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(description='Traditional CNN baseline for fault diagnosis')
     parser.add_argument('--ways', type=int, default=5,
                         help='Number of classes for target adaptation, default=5')
@@ -72,8 +73,8 @@ def parse_args():
                         help='Plot the learning curve, default=True')
     parser.add_argument('--plot_path', type=str, default='./images',
                         help='Directory to save the learning curve, default=./images')
-    parser.add_argument('--plot_step', type=int, default=10,
-                        help='Step for plotting the learning curve, default=10')
+    parser.add_argument('--plot_step', type=int, default=None,
+                        help='Step for plotting the learning curve, default=epochs//5')
 
     parser.add_argument('--log', type=str2bool, default=True,
                         help='Log the training process, default=True')
@@ -84,8 +85,8 @@ def parse_args():
                         help='Save model checkpoints, default=True')
     parser.add_argument('--checkpoint_path', type=str, default='./checkpoints',
                         help='Directory to save model checkpoints, default=./checkpoints')
-    parser.add_argument('--checkpoint_step', type=int, default=10,
-                        help='Epoch interval for saving checkpoints, default=10')
+    parser.add_argument('--checkpoint_step', type=int, default=None,
+                        help='Epoch interval for saving checkpoints, default=epochs//5')
     parser.add_argument('--keep_all_checkpoints', type=str2bool, default=False,
                         help='Keep every intermediate checkpoint, default=False')
 
@@ -108,11 +109,12 @@ def parse_args():
     parser.add_argument('--onnx_opset', type=int, default=17,
                         help='ONNX export opset version, default=17')
 
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def normalize_args(args):
-    return normalize_shared_args(args, require_query_shots=True)
+    args = normalize_shared_args(args, require_query_shots=True)
+    return apply_default_schedule(args, args.epochs)
 
 
 def build_experiment_title(args):
@@ -142,10 +144,10 @@ def prepare_runtime_dirs(args, experiment_title):
         os.makedirs(args.compression_output_path, exist_ok=True)
 
 
-def main():
+def main(argv=None):
     from . import cnn_baseline
 
-    args = normalize_args(parse_args())
+    args = normalize_args(parse_args(argv))
     experiment_title = build_experiment_title(args)
     prepare_runtime_dirs(args, experiment_title)
     cnn_baseline.train(args, experiment_title)
