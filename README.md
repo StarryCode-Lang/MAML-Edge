@@ -1,55 +1,31 @@
 # MAML-Edge
 
-Few-shot industrial fault diagnosis project organized into four layers:
+Few-shot industrial fault diagnosis project with four layers:
 
-- `data_layer`: CWRU and HST data loading, preprocessing, and fault subset control
-- `model_layer`: MAML, ProtoNet, and CNN baseline
-- `deploy_layer`: structured pruning, recovery fine-tuning, ONNX export, INT8 PTQ, optional QAT
+- `data_layer`: CWRU / HST loading and preprocessing
+- `model_layer`: `MAML`, `ProtoNet`, `CNN`
+- `deploy_layer`: pruning, recovery fine-tuning, ONNX export, INT8 PTQ
 - `test_layer`: benchmark summary checking
 
-The project follows the final scheme:
+Unified root entry:
 
-```text
-Structured pruning (~40%, channel level)
--> recovery fine-tuning
--> INT8 post-training quantization
--> ONNX Runtime deployment
--> MQTT / web diagnostic system integration
+```bash
+python train.py --algorithm {maml|protonet|cnn} ...
 ```
 
-## Project Layout
+## Structure
 
 ```text
 MAML-Edge/
 |-- data_layer/
-|   |-- fault_datasets.py
-|   |-- preprocess_cwru.py
-|   |-- preprocess_hst.py
-|   `-- __init__.py
 |-- model_layer/
-|   |-- experiment.py
-|   |-- models.py
-|   |-- utils.py
-|   |-- maml.py
-|   |-- protonet.py
-|   |-- cnn_baseline.py
-|   |-- train_maml.py
-|   |-- train_protonet.py
-|   |-- train_cnn.py
-|   `-- __init__.py
 |-- deploy_layer/
-|   |-- compression.py
-|   `-- __init__.py
 |-- test_layer/
-|   |-- benchmark.py
-|   `-- __init__.py
 |-- train.py
 |-- requirements.txt
 |-- LICENSE
 `-- README.md
 ```
-
-The repository root keeps a unified `train.py` entry. Main implementation stays inside the four layers.
 
 ## Environment
 
@@ -61,7 +37,7 @@ pip install -r requirements.txt
 
 ## Data
 
-Default data root is `./data`.
+Default data root: `./data`
 
 ### CWRU
 
@@ -84,63 +60,29 @@ data/
     `-- 2/
 ```
 
-## Default Experiment Setup
+## Defaults
 
 - `ways = 5`
 - `shots = 5`
 - `query_shots = shots`
-- default fault subsets:
+- default label pool:
   - `CWRU: 0,1,2,3,4,5,6,7,8,9`
   - `HST: 0,2,3,5,6`
-- target-domain evaluation uses a fixed support/query pool
+- `CWRU` default behavior is: sample `5-way` episodes from the full `10-label` pool
 
-You can override the fault subset with:
+If you need a fixed 5-class experiment:
 
 ```bash
-python train.py --algorithm maml --fault_labels 0,1,2,3,4
+python train.py --algorithm maml --fault_labels 0,1,2,3,4 ...
 ```
-
-## Controlled Variables
-
-This branch aligns `CNN / MAML / ProtoNet` as much as possible without changing their algorithmic nature.
-
-For `CWRU`, the default now follows the original main-branch behavior more closely:
-
-- default source label pool uses all 10 CWRU fault labels
-- `ways = 5` means each episode samples 5 classes from those 10
-- if you want a fixed 5-class experiment, pass `--fault_labels` explicitly
-
-Shared across all three:
-
-- same dataset and selected fault subset
-- same `train_domains` and `test_domain`
-- same `ways / shots / query_shots`
-- same target-domain fixed-pool evaluation rule
-- same backbone width configuration
-- same best-checkpoint selection rule
-
-Shared backbone defaults:
-
-- `FFT`: `32,64,64` with `AdaptiveAvgPool1d(64)`
-- `STFT/WT`: `64,64,64,64`
-
-Algorithm-specific parts intentionally remain different:
-
-- `MAML`: `fast_lr`, `adapt_steps`, `first_order`
-- `ProtoNet`: prototype-based distance classification
-- `CNN`: supervised source-domain training with target-domain few-shot episodic evaluation
 
 ## Training
 
-Unified entry:
+### FFT
 
-```bash
-python train.py --algorithm maml ...
-python train.py --algorithm protonet ...
-python train.py --algorithm cnn ...
-```
+Recommended when you want a lighter 1D model and longer training.
 
-### MAML
+#### MAML
 
 ```bash
 python train.py --algorithm maml \
@@ -153,7 +95,7 @@ python train.py --algorithm maml \
   --iters 1500
 ```
 
-### ProtoNet
+#### ProtoNet
 
 ```bash
 python train.py --algorithm protonet \
@@ -166,7 +108,7 @@ python train.py --algorithm protonet \
   --iters 1500
 ```
 
-### CNN Baseline
+#### CNN
 
 ```bash
 python train.py --algorithm cnn \
@@ -180,9 +122,53 @@ python train.py --algorithm cnn \
   --epochs 50
 ```
 
+### STFT
+
+Recommended when you want stronger time-frequency representation and usually fewer iterations.
+
+#### MAML
+
+```bash
+python train.py --algorithm maml \
+  --dataset CWRU \
+  --preprocess STFT \
+  --ways 5 \
+  --shots 5 \
+  --train_domains 0,1,2 \
+  --test_domain 3 \
+  --iters 200
+```
+
+#### ProtoNet
+
+```bash
+python train.py --algorithm protonet \
+  --dataset CWRU \
+  --preprocess STFT \
+  --ways 5 \
+  --shots 5 \
+  --train_domains 0,1,2 \
+  --test_domain 3 \
+  --iters 200
+```
+
+#### CNN
+
+```bash
+python train.py --algorithm cnn \
+  --dataset CWRU \
+  --preprocess STFT \
+  --ways 5 \
+  --shots 5 \
+  --query_shots 5 \
+  --train_domains 0,1,2 \
+  --test_domain 3 \
+  --epochs 50
+```
+
 ## Auto Schedule
 
-If `plot_step` and `checkpoint_step` are not passed explicitly, they are set automatically to one-fifth of total training steps:
+If `plot_step` and `checkpoint_step` are not passed, they are set automatically to one-fifth of total training steps:
 
 - `MAML / ProtoNet`: `iters // 5`
 - `CNN`: `epochs // 5`
@@ -193,19 +179,25 @@ Examples:
 - `STFT, iters=200` -> `plot_step=40`, `checkpoint_step=40`
 - `CNN, epochs=50` -> `plot_step=10`, `checkpoint_step=10`
 
-## Shared Backbone Parameters
+## Backbone
 
-All three algorithms support the same backbone control arguments:
+Shared backbone defaults:
 
-```bash
---fft_channels 32,64,64
---image_channels 64,64,64,64
---fft_pooled_length 64
+- `FFT`: `--fft_channels 32,64,64 --fft_pooled_length 64`
+- `STFT/WT`: `--image_channels 64,64,64,64`
+
+## Compression
+
+Compression pipeline matches the final scheme:
+
+```text
+Structured pruning (~40%, channel level)
+-> recovery fine-tuning
+-> INT8 PTQ
+-> ONNX Runtime deployment
 ```
 
-## Compression and Export
-
-Enable the compression pipeline from the training entry:
+Example:
 
 ```bash
 python train.py --algorithm maml \
@@ -220,34 +212,20 @@ python train.py --algorithm maml \
   --prune_ratio 0.4
 ```
 
-Typical outputs are written to:
+Outputs are written to:
 
 ```text
 deploy_artifacts/<experiment_title>/
 ```
 
-Including:
+Main artifacts:
 
 - float ONNX model
 - INT8 ONNX model
 - ProtoNet prototype file
 - `compression_summary.json`
 
-## Best Model Selection
-
-Training keeps the best model using:
-
-1. `meta_test_acc`
-2. `meta_test_loss`
-3. `meta_train_acc`
-
-By default only the best checkpoint is kept. To keep all intermediate checkpoints:
-
-```bash
---keep_all_checkpoints True
-```
-
-## Benchmark Helper
+## Benchmark
 
 ```bash
 python test_layer/benchmark.py \
@@ -261,7 +239,7 @@ Default checks:
 
 ## Dependencies
 
-Core packages are listed in `requirements.txt`, including:
+Core packages in `requirements.txt`:
 
 - `torch`
 - `learn2learn`
