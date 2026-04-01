@@ -142,18 +142,25 @@ def deterministic_task_sample(taskset, seed):
 
 
 def deterministic_fixed_pool_episode(dataset, support_pools, query_pools, ways, shots, query_shots, seed):
-    support_data, support_labels, query_data, query_labels, _ = deterministic_fixed_pool_episode_split(
-        dataset,
-        support_pools,
-        query_pools,
-        ways,
-        shots,
-        query_shots,
-        seed,
-    )
-    batch_samples = torch.cat([support_data, query_data], dim=0)
-    batch_labels = torch.cat([support_labels, query_labels], dim=0)
-    return batch_samples, batch_labels
+    rng = np.random.RandomState(seed)
+    available_labels = [label for label in sorted(support_pools.keys())
+                        if len(support_pools[label]) >= shots and len(query_pools[label]) >= query_shots]
+    if len(available_labels) < ways:
+        raise ValueError('Not enough classes with sufficient support/query samples for evaluation.')
+
+    selected_labels = rng.choice(available_labels, size=ways, replace=False)
+    batch_samples = []
+    batch_labels = []
+
+    for new_label, original_label in enumerate(selected_labels):
+        support_indices = rng.choice(support_pools[original_label], size=shots, replace=False)
+        query_indices = rng.choice(query_pools[original_label], size=query_shots, replace=False)
+        for index in np.concatenate([support_indices, query_indices]):
+            sample, _ = dataset[int(index)]
+            batch_samples.append(sample)
+            batch_labels.append(new_label)
+
+    return torch.stack(batch_samples), torch.tensor(batch_labels, dtype=torch.int64)
 
 
 def deterministic_fixed_pool_episode_split(dataset, support_pools, query_pools, ways, shots, query_shots, seed):
