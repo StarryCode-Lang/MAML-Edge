@@ -90,39 +90,39 @@ python train_maml.py --fault_labels 0,1,2,3,4
 ### MAML
 
 ```bash
-python train_maml.py ^
-  --dataset CWRU ^
-  --preprocess FFT ^
-  --ways 5 ^
-  --shots 5 ^
-  --train_domains 0,1,2 ^
-  --test_domain 3 ^
+python train_maml.py \
+  --dataset CWRU \
+  --preprocess FFT \
+  --ways 5 \
+  --shots 5 \
+  --train_domains 0,1,2 \
+  --test_domain 3 \
   --iters 1500
 ```
 
 ### ProtoNet
 
 ```bash
-python train_protonet.py ^
-  --dataset CWRU ^
-  --preprocess FFT ^
-  --ways 5 ^
-  --shots 5 ^
-  --train_domains 0,1,2 ^
-  --test_domain 3 ^
+python train_protonet.py \
+  --dataset CWRU \
+  --preprocess FFT \
+  --ways 5 \
+  --shots 5 \
+  --train_domains 0,1,2 \
+  --test_domain 3 \
   --iters 1500
 ```
 
 ### 传统 CNN 基线
 
 ```bash
-python train_cnn.py ^
-  --dataset CWRU ^
-  --preprocess FFT ^
-  --ways 5 ^
-  --shots 5 ^
-  --train_domains 0,1,2 ^
-  --test_domain 3 ^
+python train_cnn.py \
+  --dataset CWRU \
+  --preprocess FFT \
+  --ways 5 \
+  --shots 5 \
+  --train_domains 0,1,2 \
+  --test_domain 3 \
   --epochs 50
 ```
 
@@ -141,15 +141,15 @@ python train_cnn.py ^
 开启方式：
 
 ```bash
-python train_maml.py ^
-  --dataset CWRU ^
-  --preprocess FFT ^
-  --ways 5 ^
-  --shots 5 ^
-  --train_domains 0,1,2 ^
-  --test_domain 3 ^
-  --iters 1500 ^
-  --enable_compression True ^
+python train_maml.py \
+  --dataset CWRU \
+  --preprocess FFT \
+  --ways 5 \
+  --shots 5 \
+  --train_domains 0,1,2 \
+  --test_domain 3 \
+  --iters 1500 \
+  --enable_compression True \
   --prune_ratio 0.4
 ```
 
