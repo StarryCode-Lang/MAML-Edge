@@ -1,7 +1,6 @@
 import copy
 import logging
 import os
-import time
 
 import learn2learn as l2l
 import numpy as np
@@ -10,6 +9,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
+from deploy_layer import onnx_exporter, runtime_backends
 from model_layer.models import CNN1D, CNN1DEncoder, CNN2D, CNN2DEncoder
 from model_layer.utils import (
     accuracy,
@@ -71,13 +71,18 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
     )
 
     float_model_path = os.path.join(artifact_dir, '{}_float.onnx'.format(experiment_title))
-    export_deployment_bundle_to_onnx(
+    onnx_exporter.export_deployment_bundle_to_onnx(
         deployment_bundle=deployment_bundle,
         onnx_path=float_model_path,
         opset_version=args.onnx_opset,
     )
+    float_runtime_metrics = runtime_backends.evaluate_onnx_bundle(
+        onnx_path=float_model_path,
+        deployment_bundle=deployment_bundle,
+        runtime_backend=getattr(args, 'runtime_backend', 'onnxruntime'),
+    )
 
-    quant_model_path, quant_metrics, quant_warning = quantize_and_evaluate_onnx(
+    quant_model_path, quant_metrics, quant_warning = runtime_backends.quantize_and_evaluate_onnx(
         args=args,
         deployment_bundle=deployment_bundle,
         float_model_path=float_model_path,
@@ -89,12 +94,17 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
     if should_run_qat(args, deployment_bundle, quant_metrics):
         qat_bundle = run_qat_recovery(deployment_bundle, args)
         qat_float_path = os.path.join(artifact_dir, '{}_qat_float.onnx'.format(experiment_title))
-        export_deployment_bundle_to_onnx(
+        onnx_exporter.export_deployment_bundle_to_onnx(
             deployment_bundle=qat_bundle,
             onnx_path=qat_float_path,
             opset_version=args.onnx_opset,
         )
-        quant_model_path, quant_metrics, quant_warning = quantize_and_evaluate_onnx(
+        float_runtime_metrics = runtime_backends.evaluate_onnx_bundle(
+            onnx_path=qat_float_path,
+            deployment_bundle=qat_bundle,
+            runtime_backend=getattr(args, 'runtime_backend', 'onnxruntime'),
+        )
+        quant_model_path, quant_metrics, quant_warning = runtime_backends.quantize_and_evaluate_onnx(
             args=args,
             deployment_bundle=qat_bundle,
             float_model_path=qat_float_path,
@@ -110,7 +120,7 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
         'best_training_record': training_result['best_record'],
         'meta_eval_before_prune': meta_eval_before,
         'meta_eval_after_recovery': meta_eval_after,
-        'deployment_float_metrics': evaluate_deployment_bundle(deployment_bundle, device=device),
+        'deployment_float_metrics': float_runtime_metrics,
         'deployment_int8_metrics': quant_metrics,
         'qat_float_metrics': qat_metrics,
         'prune_metadata': prune_metadata,
@@ -118,6 +128,7 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
         'int8_model_path': quant_model_path,
         'prototype_path': deployment_bundle.get('prototype_path'),
         'quantization_warning': quant_warning,
+        'deployment_backend': getattr(args, 'runtime_backend', 'onnxruntime'),
         'model_profile': {
             'baseline_params': count_parameters(base_model),
             'pruned_params': count_parameters(recovered_model),
@@ -690,113 +701,6 @@ def evaluate_encoder_with_prototypes(model, prototypes, query_data, query_labels
         'loss': loss_value,
         'accuracy': accuracy_value,
     }
-
-
-def export_deployment_bundle_to_onnx(deployment_bundle, onnx_path, opset_version):
-    os.makedirs(os.path.dirname(onnx_path), exist_ok=True)
-    model = deployment_bundle['model'].cpu().eval()
-    example_input = deployment_bundle['support_data'][:1].cpu()
-    torch.onnx.export(
-        model,
-        example_input,
-        onnx_path,
-        input_names=['input'],
-        output_names=['output'],
-        dynamic_axes={'input': {0: 'batch'}, 'output': {0: 'batch'}},
-        opset_version=opset_version,
-    )
-    if deployment_bundle['deployment_type'] == 'encoder_with_prototypes':
-        prototype_path = os.path.splitext(onnx_path)[0] + '_prototypes.npz'
-        np.savez(
-            prototype_path,
-            prototypes=deployment_bundle['prototypes'].cpu().numpy(),
-            selected_labels=np.asarray(deployment_bundle['selected_labels']),
-        )
-        deployment_bundle['prototype_path'] = prototype_path
-
-
-class NumpyCalibrationDataReader:
-    def __init__(self, batches):
-        self._batches = iter(batches)
-
-    def get_next(self):
-        return next(self._batches, None)
-
-
-def quantize_and_evaluate_onnx(args, deployment_bundle, float_model_path, artifact_dir, experiment_title):
-    try:
-        from onnxruntime.quantization import CalibrationMethod, QuantFormat, QuantType, quantize_static
-    except ImportError as exc:
-        warning = 'onnxruntime quantization is unavailable: {}'.format(exc)
-        logging.warning(warning)
-        return None, None, warning
-
-    calibration_input = collect_calibration_batches(
-        support_data=deployment_bundle['support_data'],
-        query_data=deployment_bundle['query_data'],
-        calibration_size=args.calibration_size,
-    )
-    quant_model_path = os.path.join(artifact_dir, '{}_int8.onnx'.format(experiment_title))
-    quantize_static(
-        model_input=float_model_path,
-        model_output=quant_model_path,
-        calibration_data_reader=NumpyCalibrationDataReader(calibration_input),
-        quant_format=QuantFormat.QDQ,
-        activation_type=QuantType.QUInt8,
-        weight_type=QuantType.QInt8,
-        per_channel=True,
-        calibrate_method=CalibrationMethod.MinMax,
-    )
-    metrics = evaluate_onnx_bundle(quant_model_path, deployment_bundle)
-    return quant_model_path, metrics, None
-
-
-def collect_calibration_batches(support_data, query_data, calibration_size):
-    combined = torch.cat([support_data, query_data], dim=0)
-    limited = combined[:max(1, calibration_size)]
-    return [{'input': limited[index:index + 1].cpu().numpy()} for index in range(limited.size(0))]
-
-
-def evaluate_onnx_bundle(onnx_path, deployment_bundle):
-    import onnxruntime as ort
-
-    session = ort.InferenceSession(onnx_path, providers=['CPUExecutionProvider'])
-    query_array = deployment_bundle['query_data'].cpu().numpy()
-    query_labels = deployment_bundle['query_labels'].cpu().numpy()
-
-    outputs = []
-    total_time = 0.0
-    for sample in query_array:
-        feed_dict = {'input': sample[np.newaxis, ...]}
-        start_time = time.perf_counter()
-        session_output = session.run(None, feed_dict)[0]
-        total_time += (time.perf_counter() - start_time)
-        outputs.append(session_output[0])
-
-    outputs = np.asarray(outputs)
-    if deployment_bundle['deployment_type'] == 'classifier':
-        predicted_labels = outputs.argmax(axis=1)
-        loss_value = softmax_cross_entropy(outputs, query_labels)
-    else:
-        prototypes = deployment_bundle['prototypes'].cpu().numpy()
-        distances = ((outputs[:, np.newaxis, :] - prototypes[np.newaxis, :, :]) ** 2).sum(axis=2)
-        logits = -distances
-        predicted_labels = logits.argmax(axis=1)
-        loss_value = softmax_cross_entropy(logits, query_labels)
-
-    return {
-        'loss': float(loss_value),
-        'accuracy': float((predicted_labels == query_labels).mean()),
-        'avg_latency_ms': float((total_time / max(1, len(query_array))) * 1000.0),
-    }
-
-
-def softmax_cross_entropy(logits, labels):
-    logits = logits - logits.max(axis=1, keepdims=True)
-    exp_logits = np.exp(logits)
-    probabilities = exp_logits / exp_logits.sum(axis=1, keepdims=True)
-    row_indices = np.arange(labels.shape[0])
-    return -np.log(np.clip(probabilities[row_indices, labels], 1e-12, 1.0)).mean()
 
 
 def should_run_qat(args, deployment_bundle, quant_metrics):

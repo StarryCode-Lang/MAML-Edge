@@ -108,6 +108,9 @@ def parse_args(argv=None):
                         help='Trigger QAT recovery when PTQ accuracy drops by more than this value, default=0.02')
     parser.add_argument('--onnx_opset', type=int, default=17,
                         help='ONNX export opset version, default=17')
+    parser.add_argument('--runtime_backend', type=str, default='onnxruntime',
+                        choices=['onnxruntime', 'tensorrt', 'openvino'],
+                        help='Deployment runtime backend, default=onnxruntime')
 
     return parser.parse_args(argv)
 
