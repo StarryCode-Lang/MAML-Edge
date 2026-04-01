@@ -166,26 +166,6 @@ python train.py --algorithm cnn \
   --epochs 50
 ```
 
-## 自动输出周期
-
-如果不显式传 `plot_step` 和 `checkpoint_step`，系统会自动取总训练步数的五分之一：
-
-- `MAML / ProtoNet`：`iters // 5`
-- `CNN`：`epochs // 5`
-
-示例：
-
-- `FFT, iters=1500` -> `plot_step=300`，`checkpoint_step=300`
-- `STFT, iters=200` -> `plot_step=40`，`checkpoint_step=40`
-- `CNN, epochs=50` -> `plot_step=10`，`checkpoint_step=10`
-
-## 骨干网络参数
-
-共享默认配置：
-
-- `FFT`：`--fft_channels 32,64,64 --fft_pooled_length 64`
-- `STFT/WT`：`--image_channels 64,64,64,64`
-
 ## 压缩与导出
 
 压缩流程对应最终方案：
@@ -232,37 +212,8 @@ python test_layer/benchmark.py \
   --summary_path deploy_artifacts/<experiment_title>/compression_summary.json
 ```
 
-默认检查：
-
-- 准确率 `>= 0.95`
-- 平均时延 `<= 100 ms`
-
-## 依赖
-
-`requirements.txt` 中的核心依赖包括：
-
-- `torch`
-- `learn2learn`
-- `matplotlib`
-- `onnx`
-- `onnxruntime`
-
 ## 参考资料
-
-### 开源仓库
-
 - [fyancy/MetaFD](https://github.com/fyancy/MetaFD)
 - [Yifei20/Few-shot-Fault-Diagnosis-MAML](https://github.com/Yifei20/Few-shot-Fault-Diagnosis-MAML)
-
-### 论文
-
 - [Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks](https://arxiv.org/abs/1703.03400)
 - [Meta-learning as a promising approach for few-shot cross-domain fault diagnosis: Algorithms, applications, and prospects](https://doi.org/10.1016/j.knosys.2021.107646)
-
-## Contributors
-
-- StarryCode-Lang
-
-## License
-
-MIT
