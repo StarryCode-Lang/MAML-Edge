@@ -63,9 +63,12 @@ def main(argv=None):
     else:
         from deploy_layer.deploy import main as run_main
 
+    forwarded_args = list(remaining)
+    if args.algorithm is not None:
+        forwarded_args = ['--algorithm', args.algorithm] + forwarded_args
     if args.help_requested:
-        remaining = ['--help'] + remaining
-    run_main(remaining)
+        forwarded_args = ['--help'] + forwarded_args
+    run_main(forwarded_args)
 
 
 if __name__ == '__main__':
