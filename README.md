@@ -5,18 +5,18 @@
 - `data_layer`：数据加载与预处理
 - `model_layer`：`MAML`、`ProtoNet`、`CNN`
 - `deploy_layer`：结构化剪枝、恢复微调、ONNX 导出、INT8 PTQ
-- `test_layer`：结果检查脚本
+- `test_layer`：结果检查
 
-统一训练入口：
+根目录统一入口：
 
 ```bash
-python train.py --algorithm {maml|protonet|cnn} ...
+python train.py --mode {train|deploy} --algorithm {maml|protonet|cnn} ...
 ```
 
-独立部署入口：
+部署层内部也可单独运行：
 
 ```bash
-python deploy.py --algorithm {maml|protonet|cnn} ...
+python deploy_layer/deploy.py --algorithm {maml|protonet|cnn} ...
 ```
 
 ## 环境
@@ -24,9 +24,9 @@ python deploy.py --algorithm {maml|protonet|cnn} ...
 推荐：
 
 - `Python 3.9`
-- `CUDA` 环境先按 PyTorch 官方方式安装 `torch`
+- GPU 环境先按 PyTorch 官方方式安装 `torch`
 
-创建环境：
+安装：
 
 ```bash
 conda create -n fault_env python=3.9 -y
@@ -36,7 +36,7 @@ pip install -r requirements.txt
 
 ## 数据目录
 
-默认数据目录为 `./data`。
+默认数据目录：`./data`
 
 ### CWRU
 
@@ -66,9 +66,9 @@ data/
 - `query_shots = shots`
 - `CWRU` 默认标签池：`0,1,2,3,4,5,6,7,8,9`
 - `HST` 默认标签池：`0,2,3,5,6`
-- `plot_step`、`checkpoint_step` 默认按总训练步数的 `1/5` 自动设置
+- `plot_step`、`checkpoint_step` 默认按总步数的 `1/5` 自动设置
 
-如果要固定 5 类标签，可显式传入：
+固定 5 类标签时可显式传入：
 
 ```bash
 --fault_labels 0,1,2,3,4
@@ -76,14 +76,14 @@ data/
 
 ## 从头训练并完成压缩导出
 
-现在代码已经支持从训练开始，一路跑到：
+现在代码支持从训练开始一路跑到：
 
 - 结构化剪枝
 - 恢复微调
 - ONNX 导出
 - INT8 PTQ
 
-只需在训练命令中加入：
+训练命令中加入：
 
 ```bash
 --enable_compression True --prune_ratio 0.4
@@ -94,7 +94,7 @@ data/
 #### MAML
 
 ```bash
-python train.py --algorithm maml \
+python train.py --mode train --algorithm maml \
   --dataset CWRU \
   --preprocess FFT \
   --ways 5 \
@@ -109,7 +109,7 @@ python train.py --algorithm maml \
 #### ProtoNet
 
 ```bash
-python train.py --algorithm protonet \
+python train.py --mode train --algorithm protonet \
   --dataset CWRU \
   --preprocess FFT \
   --ways 5 \
@@ -124,7 +124,7 @@ python train.py --algorithm protonet \
 #### CNN
 
 ```bash
-python train.py --algorithm cnn \
+python train.py --mode train --algorithm cnn \
   --dataset CWRU \
   --preprocess FFT \
   --ways 5 \
@@ -142,7 +142,7 @@ python train.py --algorithm cnn \
 #### MAML
 
 ```bash
-python train.py --algorithm maml \
+python train.py --mode train --algorithm maml \
   --dataset CWRU \
   --preprocess STFT \
   --ways 5 \
@@ -157,7 +157,7 @@ python train.py --algorithm maml \
 #### ProtoNet
 
 ```bash
-python train.py --algorithm protonet \
+python train.py --mode train --algorithm protonet \
   --dataset CWRU \
   --preprocess STFT \
   --ways 5 \
@@ -172,7 +172,7 @@ python train.py --algorithm protonet \
 #### CNN
 
 ```bash
-python train.py --algorithm cnn \
+python train.py --mode train --algorithm cnn \
   --dataset CWRU \
   --preprocess STFT \
   --ways 5 \
@@ -187,12 +187,12 @@ python train.py --algorithm cnn \
 
 ## 从已有 checkpoint 直接做压缩导出
 
-如果训练已经完成，并且 `checkpoints/` 下已有 `*_best.pt`，可以跳过训练，直接运行：
+如果 `checkpoints/` 下已经有 `*_best.pt`，可以跳过训练，直接部署：
 
 ### MAML
 
 ```bash
-python deploy.py --algorithm maml \
+python train.py --mode deploy --algorithm maml \
   --dataset CWRU \
   --preprocess STFT \
   --ways 5 \
@@ -206,7 +206,7 @@ python deploy.py --algorithm maml \
 ### ProtoNet
 
 ```bash
-python deploy.py --algorithm protonet \
+python train.py --mode deploy --algorithm protonet \
   --dataset CWRU \
   --preprocess STFT \
   --ways 5 \
@@ -227,13 +227,13 @@ python deploy.py --algorithm protonet \
 
 ## 输出目录
 
-压缩与导出结果位于：
+输出位于：
 
 ```text
 deploy_artifacts/<experiment_title>/
 ```
 
-典型输出文件：
+主要文件：
 
 - `compression_summary.json`
 - `*_float.onnx`
