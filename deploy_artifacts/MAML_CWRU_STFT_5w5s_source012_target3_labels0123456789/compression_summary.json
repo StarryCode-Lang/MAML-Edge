@@ -9,21 +9,30 @@
     "meta_test_loss": 0.1029098017886281
   },
   "meta_eval_before_prune": {
-    "loss": 0.12664831314235925,
+    "loss": 0.12666795644909143,
     "accuracy": 0.985599993467331
   },
   "meta_eval_after_recovery": {
-    "loss": 0.17130967054516077,
-    "accuracy": 0.9867999941110611
+    "loss": 0.19093538247048855,
+    "accuracy": 0.9815999925136566
   },
   "deployment_float_metrics": {
-    "loss": 0.0624360553920269,
-    "accuracy": 0.9989461898803711
+    "loss": 0.06753195822238922,
+    "accuracy": 0.9989462592202318,
+    "avg_latency_ms": 0.6049487060691584,
+    "providers": [
+      "CPUExecutionProvider"
+    ],
+    "runtime_backend": "onnxruntime"
   },
   "deployment_int8_metrics": {
-    "loss": 0.06334184855222702,
+    "loss": 0.07305116951465607,
     "accuracy": 0.9989462592202318,
-    "avg_latency_ms": 1.8503952327844844
+    "avg_latency_ms": 0.5254362002250643,
+    "providers": [
+      "CPUExecutionProvider"
+    ],
+    "runtime_backend": "onnxruntime"
   },
   "qat_float_metrics": null,
   "prune_metadata": {
@@ -38,6 +47,7 @@
   "int8_model_path": "./deploy_artifacts/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_int8.onnx",
   "prototype_path": null,
   "quantization_warning": null,
+  "deployment_backend": "onnxruntime",
   "model_profile": {
     "baseline_params": 113738,
     "pruned_params": 40860
