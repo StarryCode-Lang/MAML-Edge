@@ -9,21 +9,21 @@
     "meta_test_loss": 0.1029098017886281
   },
   "meta_eval_before_prune": {
-    "loss": 0.12662721280008554,
+    "loss": 0.12664831314235925,
     "accuracy": 0.985599993467331
   },
   "meta_eval_after_recovery": {
-    "loss": 0.18696740563958883,
-    "accuracy": 0.9851999938488006
+    "loss": 0.17130967054516077,
+    "accuracy": 0.9867999941110611
   },
   "deployment_float_metrics": {
-    "loss": 0.06975891441106796,
+    "loss": 0.0624360553920269,
     "accuracy": 0.9989461898803711
   },
   "deployment_int8_metrics": {
-    "loss": 0.07268625497817993,
+    "loss": 0.06334184855222702,
     "accuracy": 0.9989462592202318,
-    "avg_latency_ms": 1.5249450831380609
+    "avg_latency_ms": 1.8503952327844844
   },
   "qat_float_metrics": null,
   "prune_metadata": {

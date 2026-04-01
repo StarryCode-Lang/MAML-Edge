@@ -13,17 +13,17 @@
     "accuracy": 0.9975999987125397
   },
   "meta_eval_after_recovery": {
-    "loss": 0.022636368790699635,
+    "loss": 0.022744361095537898,
     "accuracy": 0.9939999967813492
   },
   "deployment_float_metrics": {
-    "loss": 0.00961173977702856,
+    "loss": 0.009610351175069809,
     "accuracy": 0.9978924989700317
   },
   "deployment_int8_metrics": {
-    "loss": 0.010648536495864391,
+    "loss": 0.010710966773331165,
     "accuracy": 0.9978925184404637,
-    "avg_latency_ms": 2.189448209296916
+    "avg_latency_ms": 2.365953643247878
   },
   "qat_float_metrics": null,
   "prune_metadata": {
