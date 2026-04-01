@@ -136,7 +136,7 @@ python train.py --algorithm maml \
   --shots 5 \
   --train_domains 0,1,2 \
   --test_domain 3 \
-  --iters 200
+  --iters 100
 ```
 
 #### ProtoNet
@@ -149,7 +149,7 @@ python train.py --algorithm protonet \
   --shots 5 \
   --train_domains 0,1,2 \
   --test_domain 3 \
-  --iters 200
+  --iters 100
 ```
 
 #### CNN

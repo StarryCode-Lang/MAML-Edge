@@ -8,10 +8,6 @@ venv/
 *.pyc
 __pycache__/
 
-# Logs
-*.log
-logs/
-
 # IDE files
 .idea/
 .vscode/
