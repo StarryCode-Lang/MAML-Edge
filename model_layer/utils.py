@@ -15,7 +15,7 @@ from PIL import Image
 
 
 DEFAULT_FAULT_LABELS = {
-    'CWRU': [0, 1, 2, 3, 4],
+    'CWRU': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
     'HST': [0, 2, 3, 5, 6],
 }
 

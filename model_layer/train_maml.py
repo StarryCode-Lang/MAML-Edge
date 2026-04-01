@@ -53,7 +53,7 @@ def parse_args():
     parser.add_argument('--preprocess', type=str, default='FFT',
                         help='Which preprocessing technique to use, options=[WT, STFT, FFT]')
     parser.add_argument('--fault_labels', type=str, default=None,
-                        help='Fault labels to keep. Defaults to project 5-class subset.')
+                        help='Fault labels to keep. Defaults to all 10 CWRU labels or the project HST subset.')
     parser.add_argument('--fft_channels', type=str, default='32,64,64',
                         help='Shared 1D backbone channels, default=32,64,64')
     parser.add_argument('--image_channels', type=str, default='64,64,64,64',

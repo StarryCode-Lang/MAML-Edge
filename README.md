@@ -92,7 +92,7 @@ data/
 - `shots = 5`
 - `query_shots = shots`
 - default fault subsets:
-  - `CWRU: 0,1,2,3,4`
+  - `CWRU: 0,1,2,3,4,5,6,7,8,9`
   - `HST: 0,2,3,5,6`
 - target-domain evaluation uses a fixed support/query pool
 
@@ -105,6 +105,12 @@ python train_maml.py --fault_labels 0,1,2,3,4
 ## Controlled Variables
 
 This branch aligns `CNN / MAML / ProtoNet` as much as possible without changing their algorithmic nature.
+
+For `CWRU`, the default now follows the original main-branch behavior more closely:
+
+- default source label pool uses all 10 CWRU fault labels
+- `ways = 5` means each episode samples 5 classes from those 10
+- if you want a fixed 5-class experiment, pass `--fault_labels` explicitly
 
 Shared across all three:
 
