@@ -374,12 +374,13 @@ def recover_pruned_cnn_model(args, model, train_loader, device):
 
 
 def evaluate_meta_model(algorithm, args, model, test_dataset, test_pools, device):
-    model = model.to(device).eval()
+    model = model.to(device)
     loss = nn.CrossEntropyLoss(reduction='mean')
     error_sum = 0.0
     accuracy_sum = 0.0
 
     if algorithm == 'maml':
+        model.train()
         maml_wrapper = l2l.algorithms.MAML(model, lr=args.fast_lr, first_order=args.first_order)
         for episode in range(args.test_task_num):
             batch_seed = args.seed + 120000000 + episode
@@ -582,6 +583,12 @@ def adapt_maml_for_deployment(args, model, support_data, support_labels, device)
         learner.adapt(adaptation_loss)
     deployment_model = build_model_from_config(infer_deployment_model_config(learner.module))
     deployment_model.load_state_dict(clone_state_dict_to_cpu(learner.module))
+    deployment_model = recalibrate_batch_norm(
+        model=deployment_model,
+        calibration_data=support_data.detach().cpu(),
+        device=device,
+        passes=max(8, args.adapt_steps * 2),
+    )
     return deployment_model.cpu().eval()
 
 
@@ -608,6 +615,34 @@ def build_prototypes(model, support_data, ways, shots, device):
         embeddings = encoder(support_data.to(device))
         prototypes = embeddings.reshape(ways, shots, -1).mean(dim=1)
     return prototypes.cpu()
+
+
+def recalibrate_batch_norm(model, calibration_data, device, passes=8):
+    batch_norm_layers = [
+        module for module in model.modules()
+        if isinstance(module, (nn.BatchNorm1d, nn.BatchNorm2d))
+    ]
+    if not batch_norm_layers:
+        return model
+
+    model = model.to(device)
+    original_momenta = {}
+    for module in batch_norm_layers:
+        original_momenta[module] = module.momentum
+        module.reset_running_stats()
+        module.momentum = None
+
+    model.train()
+    calibration_data = calibration_data.to(device)
+    with torch.no_grad():
+        for _ in range(passes):
+            _ = model(calibration_data)
+
+    for module in batch_norm_layers:
+        module.momentum = original_momenta[module]
+
+    model.eval()
+    return model
 
 
 def evaluate_deployment_bundle(deployment_bundle, device):
