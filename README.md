@@ -268,6 +268,11 @@ python test_layer/benchmark.py \
 - [Yifei20/Few-shot-Fault-Diagnosis-MAML](https://github.com/Yifei20/Few-shot-Fault-Diagnosis-MAML)
 - [Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks](https://arxiv.org/abs/1703.03400)
 - [Meta-learning as a promising approach for few-shot cross-domain fault diagnosis: Algorithms, applications, and prospects](https://doi.org/10.1016/j.knosys.2021.107646)
+- [An Interactive Introduction to Model-Agnostic Meta-Learning](https://interactive-maml.github.io/meta-learning.html#start)
+- [元学习入门必备：MAML(背景+论文解读+代码分析)](https://juejin.cn/post/7090902570683596813)
+- [CWRU official Database](https://engineering.case.edu/bearingdatacenter/download-data-file)
+- [美国西储大学轴承数据解读](https://www.cnblogs.com/gshang/p/10712809.html)
+- [Python-凯斯西储大学（CWRU）轴承数据解读与分类处理](https://mp.weixin.qq.com/s?__biz=MzkxMzYxMTk3NA==&mid=2247483804&idx=1&sn=9f581f395236d587abe2ecac1c9bba94&chksm=c17a4c35f60dc523160ee4696b5a753fa5523ef832d5a2b78f8967580c8e6820549adc2b17a3&scene=178&cur_album_id=3201137189477433349&poc_token=HE9iUmmjxCUT_zRO3JYKmnjNaCgMziMfcDKP25-I)
 
 ## Contributors
 
