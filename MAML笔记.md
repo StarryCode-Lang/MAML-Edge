@@ -50,12 +50,9 @@
    3. **Meta Networks (元网络):** 能够快速、一次性地将新任务信息合并到其内部表示中。 
 
 9. v和vi使用外部存储器，同时保持端到端训练的能力。
-
-10. ![image-20260102171540704](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20260102171540704.png)
-
-11. ![image-20260102171810141](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20260102171810141.png)
-
-12. Meta-Learning（元学习 / learn to learn）：常见的深度学习模型，目的是学习一个用于预测的数学模型。而元学习面向的不是学习的结果，而是学习的过程。其学习的不是一个直接用于预测的数学模型，而是学习“如何更快更好地学习一个数学模型”。例：一个一个的学单词的发音
+10. <img width="1578" height="1118" alt="image" src="https://github.com/user-attachments/assets/ee35a7cb-0a53-4da5-bf80-9f9ca7f33c60" />
+11. <img width="1491" height="871" alt="image" src="https://github.com/user-attachments/assets/a6d76d64-62c5-4747-a8d8-dffdaac27bbc" />
+14. Meta-Learning（元学习 / learn to learn）：常见的深度学习模型，目的是学习一个用于预测的数学模型。而元学习面向的不是学习的结果，而是学习的过程。其学习的不是一个直接用于预测的数学模型，而是学习“如何更快更好地学习一个数学模型”。例：一个一个的学单词的发音
 
     分类：
 
@@ -63,9 +60,9 @@
     - meta-models that generate the parameters of other models
     - learning transferable optimizers
 
-13. **model-agnostic**：绝大多数深度学习模型都可以作为 base-learner 无缝嵌入 MAML 中，而MAML甚至可以用于强化学习中，这就是 MAML 中 model-agnostic 的含义。
+15. **model-agnostic**：绝大多数深度学习模型都可以作为 base-learner 无缝嵌入 MAML 中，而MAML甚至可以用于强化学习中，这就是 MAML 中 model-agnostic 的含义。
 
-14. **task**：模型的训练过程都是围绕 task 展开的。要正确地理解 task，我们需要了解的相关概念包括
+16. **task**：模型的训练过程都是围绕 task 展开的。要正确地理解 task，我们需要了解的相关概念包括
 
     > **场景案例**：我们需要利用 MAML 训练一个数学模型模型 $M_{fine-tune}$ ，目的是对未知标签的图片做分类，类别包括 $P_1 \sim P_5$（每类 5 个已标注样本用于训练。另外每类有 15 个已标注样本用于测试）。我们的训练数据除了 $P_1 \sim P_5$ 中已标注的样本外，还包括另外 10 个类别的图片 $C_1 \sim C_{10}$（每类 30 个已标注样本），用于帮助训练元学习模型 $M_{meta}$ 。MAML首先利用 $C_1 \sim C_{10}$ 的数据集训练元模型 $M_{meta}$ ，再在 $P_1 \sim P_5$ 的数据集上精调（fine-tune）得到最终的模型 $M_{fine-tune}$ 。 
 
@@ -75,8 +72,6 @@
     4. ${meta-train classes}$：$C_1 \sim C_{10}$ 
     5. ${meta-test classes}$：$P_1 \sim P_5$ 
     6. task$ \mathcal{T} $ 训练定位：相当于普通深度学习模型训练过程中的一条训练数据。那我们肯定要组成一个 batch ，才能做随机梯度下降 SGD* 对不对？所以我们反复在训练数据分布中抽取若干个这样的 task$ \mathcal{T} $ ，组成一个batch。在训练$M_{fine-tune}$阶段，task、support set、query set的含义与训练$M_{meta}$阶段均相同。
-
-15. 
 
 # MAML
 
