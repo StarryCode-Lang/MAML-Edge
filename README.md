@@ -2,16 +2,16 @@
 
 工业物联网下基于元学习的边缘设备少样本故障诊断系统。
 
-当前项目结构保持为：
+当前项目主结构保持为：
 
-- `data_layer`：CWRU / HST 数据读取与 FFT、STFT、WT 预处理
-- `model_layer`：`MAML`、`ProtoNet`、`CNN` 训练与评估
+- `data_layer`：CWRU / HST 数据读取、FFT / STFT / WT 预处理、few-shot 数据构造
+- `model_layer`：`MAML`、`ProtoNet`、`CNN` 的训练与评估
 - `deploy_layer`：结构化剪枝、恢复微调、ONNX 导出、INT8 PTQ、推理后端选择
 - `test_layer`：部署结果与指标检查
 - `edge_layer`：边缘侧信号模拟、轻量预处理、MQTT 上传
 - `system_layer`：FastAPI、MQTT、WebSocket、存储与前端占位
 
-统一入口：
+统一训练入口：
 
 ```bash
 python train.py --mode {train|deploy} --algorithm {maml|protonet|cnn} ...
@@ -28,14 +28,22 @@ python deploy_layer/deploy.py --algorithm {maml|protonet|cnn} ...
 推荐：
 
 - `Python 3.9`
-- GPU 环境按 PyTorch 官方方式安装 `torch`
+- 训练环境按 PyTorch 官方方式安装 `torch`
 
-安装：
+完整环境安装：
 
 ```bash
 conda create -n fault_env python=3.9 -y
 conda activate fault_env
 pip install -r requirements.txt
+```
+
+后两层最小联调环境：
+
+```bash
+conda create -n edge_system python=3.9 -y
+conda activate edge_system
+pip install -r requirements.edge-system.txt
 ```
 
 ## 数据目录
@@ -266,7 +274,25 @@ deploy_artifacts/<experiment_title>/
 - 生成事件触发上传消息
 - 通过 MQTT 发布原始片段与特征摘要
 
-示例：
+说明：
+
+- `--source synthetic` 只依赖 `requirements.edge-system.txt`
+- `--source cwru` 会读取训练数据处理模块，需使用完整环境 `requirements.txt`
+
+推荐启动方式：
+
+```bash
+python -m edge_layer.simulator.publish_signal \
+  --source synthetic \
+  --device_id esp32-sim-01 \
+  --host 127.0.0.1 \
+  --port 1883 \
+  --topic maml-edge/devices/esp32-sim-01/signal \
+  --count 5 \
+  --interval 1.0
+```
+
+兼容直接脚本方式：
 
 ```bash
 python edge_layer/simulator/publish_signal.py \
@@ -299,7 +325,13 @@ python edge_layer/simulator/publish_signal.py \
 - 历史记录与报警记录
 - 从 `deploy_artifacts` 加载 ONNX 与 `ProtoNet` 原型
 
-启动后端：
+推荐启动方式：
+
+```bash
+python -m uvicorn system_layer.backend.main:app --host 0.0.0.0 --port 8000
+```
+
+兼容直接命令：
 
 ```bash
 uvicorn system_layer.backend.main:app --host 0.0.0.0 --port 8000
@@ -322,6 +354,26 @@ system_layer/frontend/webui/
 ```
 
 后续用于放置 `Vue + ECharts` 页面。
+
+## 后两层联调顺序
+
+推荐按下面顺序联调：
+
+1. 启动 `Mosquitto`
+2. 启动 `system_layer` 后端
+3. 用 `POST /predict` 验证服务推理
+4. 运行 `edge_layer` 模拟器
+5. 检查 `GET /history`
+6. 检查 `GET /alerts`
+7. 再做 `WS /ws/realtime` 联调
+
+Windows 示例：
+
+```bash
+mosquitto -p 1883
+python -m uvicorn system_layer.backend.main:app --host 0.0.0.0 --port 8000
+python -m edge_layer.simulator.publish_signal --source synthetic --count 5
+```
 
 ## 测试脚本
 

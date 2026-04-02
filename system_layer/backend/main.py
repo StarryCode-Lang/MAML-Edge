@@ -1,5 +1,12 @@
-from contextlib import asynccontextmanager
 import asyncio
+import os
+import sys
+from contextlib import asynccontextmanager
+
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 

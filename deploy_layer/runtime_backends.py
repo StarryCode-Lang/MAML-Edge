@@ -3,7 +3,6 @@ import os
 import time
 
 import numpy as np
-import torch
 
 
 BACKEND_PROVIDER_CHAINS = {
@@ -38,6 +37,8 @@ def resolve_execution_providers(runtime_backend, ort_module):
 
 
 def collect_calibration_batches(support_data, query_data, calibration_size):
+    import torch
+
     combined = torch.cat([support_data, query_data], dim=0)
     limited = combined[:max(1, calibration_size)]
     return [{'input': limited[index:index + 1].cpu().numpy()} for index in range(limited.size(0))]

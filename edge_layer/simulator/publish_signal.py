@@ -1,16 +1,23 @@
 import argparse
+import os
 import random
 import sys
 import time
 
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
 import numpy as np
 
-from data_layer.preprocess_cwru import load_CWRU_dataset
 from edge_layer.mqtt_client.publisher import MQTTPublisher
 from edge_layer.simulator.sample_payloads import build_signal_payload
 
 
 def _load_cwru_signal(data_dir_path, domain, label, seed):
+    from data_layer.preprocess_cwru import load_CWRU_dataset
+
     dataset = load_CWRU_dataset(
         domain=domain,
         dir_path=data_dir_path,
