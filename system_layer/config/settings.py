@@ -23,6 +23,7 @@ class SystemSettings:
     runtime_backend: str = 'onnxruntime'
     prefer_int8: bool = True
     model_summary_path: str = None
+    strict_model_selection: bool = True
     dataset_name: str = 'CWRU'
     preprocess: str = 'STFT'
     time_steps: int = 1024
@@ -40,7 +41,15 @@ class SystemSettings:
 
     def __post_init__(self):
         if self.model_summary_path is None:
+            if self.strict_model_selection:
+                raise FileNotFoundError(
+                    'MAML_EDGE_MODEL_SUMMARY_PATH is required when strict model selection is enabled.'
+                )
             self.model_summary_path = _find_latest_summary(self.root_dir)
+        if self.model_summary_path is None:
+            raise FileNotFoundError('No compression summary could be resolved for the system service.')
+        if not os.path.exists(self.model_summary_path):
+            raise FileNotFoundError('Compression summary not found: {}'.format(self.model_summary_path))
         if self.storage_dir is None:
             self.storage_dir = str(self.root_dir / 'system_layer' / 'storage' / 'runtime')
         os.makedirs(self.storage_dir, exist_ok=True)
@@ -62,6 +71,7 @@ class SystemSettings:
             runtime_backend=os.getenv('MAML_EDGE_RUNTIME_BACKEND', 'onnxruntime'),
             prefer_int8=os.getenv('MAML_EDGE_PREFER_INT8', '1') != '0',
             model_summary_path=os.getenv('MAML_EDGE_MODEL_SUMMARY_PATH'),
+            strict_model_selection=os.getenv('MAML_EDGE_STRICT_MODEL_SELECTION', '1') != '0',
             dataset_name=os.getenv('MAML_EDGE_DATASET', 'CWRU'),
             preprocess=os.getenv('MAML_EDGE_PREPROCESS', 'STFT'),
             time_steps=int(os.getenv('MAML_EDGE_TIME_STEPS', '1024')),

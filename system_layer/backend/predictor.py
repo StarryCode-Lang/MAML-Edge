@@ -116,6 +116,7 @@ class RealTimePredictor:
             prefer_int8=settings.prefer_int8,
         )
         experiment_title = self.service.summary.get('experiment_title', '')
+        self.service.summary['_summary_path'] = settings.model_summary_path
         if '_FFT_' in experiment_title:
             self.settings.preprocess = 'FFT'
         elif '_STFT_' in experiment_title:
@@ -128,19 +129,30 @@ class RealTimePredictor:
             self.settings.dataset_name = 'HST'
 
     def predict_payload(self, payload):
+        start_time = time.perf_counter()
         signal = payload.get('raw_signal') or payload.get('signal')
         if signal is None:
             raise ValueError('Payload must contain "raw_signal" or "signal".')
+        preprocess_start = time.perf_counter()
         model_input = _transform_signal(signal, self.settings)
+        preprocess_latency_ms = (time.perf_counter() - preprocess_start) * 1000.0
         prediction = self.service.predict(model_input)[0]
+        end_to_end_latency_ms = (time.perf_counter() - start_time) * 1000.0
         result = {
             'device_id': payload.get('device_id', 'unknown-device'),
             'timestamp': payload.get('timestamp', int(time.time())),
             'predicted_label': prediction['predicted_label'],
             'confidence': prediction['confidence'],
-            'latency_ms': prediction['latency_ms'],
+            'latency_ms': end_to_end_latency_ms,
+            'preprocess_latency_ms': preprocess_latency_ms,
+            'inference_latency_ms': prediction['inference_latency_ms'],
+            'end_to_end_latency_ms': end_to_end_latency_ms,
             'runtime_backend': prediction['runtime_backend'],
             'providers': prediction['providers'],
+            'model_path': prediction['model_path'],
+            'model_summary_path': self.settings.model_summary_path,
+            'experiment_title': self.service.summary.get('experiment_title'),
+            'deployment_backend': self.service.summary.get('deployment_backend', prediction['runtime_backend']),
             'temperature': payload.get('temperature'),
             'event_triggered': payload.get('event_triggered', False),
             'feature_summary': payload.get('feature_summary', {}),
@@ -149,4 +161,6 @@ class RealTimePredictor:
         return result
 
     def model_info(self):
-        return self.service.model_info()
+        info = self.service.model_info()
+        info['summary_path'] = self.settings.model_summary_path
+        return info

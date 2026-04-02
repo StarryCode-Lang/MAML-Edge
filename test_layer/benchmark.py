@@ -17,6 +17,7 @@ def check_thresholds(summary, accuracy_threshold=0.95, latency_threshold_ms=100.
         'latency_pass': latency_value is not None and latency_value <= latency_threshold_ms,
         'accuracy': accuracy_value,
         'avg_latency_ms': latency_value,
+        'latency_semantics': 'deployment-layer inference latency from compression summary, not system-layer end-to-end latency',
     }
 
 

@@ -47,6 +47,8 @@ def health():
         'runtime_backend': settings.runtime_backend,
         'mqtt_enabled': settings.enable_mqtt_consumer,
         'mqtt_error': getattr(app.state, 'mqtt_error', None),
+        'model_summary_path': settings.model_summary_path,
+        'experiment_title': predictor.service.summary.get('experiment_title'),
     }
 
 

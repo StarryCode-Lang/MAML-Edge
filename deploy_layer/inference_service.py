@@ -81,7 +81,7 @@ class DeploymentInferenceService:
             results.append({
                 'predicted_label': predicted_label,
                 'confidence': confidences[index],
-                'latency_ms': latency_ms / max(1, len(predicted_labels)),
+                'inference_latency_ms': latency_ms / max(1, len(predicted_labels)),
                 'runtime_backend': self.runtime_backend,
                 'providers': list(self.providers),
                 'model_path': self.model_path,
@@ -97,4 +97,6 @@ class DeploymentInferenceService:
             'providers': list(self.providers),
             'model_path': self.model_path,
             'prototype_path': self.prototype_path,
+            'summary_path': self.summary.get('_summary_path'),
+            'deployment_backend': self.summary.get('deployment_backend', self.runtime_backend),
         }

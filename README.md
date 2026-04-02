@@ -337,6 +337,27 @@ python -m uvicorn system_layer.backend.main:app --host 0.0.0.0 --port 8000
 uvicorn system_layer.backend.main:app --host 0.0.0.0 --port 8000
 ```
 
+### 推荐配置
+
+系统层默认启用严格模型选择。推荐显式指定：
+
+```bash
+MAML_EDGE_MODEL_SUMMARY_PATH=deploy_artifacts/<experiment_title>/compression_summary.json
+```
+
+只有在显式关闭严格模式时，系统才允许按最新产物自动发现：
+
+```bash
+MAML_EDGE_STRICT_MODEL_SELECTION=0
+```
+
+### 时延字段语义
+
+- `inference_latency_ms`：部署层纯 ONNX 推理时延
+- `preprocess_latency_ms`：系统层在线预处理时延
+- `end_to_end_latency_ms`：系统层在线端到端时延
+- `latency_ms`：兼容字段，等于 `end_to_end_latency_ms`
+
 主要接口：
 
 - `GET /health`
@@ -371,6 +392,7 @@ Windows 示例：
 
 ```bash
 mosquitto -p 1883
+set MAML_EDGE_MODEL_SUMMARY_PATH=deploy_artifacts\<experiment_title>\compression_summary.json
 python -m uvicorn system_layer.backend.main:app --host 0.0.0.0 --port 8000
 python -m edge_layer.simulator.publish_signal --source synthetic --count 5
 ```
@@ -381,6 +403,11 @@ python -m edge_layer.simulator.publish_signal --source synthetic --count 5
 python test_layer/benchmark.py \
   --summary_path deploy_artifacts/<experiment_title>/compression_summary.json
 ```
+
+说明：
+
+- `benchmark.py` 读取的是部署层 `compression_summary.json`
+- 输出的 `avg_latency_ms` 表示部署层推理时延，不等同于系统层在线端到端时延
 
 ## 参考资料
 
