@@ -53,9 +53,7 @@
 10. <img width="1578" height="1118" alt="image" src="https://github.com/user-attachments/assets/ee35a7cb-0a53-4da5-bf80-9f9ca7f33c60" />
 11. <img width="1491" height="871" alt="image" src="https://github.com/user-attachments/assets/a6d76d64-62c5-4747-a8d8-dffdaac27bbc" />
 14. Meta-Learning（元学习 / learn to learn）：常见的深度学习模型，目的是学习一个用于预测的数学模型。而元学习面向的不是学习的结果，而是学习的过程。其学习的不是一个直接用于预测的数学模型，而是学习“如何更快更好地学习一个数学模型”。例：一个一个的学单词的发音
-
     分类：
-
     - learning good weight initializations：**MAML**，学习一个好的初始化权重，从而在新任务上实现fast adaptation，即在小规模的训练样本上迅速收敛并完成fine-tune。可以理解成提供一个**meta-learner**用于训练base-learner的框架
     - meta-models that generate the parameters of other models
     - learning transferable optimizers
@@ -66,10 +64,10 @@
 
     > **场景案例**：我们需要利用 MAML 训练一个数学模型模型 $M_{fine-tune}$ ，目的是对未知标签的图片做分类，类别包括 $P_1 \sim P_5$（每类 5 个已标注样本用于训练。另外每类有 15 个已标注样本用于测试）。我们的训练数据除了 $P_1 \sim P_5$ 中已标注的样本外，还包括另外 10 个类别的图片 $C_1 \sim C_{10}$（每类 30 个已标注样本），用于帮助训练元学习模型 $M_{meta}$ 。MAML首先利用 $C_1 \sim C_{10}$ 的数据集训练元模型 $M_{meta}$ ，再在 $P_1 \sim P_5$ 的数据集上精调（fine-tune）得到最终的模型 $M_{fine-tune}$ 。 
 
-    1. $\mathcal{D}_{meta-train}$：$C_1 \sim C_{10}$ 包含的共计300个样本，是用于训练 $M_{meta}$ 的数据集
+    1. $\mathcal{D}_{meta-train}$：$C_{1} \sim C_{10}$ 包含的共计300个样本，是用于训练 $M_{meta}$ 的数据集
     2. $\mathcal{D}_{meta-test}$：$P_1 \sim P_5$ 包含的共计100个样本，是用于训练和测试 $M_{fine-tune}$ 的数据集
     3. ${support-set}$、${query-set}$：根据 5-way 5-shot 的实验设置，我们在训练 $M_{meta}$ 阶段，从 $C_1 \sim C_{10}$ 中随机取 5 个类别，每个类别再随机取 20 个已标注样本，组成一个 task $ \mathcal{T} $ 。其中的 5 个已标注样本称为 $ \mathcal{T} $ 的 support set ，另外 15 个样本称为 $ \mathcal{T} $ 的 query set 。这个 task $ \mathcal{T} $ ，就相当于普通深度学习模型训练过程中的一条训练数据
-    4. ${meta-train classes}$：$C_1 \sim C_{10}$ 
+    4. ${meta-train classes}$：$C_1 \sim C_{10}$
     5. ${meta-test classes}$：$P_1 \sim P_5$ 
     6. task$ \mathcal{T} $ 训练定位：相当于普通深度学习模型训练过程中的一条训练数据。那我们肯定要组成一个 batch ，才能做随机梯度下降 SGD* 对不对？所以我们反复在训练数据分布中抽取若干个这样的 task$ \mathcal{T} $ ，组成一个batch。在训练$M_{fine-tune}$阶段，task、support set、query set的含义与训练$M_{meta}$阶段均相同。
 
