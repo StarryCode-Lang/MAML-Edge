@@ -274,10 +274,6 @@ python test_layer/benchmark.py \
 - [美国西储大学轴承数据解读](https://www.cnblogs.com/gshang/p/10712809.html)
 - [Python-凯斯西储大学（CWRU）轴承数据解读与分类处理](https://mp.weixin.qq.com/s?__biz=MzkxMzYxMTk3NA==&mid=2247483804&idx=1&sn=9f581f395236d587abe2ecac1c9bba94&chksm=c17a4c35f60dc523160ee4696b5a753fa5523ef832d5a2b78f8967580c8e6820549adc2b17a3&scene=178&cur_album_id=3201137189477433349&poc_token=HE9iUmmjxCUT_zRO3JYKmnjNaCgMziMfcDKP25-I)
 
-## Contributors
-
-- StarryCode-Lang
-
 ## License
 
 MIT
