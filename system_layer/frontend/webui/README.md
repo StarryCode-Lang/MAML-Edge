@@ -1,11 +1,25 @@
 # Web UI
 
-该目录用于放置 `Vue + ECharts` 前端项目。
+This directory hosts a zero-build Vue 3 + ECharts browser console served directly by FastAPI.
 
-建议前端第一版包含：
+Routing:
 
-- 设备当前状态
-- 故障类别与置信度
-- 历史趋势图
-- 报警记录表
-- WebSocket 实时刷新
+- `GET /` serves `index.html`
+- static assets are mounted at `/webui`
+
+Current capabilities:
+
+- switch deployment artifacts from the browser
+- inspect system health and current model info
+- run direct prediction requests
+- trigger synthetic or CWRU simulation in `direct` or `mqtt` mode
+- clear runtime history and alerts
+- view history and alerts
+- watch realtime WebSocket diagnosis updates
+- inspect the current deployment benchmark snapshot
+
+Implementation notes:
+
+- Vue 3 is loaded from CDN and drives the page state without a separate frontend build step
+- ECharts renders the realtime latency/confidence visualization
+- FastAPI remains the only service that needs to be started for local demos

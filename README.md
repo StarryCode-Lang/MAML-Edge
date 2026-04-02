@@ -374,7 +374,22 @@ MAML_EDGE_STRICT_MODEL_SELECTION=0
 system_layer/frontend/webui/
 ```
 
-后续用于放置 `Vue + ECharts` 页面。
+现在已经提供一个由 FastAPI 直接托管的零构建浏览器控制台。
+
+浏览器打开：
+
+```text
+http://127.0.0.1:8000/
+```
+
+当前页面能力包括：
+
+- 浏览和切换 `deploy_artifacts` 中的模型
+- 查看 `/health`、`/model/info`、当前 benchmark 摘要
+- 直接发起 `/predict`
+- 从页面触发 synthetic / CWRU 模拟
+- 清空并查看 `history` / `alerts`
+- 通过 WebSocket 实时查看诊断结果
 
 ## 后两层联调顺序
 

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAML-Edge Console</title>
+  <link rel="stylesheet" href="/webui/styles.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <script defer src="/webui/app.js"></script>
+</head>
+<body>
+  <div
+    id="app"
+    class="shell"
+    :class="shellClasses"
+    v-cloak
+    @mousemove="handlePointerMove"
+    @mouseleave="clearPointerState"
+  >
+    <canvas ref="fxCanvas" class="scene-canvas" aria-hidden="true"></canvas>
+    <div class="scene-vignette" aria-hidden="true"></div>
+    <div
+      v-if="pointerEnabled"
+      class="cursor-orb"
+      :class="{ visible: pointerVisible }"
+      :style="cursorOrbStyle"
+    ></div>
+    <div
+      v-for="(trail, index) in pointerTrail"
+      :key="`trail-${index}`"
+      class="cursor-trail"
+      :class="{ visible: pointerVisible }"
+      :style="trailStyle(trail, index)"
+    ></div>
+    <div
+      v-if="pointerEnabled && hoverHud.visible"
+      class="cursor-hud"
+      :style="cursorHudStyle"
+    >
+      <span>{{ hoverHud.section }}</span>
+      <strong>{{ hoverHud.title }}</strong>
+      <p>{{ hoverHud.detail }}</p>
+    </div>
+    <header class="masthead">
+      <div
+        class="brand-block hud-target"
+        data-hud-section="Overview"
+        data-hud-title="Integrated system overview"
+        data-hud-detail="Read the active pipeline state before jumping into deploy, predict, simulate, or monitor operations."
+      >
+        <p class="eyebrow">MAML-Edge Vue Console</p>
+        <h1>Operate the MAML-Edge pipeline from one console.</h1>
+        <p class="lead">
+          Load a model, run prediction, trigger simulation, inspect storage and benchmark state,
+          and watch live diagnosis updates without terminal switching.
+        </p>
+        <div class="pipeline-strip">
+          <article class="pipeline-pill" v-for="pill in pipelinePills" :key="pill.label">
+            <span>{{ pill.label }}</span>
+            <strong>{{ pill.value }}</strong>
+          </article>
+        </div>
+      </div>
+      <div class="status-cluster">
+        <article
+          class="status-tile hud-target"
+          data-hud-section="Health"
+          data-hud-title="Service heartbeat"
+          data-hud-detail="Confirms the FastAPI control surface is running and ready to accept requests."
+        >
+          <span class="tile-label">Service</span>
+          <strong :class="statusClass(serviceTone)">{{ health.status || 'Unknown' }}</strong>
+        </article>
+        <article
+          class="status-tile hud-target"
+          data-hud-section="Runtime"
+          data-hud-title="Inference backend"
+          data-hud-detail="Shows which deployment runtime is currently serving predictions."
+        >
+          <span class="tile-label">Backend</span>
+          <strong>{{ health.runtime_backend || '-' }}</strong>
+        </article>
+        <article
+          class="status-tile hud-target"
+          data-hud-section="Experiment"
+          data-hud-title="Loaded experiment"
+          data-hud-detail="Tracks the active deployment artifact bound to the live system."
+        >
+          <span class="tile-label">Active Experiment</span>
+          <strong :title="health.experiment_title || '-'">{{ health.experiment_title || '-' }}</strong>
+        </article>
+      </div>
+    </header>
+
+    <div
+      v-if="notice.message"
+      :class="['notice', notice.type || 'info']"
+      role="status"
+      aria-live="polite"
+    >
+      {{ notice.message }}
+    </div>
+
+    <section class="overview-bar">
+      <article
+        class="overview-card hud-target"
+        data-hud-section="Artifacts"
+        data-hud-title="Summary artifact"
+        data-hud-detail="The deployment summary file currently driving model loading and benchmark lookup."
+      >
+        <span class="tile-label">Summary Path</span>
+        <strong :title="health.model_summary_path || 'Not configured'">{{ summaryPathLabel }}</strong>
+      </article>
+      <article
+        class="overview-card hud-target"
+        data-hud-section="Transport"
+        data-hud-title="MQTT consumer state"
+        data-hud-detail="Indicates whether the backend is actively consuming edge payloads from the broker."
+      >
+        <span class="tile-label">MQTT</span>
+        <strong :class="statusClass(mqttTone)">{{ mqttSummary }}</strong>
+      </article>
+      <article
+        class="overview-card hud-target"
+        data-hud-section="Capability"
+        data-hud-title="CWRU simulation support"
+        data-hud-detail="Reveals whether the full training environment is available for dataset-backed simulation."
+      >
+        <span class="tile-label">CWRU Sim</span>
+        <strong :class="statusClass(cwruTone)">{{ cwruSummary }}</strong>
+      </article>
+      <article
+        class="overview-card hud-target"
+        data-hud-section="Realtime"
+        data-hud-title="WebSocket stream"
+        data-hud-detail="Shows whether the browser is currently attached to the realtime diagnosis broadcast."
+      >
+        <span class="tile-label">WebSocket</span>
+        <strong :class="statusClass(wsTone)">{{ wsSummary }}</strong>
+      </article>
+    </section>
+
+    <section class="command-deck">
+      <div
+        class="command-block hud-target"
+        data-hud-section="Navigation"
+        data-hud-title="Section shortcuts"
+        data-hud-detail="Jump directly to major work areas without scrolling through the whole console."
+      >
+        <span class="command-label">Jump To</span>
+        <div class="command-row">
+          <button
+            v-for="shortcut in sectionShortcuts"
+            :key="shortcut.key"
+            class="ghost nav-chip"
+            @click="scrollToSection(shortcut)"
+          >
+            {{ shortcut.label }}
+          </button>
+        </div>
+      </div>
+      <div
+        class="command-block hud-target"
+        data-hud-section="Density"
+        data-hud-title="Interface density"
+        data-hud-detail="Switch between compact, balanced, and relaxed spacing without changing any data."
+      >
+        <span class="command-label">Density</span>
+        <div class="command-row">
+          <button
+            v-for="mode in densityOptions"
+            :key="mode.value"
+            class="ghost nav-chip"
+            :class="{ active: densityMode === mode.value }"
+            @click="setDensityMode(mode.value)"
+          >
+            {{ mode.label }}
+          </button>
+        </div>
+      </div>
+      <div
+        class="command-block hud-target"
+        data-hud-section="Focus"
+        data-hud-title="Attention routing"
+        data-hud-detail="Bias the layout toward controls or monitoring depending on the demo moment."
+      >
+        <span class="command-label">Focus</span>
+        <div class="command-row">
+          <button
+            v-for="mode in focusOptions"
+            :key="mode.value"
+            class="ghost nav-chip"
+            :class="{ active: focusMode === mode.value }"
+            @click="setFocusMode(mode.value)"
+          >
+            {{ mode.label }}
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <aside class="control-rail" ref="controlColumn">
+        <section
+          class="panel hud-target"
+          ref="modelSection"
+          data-hud-section="Deploy Layer"
+          data-hud-title="Model switcher"
+          data-hud-detail="Swap deployment bundles, inspect runtime providers, and confirm the active artifact."
+        >
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Deploy Layer</p>
+              <h2>Model Switcher</h2>
+            </div>
+            <button class="ghost small" @click="refreshAll({ showSuccess: true })" :disabled="busy.refresh">
+              {{ busy.refresh ? 'Refreshing...' : 'Refresh' }}
+            </button>
+          </div>
+          <label class="field-label" for="summarySelect">Available deployment bundles</label>
+          <select id="summarySelect" v-model="selectedSummaryPath" @change="handleSummarySelection">
+            <option value="" disabled>Select a deployment bundle</option>
+            <option
+              v-for="item in summaries"
+              :key="item.summary_path"
+              :value="item.summary_path"
+            >
+              {{ item.experiment_title || item.summary_path }} | acc {{ formatAccuracy(item.accuracy) }}
+            </option>
+          </select>
+          <div class="button-row">
+            <button @click="applySelectedModel" :disabled="!selectedSummaryPath || busy.modelApply">
+              {{ busy.modelApply ? 'Applying...' : 'Apply Model' }}
+            </button>
+            <button class="ghost" @click="refreshModelInfo" :disabled="busy.modelInfo">
+              {{ busy.modelInfo ? 'Loading...' : 'Reload Info' }}
+            </button>
+          </div>
+          <div class="mini-grid">
+            <article class="mini-card" v-for="card in modelMetaCards" :key="card.label">
+              <span>{{ card.label }}</span>
+              <strong>{{ card.value }}</strong>
+            </article>
+          </div>
+          <details class="details-box">
+            <summary>Raw model info</summary>
+            <pre>{{ pretty(modelInfo || 'Loading model info...') }}</pre>
+          </details>
+        </section>
+
+        <section
+          class="panel hud-target"
+          ref="predictSection"
+          data-hud-section="System Layer"
+          data-hud-title="Direct predict"
+          data-hud-detail="Send a manual raw-signal payload straight to the backend and inspect the returned latency breakdown."
+        >
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">System Layer</p>
+              <h2>Direct Predict</h2>
+            </div>
+          </div>
+          <label class="field-label" for="signalInput">Raw signal</label>
+          <textarea id="signalInput" v-model="signalInput" rows="7"></textarea>
+          <div class="field-grid">
+            <label>
+              <span class="field-label">Device ID</span>
+              <input v-model="deviceIdInput" placeholder="web-manual-01" />
+            </label>
+            <label>
+              <span class="field-label">Temperature</span>
+              <input v-model.number="temperatureInput" placeholder="36.5" type="number" step="0.1" />
+            </label>
+          </div>
+          <div class="button-row">
+            <button @click="runPredict" :disabled="busy.predict">
+              {{ busy.predict ? 'Predicting...' : 'Run Predict' }}
+            </button>
+            <button class="ghost" @click="loadExampleSignal">Load Example</button>
+          </div>
+          <div class="mini-grid">
+            <article class="mini-card" v-for="card in predictSummaryCards" :key="card.label">
+              <span>{{ card.label }}</span>
+              <strong>{{ card.value }}</strong>
+            </article>
+          </div>
+          <details class="details-box">
+            <summary>Raw predict result</summary>
+            <pre>{{ pretty(predictResult || 'Awaiting request...') }}</pre>
+          </details>
+        </section>
+
+        <section
+          class="panel hud-target"
+          ref="simulateSection"
+          data-hud-section="Edge Layer"
+          data-hud-title="Simulation controls"
+          data-hud-detail="Drive synthetic or CWRU simulation through the direct path or the MQTT path."
+        >
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Edge Layer</p>
+              <h2>Simulation Controls</h2>
+            </div>
+          </div>
+          <div class="field-grid">
+            <label>
+              <span class="field-label">Mode</span>
+              <select v-model="simulateMode" @change="handleSimulationModeChange">
+                <option value="direct">Direct process</option>
+                <option value="mqtt">Publish via MQTT</option>
+              </select>
+            </label>
+            <label>
+              <span class="field-label">Source</span>
+              <select v-model="simulateSource" @change="handleSimulationSourceChange">
+                <option value="synthetic">Synthetic</option>
+                <option value="cwru" :disabled="!capabilities.supports_cwru_source">
+                  {{ capabilities.supports_cwru_source ? 'CWRU' : 'CWRU (full env only)' }}
+                </option>
+              </select>
+            </label>
+            <label>
+              <span class="field-label">Count</span>
+              <input v-model.number="simulateCount" type="number" min="1" @change="announceSimulationConfig" />
+            </label>
+            <label>
+              <span class="field-label">Interval (s)</span>
+              <input v-model.number="simulateInterval" type="number" min="0" step="0.1" @change="announceSimulationConfig" />
+            </label>
+          </div>
+          <p class="hint">{{ simulateHint }}</p>
+          <div class="button-row">
+            <button @click="runSimulation" :disabled="busy.simulate">
+              {{ busy.simulate ? 'Running...' : 'Run Simulation' }}
+            </button>
+            <button class="ghost" @click="resetStorage" :disabled="busy.reset">
+              {{ busy.reset ? 'Clearing...' : 'Clear History/Alerts' }}
+            </button>
+          </div>
+          <div class="mini-grid">
+            <article class="mini-card" v-for="card in simulationSummaryCards" :key="card.label">
+              <span>{{ card.label }}</span>
+              <strong>{{ card.value }}</strong>
+            </article>
+          </div>
+          <details class="details-box">
+            <summary>Simulation response</summary>
+            <pre>{{ pretty(simulationResult || 'No simulation yet.') }}</pre>
+          </details>
+        </section>
+      </aside>
+
+      <section class="monitor-stage" ref="monitorColumn">
+        <section
+          class="panel panel-hero hud-target"
+          ref="realtimeSection"
+          data-hud-section="Realtime"
+          data-hud-title="Latency monitor"
+          data-hud-detail="Watch end-to-end latency, inference time, confidence, and live diagnosis feed updates."
+        >
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Realtime System Flow</p>
+              <h2>Latency + Confidence Monitor</h2>
+            </div>
+            <span :class="['badge', wsBadgeClass]">{{ liveBadgeText }}</span>
+          </div>
+          <div ref="latencyChart" class="chart"></div>
+          <div class="live-feed">
+            <div class="feed-item" v-for="item in liveFeed" :key="item.key">
+              <strong>{{ item.title }}</strong>
+              <span>{{ item.detail }}</span>
+            </div>
+            <div v-if="!liveFeed.length" class="feed-item">
+              <strong>No realtime messages yet</strong>
+              <span>Run Direct Predict or start a simulation to populate the live feed.</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="monitor-grid">
+          <section
+            class="panel hud-target"
+            ref="benchmarkSection"
+            data-hud-section="Test Layer"
+            data-hud-title="Benchmark snapshot"
+            data-hud-detail="Surface the current deployment benchmark verdicts without leaving the control console."
+          >
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">Test Layer</p>
+                <h2>Benchmark Snapshot</h2>
+              </div>
+            </div>
+            <div class="mini-grid">
+              <article class="mini-card" v-for="card in benchmarkCards" :key="card.label">
+                <span>{{ card.label }}</span>
+                <strong>{{ card.value }}</strong>
+              </article>
+            </div>
+            <details class="details-box">
+              <summary>Raw benchmark payload</summary>
+              <pre>{{ pretty(benchmark || 'Loading benchmark...') }}</pre>
+            </details>
+          </section>
+
+          <section
+            class="panel hud-target"
+            ref="alertsSection"
+            data-hud-section="Alerts"
+            data-hud-title="Alert queue"
+            data-hud-detail="Track high-confidence abnormal predictions promoted into the alert channel."
+          >
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">System Layer</p>
+                <h2>Alerts</h2>
+              </div>
+            </div>
+            <div class="table-wrap compact">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Device</th>
+                    <th>Label</th>
+                    <th>Conf</th>
+                    <th>Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="record in alertRows" :key="record.key">
+                    <td>{{ record.time }}</td>
+                    <td>{{ record.device }}</td>
+                    <td>{{ record.label }}</td>
+                    <td>{{ record.confidence }}</td>
+                    <td>{{ record.source }}</td>
+                  </tr>
+                  <tr v-if="!alertRows.length" class="empty-row">
+                    <td colspan="5">No alert records. Records only appear when the predicted label is not the configured normal class.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section
+          class="panel hud-target"
+          ref="historySection"
+          data-hud-section="History"
+          data-hud-title="Diagnosis history"
+          data-hud-detail="Review recent diagnosis events with confidence and latency details for the current session."
+        >
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">System Layer</p>
+              <h2>History</h2>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Device</th>
+                  <th>Label</th>
+                  <th>Confidence</th>
+                  <th>End-to-End ms</th>
+                  <th>Inference ms</th>
+                  <th>Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="record in historyRows" :key="record.key">
+                  <td>{{ record.time }}</td>
+                  <td>{{ record.device }}</td>
+                  <td>{{ record.label }}</td>
+                  <td>{{ record.confidence }}</td>
+                  <td>{{ record.endToEnd }}</td>
+                  <td>{{ record.inference }}</td>
+                  <td>{{ record.source }}</td>
+                </tr>
+                <tr v-if="!historyRows.length" class="empty-row">
+                  <td colspan="7">No diagnosis history yet. Run Direct Predict or start a simulation to populate this table.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </section>
+  </div>
+</body>
+</html>

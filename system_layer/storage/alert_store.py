@@ -39,3 +39,7 @@ class AlertStore:
     def load_recent(self, limit=50):
         with self._lock:
             return self._read_records()[-limit:]
+
+    def clear(self):
+        with self._lock:
+            self._write_records([])
