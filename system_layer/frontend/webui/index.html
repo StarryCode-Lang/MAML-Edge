@@ -294,6 +294,58 @@
 
         <section
           class="panel hud-target"
+          ref="adaptSection"
+          data-hud-section="Adaptation"
+          data-hud-title="Prototype update"
+          data-hud-detail="Inject a small support set into encoder-with-prototypes deployments to update runtime prototypes."
+        >
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">System Layer</p>
+              <h2>Prototype Adapt</h2>
+            </div>
+          </div>
+          <p class="hint">{{ adaptHint }}</p>
+          <label class="field-label" for="adaptSignalInput">Support signal</label>
+          <textarea id="adaptSignalInput" v-model="adaptSignalInput" rows="6"></textarea>
+          <div class="field-grid">
+            <label>
+              <span class="field-label">Label</span>
+              <input v-model.number="adaptLabelInput" type="number" min="0" />
+            </label>
+            <label>
+              <span class="field-label">Copies</span>
+              <input v-model.number="adaptCopiesInput" type="number" min="1" />
+            </label>
+            <label>
+              <span class="field-label">Blend Factor</span>
+              <input v-model.number="adaptBlendFactor" type="number" min="0" max="1" step="0.1" />
+            </label>
+            <label>
+              <span class="field-label">Device Prefix</span>
+              <input v-model="adaptDevicePrefix" placeholder="support-web" />
+            </label>
+          </div>
+          <div class="button-row">
+            <button @click="runAdapt" :disabled="busy.adapt || !adaptationSupported">
+              {{ busy.adapt ? 'Updating...' : 'Run Adapt' }}
+            </button>
+            <button class="ghost" @click="loadAdaptExample">Load Example</button>
+          </div>
+          <div class="mini-grid">
+            <article class="mini-card" v-for="card in adaptSummaryCards" :key="card.label">
+              <span>{{ card.label }}</span>
+              <strong>{{ card.value }}</strong>
+            </article>
+          </div>
+          <details class="details-box">
+            <summary>Raw adapt result</summary>
+            <pre>{{ pretty(adaptResult || 'No runtime adaptation yet.') }}</pre>
+          </details>
+        </section>
+
+        <section
+          class="panel hud-target"
           ref="simulateSection"
           data-hud-section="Edge Layer"
           data-hud-title="Simulation controls"
@@ -382,6 +434,35 @@
         </section>
 
         <section class="monitor-grid">
+          <section
+            class="panel hud-target"
+            ref="statsSection"
+            data-hud-section="System Metrics"
+            data-hud-title="Runtime statistics"
+            data-hud-detail="Summarise direct and MQTT throughput, average latency, adaptation count, and export-ready snapshots."
+          >
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">System Metrics</p>
+                <h2>Runtime Stats</h2>
+              </div>
+            </div>
+            <div class="mini-grid">
+              <article class="mini-card" v-for="card in systemStatCards" :key="card.label">
+                <span>{{ card.label }}</span>
+                <strong>{{ card.value }}</strong>
+              </article>
+            </div>
+            <div class="button-row">
+              <button class="ghost" @click="copyConsoleSnapshot">Copy Snapshot</button>
+              <button class="ghost" @click="downloadConsoleSnapshot">Download Snapshot</button>
+            </div>
+            <details class="details-box">
+              <summary>Raw system stats payload</summary>
+              <pre>{{ pretty(systemStats || 'Loading system stats...') }}</pre>
+            </details>
+          </section>
+
           <section
             class="panel hud-target"
             ref="benchmarkSection"

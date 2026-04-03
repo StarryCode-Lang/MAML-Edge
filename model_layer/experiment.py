@@ -134,3 +134,24 @@ def get_model_config(model):
             'in_channels': model.in_channels,
         }
     raise ValueError('Unsupported model type: {}'.format(type(model).__name__))
+
+
+def build_experiment_descriptor(args, algorithm, experiment_title=None):
+    return {
+        'experiment_title': experiment_title,
+        'algorithm': algorithm,
+        'dataset': getattr(args, 'dataset', None),
+        'preprocess': getattr(args, 'preprocess', None),
+        'ways': getattr(args, 'ways', None),
+        'shots': getattr(args, 'shots', None),
+        'query_shots': getattr(args, 'query_shots', None),
+        'train_domains': list(getattr(args, 'train_domains', []) or []),
+        'test_domain': getattr(args, 'test_domain', None),
+        'fault_labels': list(getattr(args, 'fault_labels', []) or []),
+        'eval_support_ratio': getattr(args, 'eval_support_ratio', None),
+        'runtime_backend': getattr(args, 'runtime_backend', None),
+        'onnx_opset': getattr(args, 'onnx_opset', None),
+        'prune_ratio': getattr(args, 'prune_ratio', None),
+        'enable_qat_recovery': getattr(args, 'enable_qat_recovery', None),
+        'compression_output_path': getattr(args, 'compression_output_path', None),
+    }

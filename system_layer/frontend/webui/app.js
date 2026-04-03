@@ -63,12 +63,23 @@ async function requestJson(path, options = {}) {
   return payload;
 }
 
+function downloadJsonFile(filename, payload) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
 createApp({
   data() {
     return {
       health: {},
       modelInfo: null,
       benchmark: null,
+      systemStats: null,
       history: [],
       alerts: [],
       summaries: [],
@@ -77,11 +88,17 @@ createApp({
       signalInput: "",
       deviceIdInput: "web-manual-01",
       temperatureInput: 36.5,
+      adaptSignalInput: "",
+      adaptLabelInput: 0,
+      adaptCopiesInput: 3,
+      adaptBlendFactor: 0.5,
+      adaptDevicePrefix: "support-web",
       simulateMode: "direct",
       simulateSource: "synthetic",
       simulateCount: 5,
       simulateInterval: 0.5,
       predictResult: null,
+      adaptResult: null,
       simulationResult: null,
       notice: { message: "", type: "info" },
       noticeTimer: null,
@@ -90,6 +107,7 @@ createApp({
         modelApply: false,
         modelInfo: false,
         predict: false,
+        adapt: false,
         simulate: false,
         reset: false,
       },
@@ -133,8 +151,10 @@ createApp({
       return [
         { key: "modelSection", label: "Model" },
         { key: "predictSection", label: "Predict" },
+        { key: "adaptSection", label: "Adapt" },
         { key: "simulateSection", label: "Simulate" },
         { key: "realtimeSection", label: "Realtime" },
+        { key: "statsSection", label: "Stats" },
         { key: "historySection", label: "History" },
         { key: "alertsSection", label: "Alerts" },
       ];
@@ -225,6 +245,9 @@ createApp({
     summaryPathLabel() {
       return basename(this.health.model_summary_path) || "Not configured";
     },
+    adaptationSupported() {
+      return Boolean(this.modelInfo?.adaptation_supported);
+    },
     modelMetaCards() {
       const info = this.modelInfo || {};
       return [
@@ -234,6 +257,8 @@ createApp({
         { label: "Providers", value: (info.providers || []).join(", ") || "-" },
         { label: "Model Artifact", value: basename(info.model_path) },
         { label: "Summary File", value: basename(info.summary_path) },
+        { label: "Adaptation", value: info.adaptation_supported ? "prototype update ready" : "not supported" },
+        { label: "Prototype Labels", value: (info.prototype_labels || []).join(", ") || "-" },
       ];
     },
     predictSummaryCards() {
@@ -261,6 +286,17 @@ createApp({
         { label: "Device", value: "esp32-sim-01" },
       ];
     },
+    adaptSummaryCards() {
+      const result = this.adaptResult?.adaptation || {};
+      return [
+        { label: "Status", value: this.adaptResult?.status || "-" },
+        { label: "Updated Labels", value: (result.updated_labels || []).join(", ") || "-" },
+        { label: "New Labels", value: (result.new_labels_added || []).join(", ") || "-" },
+        { label: "Samples", value: result.sample_count ?? "-" },
+        { label: "Prototype Count", value: result.prototype_count ?? "-" },
+        { label: "Blend", value: result.blend_factor ?? this.adaptBlendFactor },
+      ];
+    },
     benchmarkCards() {
       const benchmark = this.benchmark || {};
       return [
@@ -268,6 +304,21 @@ createApp({
         { label: "Latency Pass", value: benchmark.latency_pass ? "pass" : benchmark.latency_pass === false ? "fail" : "-" },
         { label: "Accuracy", value: formatNumber(benchmark.accuracy) },
         { label: "Avg Inference ms", value: formatNumber(benchmark.avg_latency_ms) },
+      ];
+    },
+    systemStatCards() {
+      const direct = this.systemStats?.channels?.direct || {};
+      const mqtt = this.systemStats?.channels?.mqtt || {};
+      const adaptation = this.systemStats?.adaptation || {};
+      return [
+        { label: "Direct Requests", value: direct.request_count ?? 0 },
+        { label: "Direct Avg E2E ms", value: formatNumber(direct.avg_end_to_end_latency_ms) },
+        { label: "MQTT Requests", value: mqtt.request_count ?? 0 },
+        { label: "MQTT Avg E2E ms", value: formatNumber(mqtt.avg_end_to_end_latency_ms) },
+        { label: "Adapt Ops", value: adaptation.request_count ?? 0 },
+        { label: "Adapt Samples", value: adaptation.sample_count ?? 0 },
+        { label: "Alerts Triggered", value: this.systemStats?.alerts_triggered ?? 0 },
+        { label: "Uptime s", value: formatNumber(this.systemStats?.uptime_seconds) },
       ];
     },
     historyRows() {
@@ -317,6 +368,27 @@ createApp({
         transform: `translate3d(${this.pointerX + offsetX}px, ${this.pointerY + offsetY}px, 0)`,
       };
     },
+    consoleSnapshot() {
+      return {
+        exported_at: new Date().toISOString(),
+        health: this.health,
+        model_info: this.modelInfo,
+        benchmark: this.benchmark,
+        system_stats: this.systemStats,
+        latest_predict: this.predictResult,
+        latest_adapt: this.adaptResult,
+      };
+    },
+    snapshotFilename() {
+      const stamp = new Date().toISOString().replaceAll(":", "-");
+      return `maml-edge-console-snapshot-${stamp}.json`;
+    },
+    adaptHint() {
+      if (this.adaptationSupported) {
+        return "This deployment supports runtime prototype updates. Provide a small support signal and label to refresh prototype centroids.";
+      }
+      return "The currently loaded deployment is a classifier path. Switch to a ProtoNet encoder bundle to enable runtime prototype updates.";
+    },
     simulateHint() {
       return this.capabilities.supports_cwru_source
         ? "Synthetic is fastest for demos. CWRU is available because the full training environment is present."
@@ -334,6 +406,7 @@ createApp({
   mounted() {
     this.pointerEnabled = window.matchMedia("(pointer: fine)").matches;
     this.loadExampleSignal();
+    this.loadAdaptExample();
     this.connectWebSocket();
     this.initScene();
     this.resizeHandler = () => {
@@ -402,11 +475,12 @@ createApp({
         if (setBusy) {
           this.busy.refresh = true;
         }
-        const [health, info, catalog, benchmark, history, alerts] = await Promise.all([
+        const [health, info, catalog, benchmark, systemStats, history, alerts] = await Promise.all([
           requestJson("/health"),
           requestJson("/model/info"),
           requestJson("/artifacts/summaries"),
           requestJson("/benchmark/current"),
+          requestJson("/system/stats"),
           requestJson("/history"),
           requestJson("/alerts"),
         ]);
@@ -416,6 +490,7 @@ createApp({
         this.modelInfo = info;
         this.summaries = catalog;
         this.benchmark = benchmark;
+        this.systemStats = systemStats;
         this.history = history;
         this.alerts = alerts;
         this.selectedSummaryPath = health.model_summary_path
@@ -729,8 +804,20 @@ createApp({
       this.signalInput = "0.01,0.03,0.02,0.15,0.22,0.18,0.03,0.02";
       this.showNotice("Example signal loaded into the editor.", "info", 1200);
     },
+    loadAdaptExample() {
+      this.adaptSignalInput = this.signalInput || "0.01,0.03,0.02,0.15,0.22,0.18,0.03,0.02";
+      this.adaptLabelInput = 0;
+      this.adaptCopiesInput = 3;
+      this.showNotice("Prototype-adapt example support set loaded.", "info", 1200);
+    },
     parseSignalInput() {
       return this.signalInput
+        .split(",")
+        .map((item) => Number(item.trim()))
+        .filter((item) => !Number.isNaN(item));
+    },
+    parseSupportSignalInput() {
+      return this.adaptSignalInput
         .split(",")
         .map((item) => Number(item.trim()))
         .filter((item) => !Number.isNaN(item));
@@ -783,17 +870,47 @@ createApp({
         });
 
         this.predictResult = result;
-        const [history, alerts] = await Promise.all([
-          requestJson("/history"),
-          requestJson("/alerts"),
-        ]);
-        this.history = history;
-        this.alerts = alerts;
+        await this.refreshAll({ setBusy: false });
         this.showNotice("Direct prediction finished.", "success");
       } catch (error) {
         this.showNotice(`Prediction failed: ${error.message}`, "error", 0);
       } finally {
         this.busy.predict = false;
+      }
+    },
+    async runAdapt() {
+      try {
+        if (!this.adaptationSupported) {
+          this.showNotice("The active deployment does not support runtime prototype updates.", "warn");
+          return;
+        }
+        const signal = this.parseSupportSignalInput();
+        if (!signal.length) {
+          this.showNotice("Provide a numeric support signal before running runtime adaptation.", "warn");
+          return;
+        }
+        const sampleCount = Math.max(1, Number(this.adaptCopiesInput || 1));
+        const supportSamples = Array.from({ length: sampleCount }, (_, index) => ({
+          device_id: `${this.adaptDevicePrefix || "support-web"}-${index + 1}`,
+          label: Number(this.adaptLabelInput || 0),
+          raw_signal: signal,
+        }));
+        this.busy.adapt = true;
+        const result = await requestJson("/adapt", {
+          method: "POST",
+          body: {
+            blend_factor: Number(this.adaptBlendFactor),
+            support_samples: supportSamples,
+          },
+        });
+        this.adaptResult = result;
+        this.modelInfo = result.model_info || this.modelInfo;
+        await this.refreshAll({ setBusy: false });
+        this.showNotice("Runtime prototype update completed.", "success");
+      } catch (error) {
+        this.showNotice(`Adaptation failed: ${error.message}`, "error", 0);
+      } finally {
+        this.busy.adapt = false;
       }
     },
     handleSimulationSourceChange() {
@@ -840,12 +957,10 @@ createApp({
         });
 
         this.simulationResult = result;
-        const [history, alerts] = await Promise.all([
-          requestJson("/history"),
-          requestJson("/alerts"),
-        ]);
-        this.history = history;
-        this.alerts = alerts;
+        if (this.simulateMode === "mqtt") {
+          await new Promise((resolve) => window.setTimeout(resolve, 900));
+        }
+        await this.refreshAll({ setBusy: false });
         this.showNotice(`Simulation finished in ${this.simulateMode} mode.`, "success");
       } catch (error) {
         this.showNotice(`Simulation failed: ${error.message}`, "error", 0);
@@ -860,14 +975,38 @@ createApp({
         this.history = [];
         this.alerts = [];
         this.predictResult = null;
+        this.adaptResult = null;
         this.simulationResult = "Runtime storage cleared.";
         this.liveFeedRecords = [];
+        await this.refreshAll({ setBusy: false });
         this.showNotice("History and alert storage cleared.", "success");
       } catch (error) {
         this.showNotice(`Failed to clear storage: ${error.message}`, "error", 0);
       } finally {
         this.busy.reset = false;
       }
+    },
+    async copyConsoleSnapshot() {
+      try {
+        const payload = JSON.stringify(this.consoleSnapshot, null, 2);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(payload);
+        } else {
+          const textarea = document.createElement("textarea");
+          textarea.value = payload;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textarea);
+        }
+        this.showNotice("Console snapshot copied to clipboard.", "success", 1600);
+      } catch (error) {
+        this.showNotice(`Copy failed: ${error.message}`, "error", 0);
+      }
+    },
+    downloadConsoleSnapshot() {
+      downloadJsonFile(this.snapshotFilename, this.consoleSnapshot);
+      this.showNotice("Console snapshot download started.", "success", 1600);
     },
     connectWebSocket() {
       const protocol = window.location.protocol === "https:" ? "wss" : "ws";

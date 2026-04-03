@@ -20,6 +20,7 @@ from edge_layer.simulator.publish_signal import _build_synthetic_signal, _load_c
 from edge_layer.simulator.sample_payloads import build_signal_payload
 from system_layer.backend.mqtt_worker import MQTTWorker
 from system_layer.backend.predictor import RealTimePredictor
+from system_layer.backend.service_stats import ServiceStats
 from system_layer.backend.websocket_manager import WebSocketManager
 from system_layer.config.settings import SystemSettings
 from system_layer.storage.alert_store import AlertStore
@@ -31,9 +32,23 @@ settings = SystemSettings.from_env()
 history_store = HistoryStore(settings.history_path)
 alert_store = AlertStore(settings.alert_path)
 websocket_manager = WebSocketManager()
+service_stats = ServiceStats()
 predictor = RealTimePredictor(settings)
-mqtt_worker = MQTTWorker(settings, predictor, history_store, alert_store, websocket_manager)
 WEBUI_DIR = Path(ROOT_DIR) / 'system_layer' / 'frontend' / 'webui'
+
+
+def _record_prediction(result, source, alert_raised):
+    service_stats.record_prediction(result=result, source=source, alert_raised=alert_raised)
+
+
+mqtt_worker = MQTTWorker(
+    settings,
+    predictor,
+    history_store,
+    alert_store,
+    websocket_manager,
+    result_callback=_record_prediction,
+)
 
 
 @asynccontextmanager
@@ -59,11 +74,13 @@ def _should_raise_alert(result):
     )
 
 
-async def _process_payload(payload):
+async def _process_payload(payload, source='direct'):
     result = predictor.predict_payload(payload)
     history_store.append(result)
-    if _should_raise_alert(result):
+    alert_raised = _should_raise_alert(result)
+    if alert_raised:
         alert_store.append(result)
+    service_stats.record_prediction(result=result, source=source, alert_raised=alert_raised)
     await websocket_manager.broadcast_json({'type': 'diagnosis', 'data': result})
     return result
 
@@ -83,6 +100,7 @@ def _list_summary_catalog():
             'experiment_title': summary.get('experiment_title'),
             'algorithm': summary.get('algorithm'),
             'deployment_backend': summary.get('deployment_backend', 'onnxruntime'),
+            'deployment_type': summary.get('deployment_type', 'classifier'),
             'accuracy': deploy_metrics.get('accuracy'),
             'avg_latency_ms': deploy_metrics.get('avg_latency_ms'),
         })
@@ -95,6 +113,7 @@ def _detect_capabilities():
         'supports_cwru_source': torch_available,
         'supports_mqtt_publish': True,
         'supports_direct_simulation': True,
+        'supports_runtime_adaptation': predictor.service.adaptation_supported(),
         'webui_path': '/',
     }
 
@@ -170,6 +189,13 @@ def benchmark_current():
     return check_thresholds(load_summary(settings.model_summary_path))
 
 
+@app.get('/system/stats')
+def system_stats():
+    snapshot = service_stats.snapshot()
+    snapshot['current_model'] = predictor.model_info()
+    return snapshot
+
+
 @app.get('/history')
 def get_history(limit: int = 50):
     return history_store.load_recent(limit)
@@ -184,12 +210,13 @@ def get_alerts(limit: int = 50):
 def reset_storage():
     history_store.clear()
     alert_store.clear()
+    service_stats.reset()
     return {'status': 'ok'}
 
 
 @app.post('/predict')
 async def predict(payload: dict):
-    return await _process_payload(payload)
+    return await _process_payload(payload, source='direct')
 
 
 @app.post('/simulate/publish')
@@ -246,6 +273,7 @@ async def simulate_publish(payload: dict):
                     'domain': domain,
                     'label': label,
                     'publish_index': publish_index,
+                    'transport': mode,
                 },
             )
 
@@ -255,7 +283,7 @@ async def simulate_publish(payload: dict):
                     signal_payload,
                 )
             else:
-                results.append(await _process_payload(signal_payload))
+                results.append(await _process_payload(signal_payload, source='direct'))
 
             if publish_index < count - 1 and interval > 0:
                 await asyncio.sleep(interval)
@@ -272,11 +300,14 @@ async def simulate_publish(payload: dict):
 
 
 @app.post('/adapt')
-def adapt():
-    return {
-        'status': 'pending',
-        'message': 'Online few-shot adaptation interface is reserved for the next stage.',
-    }
+def adapt(payload: dict):
+    try:
+        result = predictor.adapt_payload(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if result.get('status') == 'ok':
+        service_stats.record_adaptation(result)
+    return result
 
 
 @app.websocket(settings.websocket_path)

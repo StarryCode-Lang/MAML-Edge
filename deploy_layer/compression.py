@@ -1,6 +1,7 @@
 import copy
 import logging
 import os
+from pathlib import Path
 
 import learn2learn as l2l
 import numpy as np
@@ -10,6 +11,7 @@ from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
 from deploy_layer import onnx_exporter, runtime_backends
+from model_layer.experiment import build_experiment_descriptor
 from model_layer.models import CNN1D, CNN1DEncoder, CNN2D, CNN2DEncoder
 from model_layer.utils import (
     accuracy,
@@ -22,6 +24,21 @@ from model_layer.utils import (
     protonet_fast_adapt,
     write_json,
 )
+
+
+def _safe_file_size_bytes(path):
+    if path is None:
+        return None
+    try:
+        return int(Path(path).stat().st_size)
+    except OSError:
+        return None
+
+
+def _bytes_to_megabytes(size_bytes):
+    if size_bytes is None:
+        return None
+    return round(size_bytes / (1024.0 * 1024.0), 6)
 
 
 def run_compression_pipeline(args, algorithm, experiment_title, training_result, train_tasks, test_dataset, test_pools, device):
@@ -114,9 +131,23 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
         qat_metrics = evaluate_deployment_bundle(qat_bundle, device=device)
         deployment_bundle = qat_bundle
 
+    baseline_params = count_parameters(base_model)
+    pruned_params = count_parameters(recovered_model)
+    float_model_size_bytes = _safe_file_size_bytes(float_model_path)
+    int8_model_size_bytes = _safe_file_size_bytes(quant_model_path)
+    prototype_path = deployment_bundle.get('prototype_path')
+    prototype_size_bytes = _safe_file_size_bytes(prototype_path)
+    best_checkpoint_path = training_result.get('best_checkpoint_path')
+    history_path = training_result.get('history_path')
+    best_checkpoint_size_bytes = _safe_file_size_bytes(best_checkpoint_path)
+    history_size_bytes = _safe_file_size_bytes(history_path)
+    experiment_descriptor = build_experiment_descriptor(args, algorithm, experiment_title=experiment_title)
+
     summary = {
+        'summary_version': 2,
         'experiment_title': experiment_title,
         'algorithm': algorithm,
+        'experiment': experiment_descriptor,
         'best_training_record': training_result['best_record'],
         'meta_eval_before_prune': meta_eval_before,
         'meta_eval_after_recovery': meta_eval_after,
@@ -124,14 +155,46 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
         'deployment_int8_metrics': quant_metrics,
         'qat_float_metrics': qat_metrics,
         'prune_metadata': prune_metadata,
+        'deployment_type': deployment_bundle.get('deployment_type'),
+        'selected_labels': deployment_bundle.get('selected_labels'),
         'float_model_path': float_model_path,
         'int8_model_path': quant_model_path,
-        'prototype_path': deployment_bundle.get('prototype_path'),
+        'prototype_path': prototype_path,
         'quantization_warning': quant_warning,
         'deployment_backend': getattr(args, 'runtime_backend', 'onnxruntime'),
+        'training_artifacts': {
+            'best_checkpoint_path': best_checkpoint_path,
+            'history_path': history_path,
+        },
+        'artifact_paths': {
+            'float_model_path': float_model_path,
+            'int8_model_path': quant_model_path,
+            'prototype_path': prototype_path,
+            'best_checkpoint_path': best_checkpoint_path,
+            'history_path': history_path,
+        },
+        'artifact_sizes_bytes': {
+            'float_model': float_model_size_bytes,
+            'int8_model': int8_model_size_bytes,
+            'prototype_bundle': prototype_size_bytes,
+            'best_checkpoint': best_checkpoint_size_bytes,
+            'history_json': history_size_bytes,
+        },
+        'artifact_sizes_mb': {
+            'float_model': _bytes_to_megabytes(float_model_size_bytes),
+            'int8_model': _bytes_to_megabytes(int8_model_size_bytes),
+            'prototype_bundle': _bytes_to_megabytes(prototype_size_bytes),
+            'best_checkpoint': _bytes_to_megabytes(best_checkpoint_size_bytes),
+            'history_json': _bytes_to_megabytes(history_size_bytes),
+        },
         'model_profile': {
-            'baseline_params': count_parameters(base_model),
-            'pruned_params': count_parameters(recovered_model),
+            'baseline_params': baseline_params,
+            'pruned_params': pruned_params,
+            'parameter_reduction_ratio': (
+                (baseline_params - pruned_params) / float(baseline_params)
+                if baseline_params else None
+            ),
+            'prune_ratio': getattr(args, 'prune_ratio', None),
         },
     }
     write_json(os.path.join(artifact_dir, 'compression_summary.json'), summary)

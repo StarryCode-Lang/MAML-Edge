@@ -4,12 +4,13 @@ import asyncio
 
 
 class MQTTWorker:
-    def __init__(self, settings, predictor, history_store, alert_store, websocket_manager):
+    def __init__(self, settings, predictor, history_store, alert_store, websocket_manager, result_callback=None):
         self.settings = settings
         self.predictor = predictor
         self.history_store = history_store
         self.alert_store = alert_store
         self.websocket_manager = websocket_manager
+        self.result_callback = result_callback
         self._client = None
         self._loop = None
 
@@ -27,8 +28,11 @@ class MQTTWorker:
             payload = json.loads(message.payload.decode('utf-8'))
             result = self.predictor.predict_payload(payload)
             self.history_store.append(result)
-            if self._should_raise_alert(result):
+            alert_raised = self._should_raise_alert(result)
+            if alert_raised:
                 self.alert_store.append(result)
+            if self.result_callback is not None:
+                self.result_callback(result=result, source='mqtt', alert_raised=alert_raised)
             if self._loop is not None:
                 asyncio.run_coroutine_threadsafe(
                     self.websocket_manager.broadcast_json({'type': 'diagnosis', 'data': result}),
