@@ -5,6 +5,7 @@ from .experiment import (
     DEFAULT_FFT_POOLED_LENGTH,
     apply_default_schedule,
     normalize_shared_args,
+    resolve_meta_iterations,
 )
 from .utils import setup_logger
 
@@ -37,8 +38,8 @@ def parse_args(argv=None):
                         help='Number of inner loop steps for adaptation, default=5')
     parser.add_argument('--meta_batch_size', type=int, default=64,
                         help='Number of meta-tasks for each iteration, default=64')
-    parser.add_argument('--iters', type=int, default=1000,
-                        help='Number of outer-loop iterations, default=1000')
+    parser.add_argument('--iters', type=int, default=None,
+                        help='Number of outer-loop iterations. Defaults to FFT=1200, STFT=200, WT=200.')
     parser.add_argument('--first_order', type=str2bool, default=True,
                         help='Use first-order approximation, default=True')
 
@@ -122,6 +123,7 @@ def parse_args(argv=None):
 
 def normalize_args(args):
     args = normalize_shared_args(args, require_query_shots=True)
+    args.iters = resolve_meta_iterations(args.preprocess, getattr(args, 'iters', None))
     return apply_default_schedule(args, args.iters)
 
 

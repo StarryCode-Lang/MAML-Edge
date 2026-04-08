@@ -1,0 +1,11 @@
+DEFAULT_META_ITERS_BY_PREPROCESS = {
+    'FFT': 1200,
+    'STFT': 200,
+    'WT': 200,
+}
+
+DEFAULT_CNN_EPOCHS_BY_PREPROCESS = {
+    'FFT': 80,
+    'STFT': 60,
+    'WT': 60,
+}

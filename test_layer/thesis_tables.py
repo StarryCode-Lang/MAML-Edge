@@ -13,6 +13,7 @@ from test_layer.thesis_config import (
     THESIS_BASE_PROFILE,
     THESIS_DEFAULT_SYSTEM_CHANNEL,
     THESIS_FEW_SHOT_VALUES,
+    THESIS_ALL_PREPROCESSES,
     THESIS_MODEL_COMPARE_ALGORITHMS,
     THESIS_PRIMARY_MODEL,
     row_matches_thesis_profile,
@@ -23,11 +24,18 @@ def discover_summary_paths(pattern):
     return sorted(ROOT_DIR.glob(pattern))
 
 
-def load_matching_rows(summary_glob):
+def load_all_rows(summary_glob):
     rows = []
     for summary_path in discover_summary_paths(summary_glob):
         summary = load_summary(str(summary_path))
         row = build_benchmark_row(summary)
+        rows.append((summary, row))
+    return rows
+
+
+def load_matching_rows(summary_glob):
+    rows = []
+    for summary, row in load_all_rows(summary_glob):
         if row_matches_thesis_profile(row):
             rows.append((summary, row))
     return rows
@@ -65,6 +73,36 @@ def build_model_performance_table(rows, allow_missing=False):
             'accuracy_percent': _percent_value(accuracy_value),
             'experiment_title': row.get('experiment_title'),
         })
+    return table_rows
+
+
+def build_preprocess_model_matrix_table(rows):
+    table_rows = []
+    for preprocess in THESIS_ALL_PREPROCESSES:
+        for algorithm in THESIS_MODEL_COMPARE_ALGORITHMS:
+            for shots in THESIS_FEW_SHOT_VALUES:
+                row = None
+                for _, candidate_row in rows:
+                    if str(candidate_row.get('algorithm')).lower() != str(algorithm).lower():
+                        continue
+                    if int(candidate_row.get('shots') or 0) != shots:
+                        continue
+                    if str(candidate_row.get('preprocess')) != preprocess:
+                        continue
+                    row = candidate_row
+                    break
+                if row is None:
+                    continue
+                accuracy_value = row.get('pre_prune_accuracy') or row.get('baseline_deployment_accuracy') or row.get('accuracy')
+                table_rows.append({
+                    'preprocess': preprocess,
+                    'model': str(algorithm).upper() if algorithm != 'protonet' else 'ProtoNet',
+                    'shots': shots,
+                    'accuracy': accuracy_value,
+                    'accuracy_percent': _percent_value(accuracy_value),
+                    'latency_ms': _round_or_none(row.get('baseline_avg_latency_ms') or row.get('avg_latency_ms'), 4),
+                    'experiment_title': row.get('experiment_title'),
+                })
     return table_rows
 
 
@@ -244,6 +282,30 @@ def build_markdown_report(model_table, few_shot_table, compression_table, system
     return '\n'.join(sections).strip() + '\n'
 
 
+def build_overnight_markdown_report(preprocess_table, model_table, few_shot_table, compression_table):
+    display_preprocess_table = [
+        {
+            'Preprocess': row.get('preprocess'),
+            'Model': row.get('model'),
+            'Shot': row.get('shots'),
+            'Accuracy (%)': _display_value(row.get('accuracy_percent'), '%'),
+            'Latency (ms)': _display_value(row.get('latency_ms')),
+        }
+        for row in preprocess_table
+    ]
+    sections = [
+        '# Overnight Run Tables',
+        '',
+        '## Table 0 - Preprocess x Model Matrix',
+        '',
+        _render_markdown_table(display_preprocess_table),
+        '## Locked Thesis Tables',
+        '',
+        build_markdown_report(model_table, few_shot_table, compression_table, []).strip(),
+    ]
+    return '\n'.join(sections).strip() + '\n'
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Build the four thesis tables from locked MAML-Edge experiment outputs.',
@@ -296,13 +358,16 @@ def main():
     output_dir = ROOT_DIR / args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    rows = load_matching_rows(args.summary_glob)
+    all_rows = load_all_rows(args.summary_glob)
+    rows = [(summary, row) for summary, row in all_rows if row_matches_thesis_profile(row)]
+    preprocess_matrix = build_preprocess_model_matrix_table(all_rows)
     model_table = build_model_performance_table(rows, allow_missing=args.allow_missing)
     few_shot_table = build_few_shot_table(rows, allow_missing=args.allow_missing)
     compression_table = build_compression_table(rows, allow_missing=args.allow_missing)
     system_stats = _load_system_stats(path=args.system_stats_path, url=args.system_stats_url)
     system_table = build_system_performance_table(system_stats, channel=args.system_channel)
 
+    write_table(preprocess_matrix, output_dir / 'table0_preprocess_model_matrix.{}'.format(args.output_format), args.output_format)
     write_table(model_table, output_dir / 'table1_model_performance.{}'.format(args.output_format), args.output_format)
     write_table(few_shot_table, output_dir / 'table2_few_shot.{}'.format(args.output_format), args.output_format)
     write_table(compression_table, output_dir / 'table3_compression.{}'.format(args.output_format), args.output_format)
@@ -311,6 +376,7 @@ def main():
 
     combined_payload = {
         'locked_profile': THESIS_BASE_PROFILE,
+        'table0_preprocess_model_matrix': preprocess_matrix,
         'table1_model_performance': model_table,
         'table2_few_shot': few_shot_table,
         'table3_compression': compression_table,
@@ -321,7 +387,20 @@ def main():
         encoding='utf-8',
     )
     (output_dir / 'thesis_tables.md').write_text(
-        build_markdown_report(model_table, few_shot_table, compression_table, system_table),
+        build_overnight_markdown_report(preprocess_matrix, model_table, few_shot_table, compression_table)
+        + (
+            '\n## Table 4 - System Performance\n\n'
+            + _render_markdown_table([
+                {
+                    'Stage': row.get('stage'),
+                    'Channel': row.get('channel'),
+                    'Requests': _display_value(row.get('request_count')),
+                    'Latency (ms)': _display_value(row.get('latency_ms')),
+                }
+                for row in system_table
+            ])
+            if system_table else ''
+        ),
         encoding='utf-8',
     )
     print(output_dir)

@@ -1,6 +1,7 @@
 from data_layer.fault_datasets import CWRU, CWRU_FFT, HST, HST_FFT
 
 from .models import CNN1D, CNN1DEncoder, CNN2D, CNN2DEncoder
+from .schedule_defaults import DEFAULT_CNN_EPOCHS_BY_PREPROCESS, DEFAULT_META_ITERS_BY_PREPROCESS
 from .utils import resolve_fault_labels
 
 
@@ -14,6 +15,22 @@ def default_schedule_step(total_steps):
     if total_steps <= 0:
         raise ValueError('total_steps must be positive.')
     return max(1, total_steps // 5)
+
+
+def resolve_meta_iterations(preprocess, value=None):
+    if value not in (None, ''):
+        return int(value)
+    if preprocess not in DEFAULT_META_ITERS_BY_PREPROCESS:
+        raise ValueError('Unsupported preprocess for meta-iteration schedule: {}'.format(preprocess))
+    return int(DEFAULT_META_ITERS_BY_PREPROCESS[preprocess])
+
+
+def resolve_cnn_epochs(preprocess, value=None):
+    if value not in (None, ''):
+        return int(value)
+    if preprocess not in DEFAULT_CNN_EPOCHS_BY_PREPROCESS:
+        raise ValueError('Unsupported preprocess for CNN epoch schedule: {}'.format(preprocess))
+    return int(DEFAULT_CNN_EPOCHS_BY_PREPROCESS[preprocess])
 
 
 def parse_channel_config(value, expected_length, default_channels):

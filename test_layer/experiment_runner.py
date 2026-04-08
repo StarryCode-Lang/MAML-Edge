@@ -10,7 +10,12 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from test_layer.benchmark import build_benchmark_row, load_summary
-from test_layer.thesis_config import THESIS_PRESET_NAME, build_thesis_experiment_records
+from test_layer.thesis_config import (
+    OVERNIGHT_PRESET_NAME,
+    THESIS_PRESET_NAME,
+    build_overnight_experiment_records,
+    build_thesis_experiment_records,
+)
 
 
 def parse_csv_list(value, cast=str):
@@ -38,6 +43,44 @@ def _resolve_entry_helpers(algorithm):
     else:
         raise ValueError('Unsupported algorithm: {}'.format(algorithm))
     return parse_args, normalize_args, build_experiment_title
+
+
+def _build_experiment_title_from_config(config):
+    train_domains_str = ''.join(str(item) for item in str(config['train_domains']).split(',') if str(item))
+    label_tag = ''.join(str(item) for item in str(config.get('fault_labels') or '').split(',') if str(item))
+    if config['algorithm'] == 'maml':
+        return 'MAML_{}_{}_{}w{}s_source{}_target{}_labels{}'.format(
+            config['dataset'],
+            config['preprocess'],
+            config['ways'],
+            config['shots'],
+            train_domains_str,
+            config['test_domain'],
+            label_tag,
+        )
+    if config['algorithm'] == 'protonet':
+        return 'ProtoNet_{}_{}_{}w{}s{}q_source{}_target{}_labels{}'.format(
+            config['dataset'],
+            config['preprocess'],
+            config['ways'],
+            config['shots'],
+            config['query_shots'],
+            train_domains_str,
+            config['test_domain'],
+            label_tag,
+        )
+    if config['algorithm'] == 'cnn':
+        return 'CNN_{}_{}_{}w{}s{}q_source{}_target{}_labels{}'.format(
+            config['dataset'],
+            config['preprocess'],
+            config['ways'],
+            config['shots'],
+            config['query_shots'],
+            train_domains_str,
+            config['test_domain'],
+            label_tag,
+        )
+    raise ValueError('Unsupported algorithm: {}'.format(config['algorithm']))
 
 
 def build_command(config):
@@ -77,6 +120,16 @@ def build_command(config):
         command.extend(['--fault_labels', config['fault_labels']])
     if config.get('cuda') is not None:
         command.extend(['--cuda', 'true' if config['cuda'] else 'false'])
+    if config.get('calibration_size') is not None:
+        command.extend(['--calibration_size', str(config['calibration_size'])])
+    if config.get('enable_qat_recovery') is not None:
+        command.extend(['--enable_qat_recovery', 'true' if config['enable_qat_recovery'] else 'false'])
+    if config.get('qat_recovery_epochs') is not None:
+        command.extend(['--qat_recovery_epochs', str(config['qat_recovery_epochs'])])
+    if config.get('qat_drop_threshold') is not None:
+        command.extend(['--qat_drop_threshold', str(config['qat_drop_threshold'])])
+    if config.get('onnx_opset') is not None:
+        command.extend(['--onnx_opset', str(config['onnx_opset'])])
     if config['algorithm'] in {'maml', 'protonet'}:
         if config.get('iters') is not None:
             command.extend(['--iters', str(config['iters'])])
@@ -88,11 +141,17 @@ def build_command(config):
             command.extend(['--test_task_num', str(config['test_task_num'])])
         if config.get('compression_finetune_iters') is not None:
             command.extend(['--compression_finetune_iters', str(config['compression_finetune_iters'])])
+        if config.get('compression_meta_batch_size') is not None:
+            command.extend(['--compression_meta_batch_size', str(config['compression_meta_batch_size'])])
     else:
         if config.get('epochs') is not None:
             command.extend(['--epochs', str(config['epochs'])])
         if config.get('batch_size') is not None:
             command.extend(['--batch_size', str(config['batch_size'])])
+        if config.get('finetune_epochs') is not None:
+            command.extend(['--finetune_epochs', str(config['finetune_epochs'])])
+        if config.get('finetune_lr') is not None:
+            command.extend(['--finetune_lr', str(config['finetune_lr'])])
         if config.get('test_task_num') is not None:
             command.extend(['--test_task_num', str(config['test_task_num'])])
         if config.get('compression_finetune_iters') is not None:
@@ -108,6 +167,12 @@ def infer_expected_summary_path(command, algorithm):
     return ROOT_DIR / normalized_args.compression_output_path / experiment_title / 'compression_summary.json'
 
 
+def infer_expected_summary_path_from_config(config):
+    experiment_title = _build_experiment_title_from_config(config)
+    compression_output_path = config.get('compression_output_path') or './deploy_artifacts'
+    return ROOT_DIR / compression_output_path / experiment_title / 'compression_summary.json'
+
+
 def export_manifest(records, manifest_dir):
     manifest_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = manifest_dir / 'experiment_manifest.json'
@@ -120,11 +185,11 @@ def main():
         description='Run or dry-run a thesis-oriented experiment matrix on top of train.py.',
     )
     parser.add_argument('--preset', type=str, default=None,
-                        choices=[THESIS_PRESET_NAME],
-                        help='Optional locked experiment preset. Use thesis_final for the final thesis matrix.')
+                        choices=[THESIS_PRESET_NAME, OVERNIGHT_PRESET_NAME],
+                        help='Optional locked experiment preset. Use thesis_final or overnight_a10.')
     parser.add_argument('--group', type=str, default='all',
                         choices=['all', 'model_compare', 'few_shot'],
-                        help='Experiment group filter when using --preset thesis_final.')
+                        help='Experiment group filter when using a locked preset.')
     parser.add_argument('--algorithms', type=str, default='maml,protonet,cnn')
     parser.add_argument('--preprocesses', type=str, default='FFT,STFT,WT')
     parser.add_argument('--shots', type=str, default='1,5')
@@ -146,14 +211,25 @@ def main():
     parser.add_argument('--train_task_num', type=int, default=None)
     parser.add_argument('--test_task_num', type=int, default=None)
     parser.add_argument('--compression_finetune_iters', type=int, default=None)
+    parser.add_argument('--compression_meta_batch_size', type=int, default=None)
+    parser.add_argument('--calibration_size', type=int, default=None)
+    parser.add_argument('--enable_qat_recovery', type=str2bool, default=None)
+    parser.add_argument('--qat_recovery_epochs', type=int, default=None)
+    parser.add_argument('--qat_drop_threshold', type=float, default=None)
+    parser.add_argument('--onnx_opset', type=int, default=None)
+    parser.add_argument('--finetune_epochs', type=int, default=None)
+    parser.add_argument('--finetune_lr', type=float, default=None)
     parser.add_argument('--execute', action='store_true')
     parser.add_argument('--manifest_dir', type=str, default='logs/thesis_runs/latest')
     args = parser.parse_args()
 
     manifest_records = []
     benchmark_rows = []
-    if args.preset == THESIS_PRESET_NAME:
-        base_records = build_thesis_experiment_records()
+    if args.preset in {THESIS_PRESET_NAME, OVERNIGHT_PRESET_NAME}:
+        if args.preset == THESIS_PRESET_NAME:
+            base_records = build_thesis_experiment_records()
+        else:
+            base_records = build_overnight_experiment_records()
         if args.group != 'all':
             base_records = [record for record in base_records if record.get('group') == args.group]
 
@@ -178,6 +254,22 @@ def main():
                 config['test_task_num'] = args.test_task_num
             if args.compression_finetune_iters is not None:
                 config['compression_finetune_iters'] = args.compression_finetune_iters
+            if args.compression_meta_batch_size is not None and config['algorithm'] in {'maml', 'protonet'}:
+                config['compression_meta_batch_size'] = args.compression_meta_batch_size
+            if args.calibration_size is not None:
+                config['calibration_size'] = args.calibration_size
+            if args.enable_qat_recovery is not None:
+                config['enable_qat_recovery'] = args.enable_qat_recovery
+            if args.qat_recovery_epochs is not None:
+                config['qat_recovery_epochs'] = args.qat_recovery_epochs
+            if args.qat_drop_threshold is not None:
+                config['qat_drop_threshold'] = args.qat_drop_threshold
+            if args.onnx_opset is not None:
+                config['onnx_opset'] = args.onnx_opset
+            if args.finetune_epochs is not None and config['algorithm'] == 'cnn':
+                config['finetune_epochs'] = args.finetune_epochs
+            if args.finetune_lr is not None and config['algorithm'] == 'cnn':
+                config['finetune_lr'] = args.finetune_lr
             expanded_configs.append(config)
     else:
         algorithms = parse_csv_list(args.algorithms, str)
@@ -213,13 +305,24 @@ def main():
                             'train_task_num': args.train_task_num,
                             'test_task_num': args.test_task_num,
                             'compression_finetune_iters': args.compression_finetune_iters,
+                            'compression_meta_batch_size': args.compression_meta_batch_size,
+                            'calibration_size': args.calibration_size,
+                            'enable_qat_recovery': args.enable_qat_recovery,
+                            'qat_recovery_epochs': args.qat_recovery_epochs,
+                            'qat_drop_threshold': args.qat_drop_threshold,
+                            'onnx_opset': args.onnx_opset,
+                            'finetune_epochs': args.finetune_epochs,
+                            'finetune_lr': args.finetune_lr,
                             'group': 'custom',
                         })
 
     for repeat_index in range(args.repeat):
         for config in expanded_configs:
             command = build_command(config)
-            expected_summary_path = infer_expected_summary_path(command, config['algorithm'])
+            if args.preset in {THESIS_PRESET_NAME, OVERNIGHT_PRESET_NAME}:
+                expected_summary_path = infer_expected_summary_path_from_config(config)
+            else:
+                expected_summary_path = infer_expected_summary_path(command, config['algorithm'])
             record = {
                 'repeat_index': repeat_index,
                 'preset': args.preset,

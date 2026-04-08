@@ -5,6 +5,7 @@ from .experiment import (
     DEFAULT_FFT_POOLED_LENGTH,
     apply_default_schedule,
     normalize_shared_args,
+    resolve_cnn_epochs,
 )
 from .utils import setup_logger
 
@@ -28,8 +29,8 @@ def parse_args(argv=None):
                         help='Number of support examples per class for target adaptation, default=5')
     parser.add_argument('--query_shots', type=int, default=None,
                         help='Number of query examples per class for target episodic evaluation, default=same as shots')
-    parser.add_argument('--epochs', type=int, default=50,
-                        help='Number of source training epochs, default=50')
+    parser.add_argument('--epochs', type=int, default=None,
+                        help='Number of source training epochs. Defaults to FFT=80, STFT=60, WT=60.')
     parser.add_argument('--batch_size', type=int, default=64,
                         help='Source training batch size, default=64')
     parser.add_argument('--lr', type=float, default=0.001,
@@ -117,6 +118,7 @@ def parse_args(argv=None):
 
 def normalize_args(args):
     args = normalize_shared_args(args, require_query_shots=True)
+    args.epochs = resolve_cnn_epochs(args.preprocess, getattr(args, 'epochs', None))
     return apply_default_schedule(args, args.epochs)
 
 

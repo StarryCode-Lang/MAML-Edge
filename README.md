@@ -172,7 +172,7 @@ python train.py --mode train --algorithm cnn \
   --query_shots 5 \
   --train_domains 0,1,2 \
   --test_domain 3 \
-  --epochs 50 \
+  --epochs 60 \
   --enable_compression true \
   --prune_ratio 0.4
 ```
@@ -188,7 +188,7 @@ python train.py --mode train --algorithm maml \
   --shots 5 \
   --train_domains 0,1,2 \
   --test_domain 3 \
-  --iters 1500 \
+  --iters 200 \
   --enable_compression true \
   --prune_ratio 0.4
 ```
@@ -205,7 +205,7 @@ python train.py --mode train --algorithm protonet \
   --query_shots 5 \
   --train_domains 0,1,2 \
   --test_domain 3 \
-  --iters 1500 \
+  --iters 200 \
   --enable_compression true \
   --prune_ratio 0.4
 ```
@@ -263,6 +263,33 @@ python test_layer/experiment_runner.py --preset thesis_final --group model_compa
 ```bash
 python test_layer/experiment_runner.py --preset thesis_final --group few_shot --execute
 ```
+
+### 3.5 一条命令跑完 A10 过夜实验
+
+```bash
+python test_layer/overnight_pipeline.py --max_attempts 2
+```
+
+这个入口会顺序执行：
+
+- `CNN / MAML / ProtoNet`
+- `FFT / STFT / WT`
+- `5-shot / 10-shot / 15-shot`
+- 自动训练、剪枝恢复、ONNX 导出、INT8 PTQ、benchmark 聚合
+- 自动导出 `logs/thesis_tables/` 下的表格文件
+
+完整矩阵共 `27` 组：
+
+- `FFT + CNN/MAML/ProtoNet + 5/10/15-shot`
+- `STFT + CNN/MAML/ProtoNet + 5/10/15-shot`
+- `WT + CNN/MAML/ProtoNet + 5/10/15-shot`
+
+默认统一调度：
+
+- `FFT`: `MAML / ProtoNet iters = 1200`
+- `STFT`: `MAML / ProtoNet iters = 200`
+- `WT`: `MAML / ProtoNet iters = 200`
+- `CNN epochs`: `FFT = 80`, `STFT = 60`, `WT = 60`
 
 ### 4. 导出单实验 benchmark
 

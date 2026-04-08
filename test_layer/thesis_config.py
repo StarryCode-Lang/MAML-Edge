@@ -1,8 +1,17 @@
-THESIS_PRESET_NAME = 'thesis_final'
+from model_layer.schedule_defaults import (
+    DEFAULT_CNN_EPOCHS_BY_PREPROCESS,
+    DEFAULT_META_ITERS_BY_PREPROCESS,
+)
 
+
+THESIS_PRESET_NAME = 'thesis_final'
+OVERNIGHT_PRESET_NAME = 'overnight_a10'
+
+THESIS_MAIN_PREPROCESS = 'STFT'
+THESIS_ALL_PREPROCESSES = ('FFT', 'STFT', 'WT')
 THESIS_BASE_PROFILE = {
     'dataset': 'CWRU',
-    'preprocess': 'STFT',
+    'preprocess': THESIS_MAIN_PREPROCESS,
     'ways': 5,
     'train_domains': '0,1,2',
     'test_domain': 3,
@@ -16,25 +25,40 @@ THESIS_MODEL_COMPARE_ALGORITHMS = ('cnn', 'maml', 'protonet')
 THESIS_PRIMARY_MODEL = 'maml'
 THESIS_PROTOTYPE_MODEL = 'protonet'
 THESIS_FEW_SHOT_VALUES = (5, 10, 15)
+OVERNIGHT_SHOT_VALUES = THESIS_FEW_SHOT_VALUES
 THESIS_DEFAULT_SYSTEM_CHANNEL = 'mqtt'
+
+A10_QUALITY_PROFILE = {
+    'cuda': True,
+    'runtime_backend': 'onnxruntime',
+    'enable_compression': True,
+    'prune_ratio': 0.4,
+    'calibration_size': 128,
+    'enable_qat_recovery': True,
+    'qat_recovery_epochs': 8,
+    'qat_drop_threshold': 0.02,
+    'onnx_opset': 17,
+    'compression_finetune_iters': 200,
+}
 
 THESIS_DEFAULT_TRAINING = {
     'maml': {
-        'iters': 100,
         'meta_batch_size': 64,
-        'train_task_num': 200,
-        'test_task_num': 100,
+        'train_task_num': 300,
+        'test_task_num': 200,
+        'compression_meta_batch_size': 32,
     },
     'protonet': {
-        'iters': 100,
         'meta_batch_size': 64,
-        'train_task_num': 200,
-        'test_task_num': 100,
+        'train_task_num': 300,
+        'test_task_num': 200,
+        'compression_meta_batch_size': 32,
     },
     'cnn': {
-        'epochs': 50,
         'batch_size': 64,
-        'test_task_num': 100,
+        'test_task_num': 200,
+        'finetune_epochs': 30,
+        'finetune_lr': 0.0003,
     },
 }
 
@@ -64,38 +88,42 @@ def row_matches_thesis_profile(row):
     )
 
 
-def build_locked_config(algorithm, shots, group):
+def _with_schedule(config):
+    preprocess = config['preprocess']
+    algorithm = config['algorithm']
+    if algorithm in {'maml', 'protonet'}:
+        config['iters'] = DEFAULT_META_ITERS_BY_PREPROCESS[preprocess]
+    elif algorithm == 'cnn':
+        config['epochs'] = DEFAULT_CNN_EPOCHS_BY_PREPROCESS[preprocess]
+    return config
+
+
+def build_locked_config(algorithm, shots, group, preprocess=None):
     config = dict(THESIS_BASE_PROFILE)
+    config.update(A10_QUALITY_PROFILE)
     config.update(
         {
             'algorithm': algorithm,
+            'preprocess': preprocess or THESIS_MAIN_PREPROCESS,
             'shots': int(shots),
             'query_shots': int(shots),
             'group': group,
         }
     )
     config.update(THESIS_DEFAULT_TRAINING[algorithm])
-    return config
+    return _with_schedule(config)
 
 
-def build_thesis_experiment_records():
-    records = []
-
-    for algorithm in THESIS_MODEL_COMPARE_ALGORITHMS:
-        records.append(build_locked_config(algorithm=algorithm, shots=5, group='model_compare'))
-
-    for shots in THESIS_FEW_SHOT_VALUES:
-        records.append(build_locked_config(algorithm=THESIS_PRIMARY_MODEL, shots=shots, group='few_shot'))
-
+def _dedupe_records(records):
     deduped = []
     seen = set()
     for record in records:
         signature = (
             record['algorithm'],
+            record['preprocess'],
             record['shots'],
             record['query_shots'],
             record['dataset'],
-            record['preprocess'],
             record['train_domains'],
             record['test_domain'],
             record['runtime_backend'],
@@ -106,3 +134,47 @@ def build_thesis_experiment_records():
         seen.add(signature)
         deduped.append(record)
     return deduped
+
+
+def build_thesis_experiment_records():
+    records = []
+
+    for algorithm in THESIS_MODEL_COMPARE_ALGORITHMS:
+        records.append(
+            build_locked_config(
+                algorithm=algorithm,
+                shots=5,
+                group='model_compare',
+                preprocess=THESIS_MAIN_PREPROCESS,
+            )
+        )
+
+    for shots in THESIS_FEW_SHOT_VALUES:
+        records.append(
+            build_locked_config(
+                algorithm=THESIS_PRIMARY_MODEL,
+                shots=shots,
+                group='few_shot',
+                preprocess=THESIS_MAIN_PREPROCESS,
+            )
+        )
+
+    return _dedupe_records(records)
+
+
+def build_overnight_experiment_records():
+    records = []
+
+    for preprocess in THESIS_ALL_PREPROCESSES:
+        for algorithm in THESIS_MODEL_COMPARE_ALGORITHMS:
+            for shots in OVERNIGHT_SHOT_VALUES:
+                records.append(
+                    build_locked_config(
+                        algorithm=algorithm,
+                        shots=shots,
+                        group='model_compare' if shots == 5 else 'few_shot',
+                        preprocess=preprocess,
+                    )
+                )
+
+    return _dedupe_records(records)
