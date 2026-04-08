@@ -101,7 +101,7 @@ def build_command(config):
 
 
 def infer_expected_summary_path(command, algorithm):
-    forwarded = command[5:]
+    forwarded = command[6:]
     parse_args, normalize_args, build_experiment_title = _resolve_entry_helpers(algorithm)
     normalized_args = normalize_args(parse_args(forwarded))
     experiment_title = build_experiment_title(normalized_args)
