@@ -57,6 +57,25 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
         test_pools=test_pools,
         device=device,
     )
+    baseline_deployment_bundle = build_deployment_bundle(
+        algorithm=algorithm,
+        args=args,
+        model=base_model,
+        test_dataset=test_dataset,
+        test_pools=test_pools,
+        device=device,
+    )
+    baseline_float_model_path = os.path.join(artifact_dir, '{}_baseline_float.onnx'.format(experiment_title))
+    onnx_exporter.export_deployment_bundle_to_onnx(
+        deployment_bundle=baseline_deployment_bundle,
+        onnx_path=baseline_float_model_path,
+        opset_version=args.onnx_opset,
+    )
+    baseline_runtime_metrics = runtime_backends.evaluate_onnx_bundle(
+        onnx_path=baseline_float_model_path,
+        deployment_bundle=baseline_deployment_bundle,
+        runtime_backend=getattr(args, 'runtime_backend', 'onnxruntime'),
+    )
 
     pruned_model, prune_metadata = structured_prune_model(base_model.cpu(), args.prune_ratio)
     pruned_model.to(device)
@@ -133,9 +152,12 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
 
     baseline_params = count_parameters(base_model)
     pruned_params = count_parameters(recovered_model)
+    baseline_float_model_size_bytes = _safe_file_size_bytes(baseline_float_model_path)
     float_model_size_bytes = _safe_file_size_bytes(float_model_path)
     int8_model_size_bytes = _safe_file_size_bytes(quant_model_path)
+    baseline_prototype_path = baseline_deployment_bundle.get('prototype_path')
     prototype_path = deployment_bundle.get('prototype_path')
+    baseline_prototype_size_bytes = _safe_file_size_bytes(baseline_prototype_path)
     prototype_size_bytes = _safe_file_size_bytes(prototype_path)
     best_checkpoint_path = training_result.get('best_checkpoint_path')
     history_path = training_result.get('history_path')
@@ -151,14 +173,17 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
         'best_training_record': training_result['best_record'],
         'meta_eval_before_prune': meta_eval_before,
         'meta_eval_after_recovery': meta_eval_after,
+        'baseline_deployment_metrics': baseline_runtime_metrics,
         'deployment_float_metrics': float_runtime_metrics,
         'deployment_int8_metrics': quant_metrics,
         'qat_float_metrics': qat_metrics,
         'prune_metadata': prune_metadata,
         'deployment_type': deployment_bundle.get('deployment_type'),
         'selected_labels': deployment_bundle.get('selected_labels'),
+        'baseline_float_model_path': baseline_float_model_path,
         'float_model_path': float_model_path,
         'int8_model_path': quant_model_path,
+        'baseline_prototype_path': baseline_prototype_path,
         'prototype_path': prototype_path,
         'quantization_warning': quant_warning,
         'deployment_backend': getattr(args, 'runtime_backend', 'onnxruntime'),
@@ -167,22 +192,28 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
             'history_path': history_path,
         },
         'artifact_paths': {
+            'baseline_float_model_path': baseline_float_model_path,
             'float_model_path': float_model_path,
             'int8_model_path': quant_model_path,
+            'baseline_prototype_path': baseline_prototype_path,
             'prototype_path': prototype_path,
             'best_checkpoint_path': best_checkpoint_path,
             'history_path': history_path,
         },
         'artifact_sizes_bytes': {
+            'baseline_float_model': baseline_float_model_size_bytes,
             'float_model': float_model_size_bytes,
             'int8_model': int8_model_size_bytes,
+            'baseline_prototype_bundle': baseline_prototype_size_bytes,
             'prototype_bundle': prototype_size_bytes,
             'best_checkpoint': best_checkpoint_size_bytes,
             'history_json': history_size_bytes,
         },
         'artifact_sizes_mb': {
+            'baseline_float_model': _bytes_to_megabytes(baseline_float_model_size_bytes),
             'float_model': _bytes_to_megabytes(float_model_size_bytes),
             'int8_model': _bytes_to_megabytes(int8_model_size_bytes),
+            'baseline_prototype_bundle': _bytes_to_megabytes(baseline_prototype_size_bytes),
             'prototype_bundle': _bytes_to_megabytes(prototype_size_bytes),
             'best_checkpoint': _bytes_to_megabytes(best_checkpoint_size_bytes),
             'history_json': _bytes_to_megabytes(history_size_bytes),

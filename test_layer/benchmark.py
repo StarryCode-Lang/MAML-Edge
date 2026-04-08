@@ -57,6 +57,10 @@ def get_deployment_metrics(summary):
     return summary.get('deployment_int8_metrics') or summary.get('deployment_float_metrics') or {}
 
 
+def get_metrics_block(summary, block_name):
+    return summary.get(block_name) or {}
+
+
 def build_benchmark_row(summary):
     experiment = summary.get('experiment') or {}
     legacy = _parse_experiment_title(summary.get('experiment_title'))
@@ -64,6 +68,12 @@ def build_benchmark_row(summary):
     size_bytes = summary.get('artifact_sizes_bytes') or {}
     size_mb = summary.get('artifact_sizes_mb') or {}
     deployment_metrics = get_deployment_metrics(summary)
+    pre_prune_metrics = get_metrics_block(summary, 'meta_eval_before_prune')
+    post_recovery_metrics = get_metrics_block(summary, 'meta_eval_after_recovery')
+    baseline_deployment_metrics = get_metrics_block(summary, 'baseline_deployment_metrics')
+    float_deployment_metrics = get_metrics_block(summary, 'deployment_float_metrics')
+    int8_deployment_metrics = get_metrics_block(summary, 'deployment_int8_metrics')
+    artifact_paths = summary.get('artifact_paths') or {}
     selected_labels = summary.get('selected_labels') or []
 
     return {
@@ -84,16 +94,39 @@ def build_benchmark_row(summary):
         'accuracy': deployment_metrics.get('accuracy'),
         'avg_latency_ms': deployment_metrics.get('avg_latency_ms'),
         'loss': deployment_metrics.get('loss'),
+        'pre_prune_accuracy': pre_prune_metrics.get('accuracy'),
+        'pre_prune_loss': pre_prune_metrics.get('loss'),
+        'post_recovery_accuracy': post_recovery_metrics.get('accuracy'),
+        'post_recovery_loss': post_recovery_metrics.get('loss'),
+        'baseline_deployment_accuracy': baseline_deployment_metrics.get('accuracy', pre_prune_metrics.get('accuracy')),
+        'baseline_deployment_loss': baseline_deployment_metrics.get('loss', pre_prune_metrics.get('loss')),
+        'baseline_avg_latency_ms': baseline_deployment_metrics.get('avg_latency_ms'),
+        'float_accuracy': float_deployment_metrics.get('accuracy'),
+        'float_loss': float_deployment_metrics.get('loss'),
+        'float_avg_latency_ms': float_deployment_metrics.get('avg_latency_ms'),
+        'int8_accuracy': int8_deployment_metrics.get('accuracy'),
+        'int8_loss': int8_deployment_metrics.get('loss'),
+        'int8_avg_latency_ms': int8_deployment_metrics.get('avg_latency_ms'),
         'providers': ','.join(str(item) for item in deployment_metrics.get('providers') or []),
         'runtime_backend': deployment_metrics.get('runtime_backend') or summary.get('deployment_backend'),
+        'baseline_float_model_path': (
+            summary.get('baseline_float_model_path') or artifact_paths.get('baseline_float_model_path')
+        ),
         'float_model_path': summary.get('float_model_path'),
         'int8_model_path': summary.get('int8_model_path'),
+        'baseline_prototype_path': (
+            summary.get('baseline_prototype_path') or artifact_paths.get('baseline_prototype_path')
+        ),
         'prototype_path': summary.get('prototype_path'),
+        'baseline_float_model_size_mb': size_mb.get('baseline_float_model'),
         'float_model_size_mb': size_mb.get('float_model'),
         'int8_model_size_mb': size_mb.get('int8_model'),
+        'baseline_prototype_size_mb': size_mb.get('baseline_prototype_bundle'),
         'prototype_size_mb': size_mb.get('prototype_bundle'),
+        'baseline_float_model_size_bytes': size_bytes.get('baseline_float_model'),
         'float_model_size_bytes': size_bytes.get('float_model'),
         'int8_model_size_bytes': size_bytes.get('int8_model'),
+        'baseline_prototype_size_bytes': size_bytes.get('baseline_prototype_bundle'),
         'prototype_size_bytes': size_bytes.get('prototype_bundle'),
         'baseline_params': profile.get('baseline_params'),
         'pruned_params': profile.get('pruned_params'),
@@ -117,6 +150,52 @@ def check_thresholds(summary, accuracy_threshold=0.95, latency_threshold_ms=100.
         'latency_semantics': LATENCY_SEMANTICS,
         'benchmark_row': build_benchmark_row(summary),
     }
+
+
+def build_compression_rows(summary):
+    row = build_benchmark_row(summary)
+    rows = []
+
+    if row.get('baseline_deployment_accuracy') is not None:
+        rows.append({
+            'experiment_title': row.get('experiment_title'),
+            'algorithm': row.get('algorithm'),
+            'variant': 'original',
+            'accuracy': row.get('baseline_deployment_accuracy'),
+            'avg_latency_ms': row.get('baseline_avg_latency_ms'),
+            'parameter_count': row.get('baseline_params'),
+            'model_size_mb': row.get('baseline_float_model_size_mb'),
+            'runtime_backend': row.get('runtime_backend'),
+            'latency_semantics': LATENCY_SEMANTICS,
+        })
+
+    if row.get('float_accuracy') is not None:
+        rows.append({
+            'experiment_title': row.get('experiment_title'),
+            'algorithm': row.get('algorithm'),
+            'variant': 'pruned',
+            'accuracy': row.get('float_accuracy'),
+            'avg_latency_ms': row.get('float_avg_latency_ms'),
+            'parameter_count': row.get('pruned_params'),
+            'model_size_mb': row.get('float_model_size_mb'),
+            'runtime_backend': row.get('runtime_backend'),
+            'latency_semantics': LATENCY_SEMANTICS,
+        })
+
+    if row.get('int8_accuracy') is not None:
+        rows.append({
+            'experiment_title': row.get('experiment_title'),
+            'algorithm': row.get('algorithm'),
+            'variant': 'pruned_int8',
+            'accuracy': row.get('int8_accuracy'),
+            'avg_latency_ms': row.get('int8_avg_latency_ms'),
+            'parameter_count': row.get('pruned_params'),
+            'model_size_mb': row.get('int8_model_size_mb'),
+            'runtime_backend': row.get('runtime_backend'),
+            'latency_semantics': LATENCY_SEMANTICS,
+        })
+
+    return rows
 
 
 def export_rows(rows, output_path=None, output_format='json'):
