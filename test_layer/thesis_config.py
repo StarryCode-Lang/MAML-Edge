@@ -2,7 +2,7 @@ THESIS_PRESET_NAME = 'thesis_final'
 
 THESIS_BASE_PROFILE = {
     'dataset': 'CWRU',
-    'preprocess': 'FFT',
+    'preprocess': 'STFT',
     'ways': 5,
     'train_domains': '0,1,2',
     'test_domain': 3,
@@ -20,13 +20,13 @@ THESIS_DEFAULT_SYSTEM_CHANNEL = 'mqtt'
 
 THESIS_DEFAULT_TRAINING = {
     'maml': {
-        'iters': 1500,
+        'iters': 100,
         'meta_batch_size': 64,
         'train_task_num': 200,
         'test_task_num': 100,
     },
     'protonet': {
-        'iters': 1500,
+        'iters': 100,
         'meta_batch_size': 64,
         'train_task_num': 200,
         'test_task_num': 100,

@@ -72,7 +72,7 @@ data/
 论文主实验固定为：
 
 - `Dataset = CWRU`
-- `Preprocess = FFT`
+- `Preprocess = STFT`
 - `Task = 5-way 5-shot`
 - `Train domains = 0,1,2`
 - `Test domain = 3`
@@ -166,7 +166,7 @@ Edge Simulator -> MQTT -> FastAPI -> ONNX -> WebSocket -> Frontend
 python train.py --mode train --algorithm cnn \
   --runtime_backend onnxruntime \
   --dataset CWRU \
-  --preprocess FFT \
+  --preprocess STFT \
   --ways 5 \
   --shots 5 \
   --query_shots 5 \
@@ -183,7 +183,7 @@ python train.py --mode train --algorithm cnn \
 python train.py --mode train --algorithm maml \
   --runtime_backend onnxruntime \
   --dataset CWRU \
-  --preprocess FFT \
+  --preprocess STFT \
   --ways 5 \
   --shots 5 \
   --train_domains 0,1,2 \
@@ -199,7 +199,7 @@ python train.py --mode train --algorithm maml \
 python train.py --mode train --algorithm protonet \
   --runtime_backend onnxruntime \
   --dataset CWRU \
-  --preprocess FFT \
+  --preprocess STFT \
   --ways 5 \
   --shots 5 \
   --query_shots 5 \
