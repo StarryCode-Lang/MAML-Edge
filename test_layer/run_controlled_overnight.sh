@@ -247,13 +247,13 @@ run_matrix_commands() {
 
   run_aux_step "aggregation" "benchmark_rows_export" \
     "${PYTHON_BIN}" test_layer/result_aggregator.py \
-    --summary_glob deploy_artifacts/*/compression_summary.json \
+    --summary_glob 'deploy_artifacts/*/compression_summary.json' \
     --output_format csv \
     --output_path logs/thesis_tables/controlled/benchmark_rows.csv || failures=$((failures + 1))
 
   run_aux_step "aggregation" "thesis_tables_export" \
     "${PYTHON_BIN}" test_layer/thesis_tables.py \
-    --summary_glob deploy_artifacts/*/compression_summary.json \
+    --summary_glob 'deploy_artifacts/*/compression_summary.json' \
     --output_dir logs/thesis_tables/controlled \
     --allow_missing || failures=$((failures + 1))
 
@@ -263,7 +263,7 @@ run_matrix_commands() {
 write_command_plan() {
   record_command_plan_header > "${COMMAND_PLAN_FILE}"
   PLAN_ONLY=1
-  run_matrix_commands >> "${COMMAND_PLAN_FILE}"
+  run_matrix_commands >> "${COMMAND_PLAN_FILE}" || true
   PLAN_ONLY=0
   chmod +x "${COMMAND_PLAN_FILE}"
 }
