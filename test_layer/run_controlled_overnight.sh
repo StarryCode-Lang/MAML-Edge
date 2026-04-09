@@ -26,6 +26,8 @@ TOTAL_PLANNED_STEPS=$((PLANNED_TRAIN_STEPS + PLANNED_AUX_STEPS))
 COMPLETED_STEPS=0
 FAILED_STEP_COUNT=0
 RUN_STARTED_EPOCH=0
+MONITOR_INTERVAL="${MONITOR_INTERVAL:-15}"
+MONITOR_TAIL_LINES="${MONITOR_TAIL_LINES:-4}"
 
 format_duration() {
   local total_seconds="$1"
@@ -58,6 +60,7 @@ print_run_header() {
   echo "Planned steps: ${TOTAL_PLANNED_STEPS} (train=${PLANNED_TRAIN_STEPS}, analysis=${PLANNED_AUX_STEPS})"
   echo "Logs: ${LOG_ROOT}"
   echo "Tables: ${TABLES_DIR}"
+  echo "Live monitor: every ${MONITOR_INTERVAL}s, tail ${MONITOR_TAIL_LINES} lines"
   echo
 }
 
@@ -101,6 +104,44 @@ announce_step_end() {
     "${FAILED_STEP_COUNT}" \
     "$(format_duration "${elapsed}")" \
     "${step_name}"
+}
+
+print_live_log_update() {
+  local log_path="$1"
+  local step_name="$2"
+  local elapsed=$(( $(date +%s) - RUN_STARTED_EPOCH ))
+  local live_lines
+  live_lines="$(grep -v '^$' "${log_path}" | tail -n "${MONITOR_TAIL_LINES}" || true)"
+  if [[ -z "${live_lines}" ]]; then
+    return 0
+  fi
+  echo
+  printf '[Live %s] %s\n' "$(format_duration "${elapsed}")" "${step_name}"
+  while IFS= read -r line; do
+    [[ -n "${line}" ]] && printf '  %s\n' "${line}"
+  done <<< "${live_lines}"
+}
+
+monitor_running_command() {
+  local cmd_pid="$1"
+  local log_path="$2"
+  local step_name="$3"
+  local last_line_count=-1
+  while kill -0 "${cmd_pid}" >/dev/null 2>&1; do
+    sleep "${MONITOR_INTERVAL}"
+    if ! kill -0 "${cmd_pid}" >/dev/null 2>&1; then
+      break
+    fi
+    if [[ ! -f "${log_path}" ]]; then
+      continue
+    fi
+    local current_line_count
+    current_line_count="$(wc -l < "${log_path}" 2>/dev/null || echo 0)"
+    if [[ "${current_line_count}" != "${last_line_count}" ]]; then
+      print_live_log_update "${log_path}" "${step_name}"
+      last_line_count="${current_line_count}"
+    fi
+  done
 }
 
 clean_outputs() {
@@ -186,7 +227,10 @@ run_logged_command() {
   (
     cd "${ROOT_DIR}"
     "$@"
-  ) >> "${log_path}" 2>&1
+  ) >> "${log_path}" 2>&1 &
+  local cmd_pid=$!
+  monitor_running_command "${cmd_pid}" "${log_path}" "${step_name}"
+  wait "${cmd_pid}"
   local rc=$?
   set -e
 
