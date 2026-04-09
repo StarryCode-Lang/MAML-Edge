@@ -243,7 +243,8 @@ def export_rows(rows, output_path=None, output_format='json'):
     payload = buffer.getvalue()
     if output_path:
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-        Path(output_path).write_text(payload, encoding='utf-8', newline='')
+        with open(output_path, 'w', encoding='utf-8', newline='') as file_pointer:
+            file_pointer.write(payload)
     return payload
 
 

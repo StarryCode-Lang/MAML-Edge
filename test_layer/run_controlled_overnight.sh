@@ -109,6 +109,10 @@ clean_outputs() {
   shopt -s nullglob
   rm -rf "${RUN_ROOT}" "${TABLES_DIR}" "${ROOT_DIR}/logs/thesis_runs/latest"
   rm -f "${ROOT_DIR}/logs/thesis_benchmark_rows.csv"
+  rm -f \
+    "${ROOT_DIR}"/logs/CNN_CWRU_*.log \
+    "${ROOT_DIR}"/logs/MAML_CWRU_*.log \
+    "${ROOT_DIR}"/logs/ProtoNet_CWRU_*.log
   rm -rf \
     "${ROOT_DIR}"/deploy_artifacts/CNN_CWRU_FFT_* \
     "${ROOT_DIR}"/deploy_artifacts/CNN_CWRU_STFT_* \
@@ -203,6 +207,21 @@ run_logged_command() {
   return "${rc}"
 }
 
+append_log_path_if_missing() {
+  local log_dir="$1"
+  shift
+  local -a command_args=("$@")
+  local argument
+  for argument in "${command_args[@]}"; do
+    if [[ "${argument}" == "--log_path" ]]; then
+      printf '%s\n' "${command_args[@]}"
+      return 0
+    fi
+  done
+  command_args+=("--log_path" "${log_dir}")
+  printf '%s\n' "${command_args[@]}"
+}
+
 run_train_step() {
   local preprocess="$1"
   local algorithm="$2"
@@ -210,11 +229,14 @@ run_train_step() {
   shift 3
 
   local summary_path="${ROOT_DIR}/deploy_artifacts/${experiment_title}/compression_summary.json"
+  local step_log_dir="${LOG_ROOT}/${preprocess}/${algorithm}"
   local attempt=1
   local success=1
+  local -a train_command=()
+  mapfile -t train_command < <(append_log_path_if_missing "${step_log_dir}" "$@")
 
   while [[ "${attempt}" -le "${MAX_ATTEMPTS}" ]]; do
-    if run_logged_command "${preprocess}" "${algorithm}" "${experiment_title}" "train" "1" "$@"; then
+    if run_logged_command "${preprocess}" "${algorithm}" "${experiment_title}" "train" "1" "${train_command[@]}"; then
       if [[ -f "${summary_path}" ]]; then
         success=0
         break
@@ -224,7 +246,6 @@ run_train_step() {
   done
 
   if [[ "${success}" -ne 0 && ! -f "${summary_path}" ]]; then
-    local -a train_command=("$@")
     local -a deploy_command=("${train_command[0]}" "deploy_layer/deploy.py" "${train_command[@]:4}")
     if run_logged_command "${preprocess}" "${algorithm}" "${experiment_title}__deploy_recovery" "recovery" "0" "${deploy_command[@]}"; then
       if [[ -f "${summary_path}" ]]; then
