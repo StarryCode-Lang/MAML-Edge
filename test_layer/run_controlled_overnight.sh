@@ -19,9 +19,7 @@ TABLES_DIR="${ROOT_DIR}/logs/thesis_tables/controlled"
 CURRENT_STEP_FILE="${RUN_ROOT}/current_step.txt"
 STATUS_FILE="${RUN_ROOT}/step_status.tsv"
 FAILED_STEPS_FILE="${RUN_ROOT}/failed_steps.txt"
-COMMAND_PLAN_FILE="${RUN_ROOT}/command_plan.sh"
 MAX_ATTEMPTS="${MAX_ATTEMPTS:-1}"
-PLAN_ONLY=0
 
 clean_outputs() {
   pkill -f "python .*train.py" >/dev/null 2>&1 || true
@@ -72,37 +70,11 @@ prepare_run_dirs() {
   } > "${RUN_ROOT}/environment.txt"
 }
 
-record_command_plan_header() {
-  cat <<EOF
-#!/usr/bin/env bash
-set -euo pipefail
-
-ROOT_DIR="\${ROOT_DIR:-$(printf '%q' "${ROOT_DIR}")}"
-PYTHON_BIN="\${PYTHON_BIN:-$(printf '%q' "${PYTHON_BIN}")}"
-
-cd "\${ROOT_DIR}"
-
-EOF
-}
-
-print_command() {
-  local step_name="$1"
-  shift
-  printf '# %s\n' "${step_name}"
-  printf '%q ' "$@"
-  printf '\n\n'
-}
-
 run_logged_command() {
   local preprocess="$1"
   local algorithm="$2"
   local step_name="$3"
   shift 3
-
-  if [[ "${PLAN_ONLY}" == "1" ]]; then
-    print_command "${step_name}" "$@"
-    return 0
-  fi
 
   local log_path="${LOG_ROOT}/${preprocess}/${algorithm}/${step_name}.log"
   mkdir -p "$(dirname "${log_path}")"
@@ -161,7 +133,7 @@ run_train_step() {
     fi
   fi
 
-  if [[ "${PLAN_ONLY}" == "0" && "${success}" -ne 0 ]]; then
+  if [[ "${success}" -ne 0 ]]; then
     echo "${experiment_title}" >> "${FAILED_STEPS_FILE}"
   fi
   return "${success}"
@@ -172,9 +144,7 @@ run_aux_step() {
   local step_name="$2"
   shift 2
   if ! run_logged_command "test_layer" "${group_name}" "${step_name}" "$@"; then
-    if [[ "${PLAN_ONLY}" == "0" ]]; then
-      echo "${step_name}" >> "${FAILED_STEPS_FILE}"
-    fi
+    echo "${step_name}" >> "${FAILED_STEPS_FILE}"
     return 1
   fi
 }
@@ -260,17 +230,8 @@ run_matrix_commands() {
   return "${failures}"
 }
 
-write_command_plan() {
-  record_command_plan_header > "${COMMAND_PLAN_FILE}"
-  PLAN_ONLY=1
-  run_matrix_commands >> "${COMMAND_PLAN_FILE}" || true
-  PLAN_ONLY=0
-  chmod +x "${COMMAND_PLAN_FILE}"
-}
-
 run_internal() {
   prepare_run_dirs
-  write_command_plan
   "${PYTHON_BIN}" -c "import torch, learn2learn, onnxruntime, numpy" >/dev/null
   if run_matrix_commands; then
     exit 0
@@ -287,11 +248,6 @@ case "${ACTION}" in
   clean)
     clean_outputs
     ;;
-  print)
-    mkdir -p "${RUN_ROOT}"
-    write_command_plan
-    cat "${COMMAND_PLAN_FILE}"
-    ;;
   restart)
     clean_outputs
     start_run
@@ -300,7 +256,7 @@ case "${ACTION}" in
     start_run
     ;;
   *)
-    echo "Usage: bash test_layer/run_controlled_overnight.sh [clean|print|run|restart]" >&2
+    echo "Usage: bash test_layer/run_controlled_overnight.sh [clean|run|restart]" >&2
     exit 1
     ;;
 esac
