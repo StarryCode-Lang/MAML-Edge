@@ -61,6 +61,18 @@ def get_metrics_block(summary, block_name):
     return summary.get(block_name) or {}
 
 
+def detect_primary_accuracy_protocol(summary):
+    if summary.get('deployment_int8_metrics'):
+        return 'deployment_int8'
+    if summary.get('deployment_float_metrics'):
+        return 'deployment_float'
+    if summary.get('baseline_deployment_metrics'):
+        return 'deployment_baseline'
+    if summary.get('meta_eval_before_prune'):
+        return 'episodic_target'
+    return None
+
+
 def build_benchmark_row(summary):
     experiment = summary.get('experiment') or {}
     legacy = _parse_experiment_title(summary.get('experiment_title'))
@@ -78,6 +90,7 @@ def build_benchmark_row(summary):
 
     return {
         'summary_path': summary.get('_summary_path') or summary.get('float_model_path') or '',
+        'summary_version': summary.get('summary_version'),
         'experiment_title': summary.get('experiment_title'),
         'algorithm': summary.get('algorithm') or experiment.get('algorithm') or legacy.get('algorithm'),
         'dataset': experiment.get('dataset') or legacy.get('dataset'),
@@ -92,14 +105,17 @@ def build_benchmark_row(summary):
         'deployment_type': summary.get('deployment_type'),
         'deployment_backend': summary.get('deployment_backend'),
         'accuracy': deployment_metrics.get('accuracy'),
+        'primary_accuracy_protocol': detect_primary_accuracy_protocol(summary),
         'avg_latency_ms': deployment_metrics.get('avg_latency_ms'),
         'loss': deployment_metrics.get('loss'),
+        'episodic_target_accuracy': pre_prune_metrics.get('accuracy'),
+        'episodic_target_loss': pre_prune_metrics.get('loss'),
         'pre_prune_accuracy': pre_prune_metrics.get('accuracy'),
         'pre_prune_loss': pre_prune_metrics.get('loss'),
         'post_recovery_accuracy': post_recovery_metrics.get('accuracy'),
         'post_recovery_loss': post_recovery_metrics.get('loss'),
-        'baseline_deployment_accuracy': baseline_deployment_metrics.get('accuracy', pre_prune_metrics.get('accuracy')),
-        'baseline_deployment_loss': baseline_deployment_metrics.get('loss', pre_prune_metrics.get('loss')),
+        'baseline_deployment_accuracy': baseline_deployment_metrics.get('accuracy'),
+        'baseline_deployment_loss': baseline_deployment_metrics.get('loss'),
         'baseline_avg_latency_ms': baseline_deployment_metrics.get('avg_latency_ms'),
         'float_accuracy': float_deployment_metrics.get('accuracy'),
         'float_loss': float_deployment_metrics.get('loss'),
@@ -166,6 +182,7 @@ def build_compression_rows(summary):
             'parameter_count': row.get('baseline_params'),
             'model_size_mb': row.get('baseline_float_model_size_mb'),
             'runtime_backend': row.get('runtime_backend'),
+            'metric_protocol': 'deployment_baseline',
             'latency_semantics': LATENCY_SEMANTICS,
         })
 
@@ -179,6 +196,7 @@ def build_compression_rows(summary):
             'parameter_count': row.get('pruned_params'),
             'model_size_mb': row.get('float_model_size_mb'),
             'runtime_backend': row.get('runtime_backend'),
+            'metric_protocol': 'deployment_float',
             'latency_semantics': LATENCY_SEMANTICS,
         })
 
@@ -192,6 +210,7 @@ def build_compression_rows(summary):
             'parameter_count': row.get('pruned_params'),
             'model_size_mb': row.get('int8_model_size_mb'),
             'runtime_backend': row.get('runtime_backend'),
+            'metric_protocol': 'deployment_int8',
             'latency_semantics': LATENCY_SEMANTICS,
         })
 

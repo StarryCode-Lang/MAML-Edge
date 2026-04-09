@@ -96,7 +96,7 @@ def build_dataset_from_args(args, domain):
             return HST_FFT(domain, args.data_dir_path, labels=args.fault_labels)
         return CWRU_FFT(domain, args.data_dir_path, label_subset=args.fault_labels)
     if args.dataset == 'HST':
-        return HST(domain, args.data_dir_path, args.preprocess, label_subset=range(len(args.fault_labels)))
+        return HST(domain, args.data_dir_path, args.preprocess, label_subset=args.fault_labels)
     return CWRU(domain, args.data_dir_path, args.preprocess, label_subset=args.fault_labels)
 
 

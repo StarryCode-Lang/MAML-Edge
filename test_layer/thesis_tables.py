@@ -20,6 +20,13 @@ from test_layer.thesis_config import (
 )
 
 
+ACCURACY_PROTOCOLS = (
+    ('deployment_baseline', 'baseline_deployment_accuracy', 'baseline_avg_latency_ms'),
+    ('episodic_target', 'episodic_target_accuracy', None),
+    ('deployment_selected', 'accuracy', 'avg_latency_ms'),
+)
+
+
 def discover_summary_paths(pattern):
     return sorted(ROOT_DIR.glob(pattern))
 
@@ -60,23 +67,36 @@ def _require_row(rows, algorithm, shots, allow_missing=False):
     )
 
 
-def build_model_performance_table(rows, allow_missing=False):
+def _resolve_accuracy_protocol(rows):
+    if not rows:
+        return None, None, None
+    for protocol_name, accuracy_field, latency_field in ACCURACY_PROTOCOLS:
+        if all(row.get(accuracy_field) is not None for _, row in rows):
+            return protocol_name, accuracy_field, latency_field
+    for protocol_name, accuracy_field, latency_field in ACCURACY_PROTOCOLS:
+        if any(row.get(accuracy_field) is not None for _, row in rows):
+            return protocol_name, accuracy_field, latency_field
+    return None, None, None
+
+
+def build_model_performance_table(rows, accuracy_field, metric_protocol, allow_missing=False):
     table_rows = []
     for algorithm in THESIS_MODEL_COMPARE_ALGORITHMS:
         _, row = _require_row(rows, algorithm=algorithm, shots=5, allow_missing=allow_missing)
         if row is None:
             continue
-        accuracy_value = row.get('pre_prune_accuracy') or row.get('baseline_deployment_accuracy') or row.get('accuracy')
+        accuracy_value = row.get(accuracy_field) if accuracy_field else None
         table_rows.append({
             'model': str(algorithm).upper() if algorithm != 'protonet' else 'ProtoNet',
             'accuracy': accuracy_value,
             'accuracy_percent': _percent_value(accuracy_value),
+            'metric_protocol': metric_protocol,
             'experiment_title': row.get('experiment_title'),
         })
     return table_rows
 
 
-def build_preprocess_model_matrix_table(rows):
+def build_preprocess_model_matrix_table(rows, accuracy_field, latency_field, metric_protocol):
     table_rows = []
     for preprocess in THESIS_ALL_PREPROCESSES:
         for algorithm in THESIS_MODEL_COMPARE_ALGORITHMS:
@@ -93,31 +113,34 @@ def build_preprocess_model_matrix_table(rows):
                     break
                 if row is None:
                     continue
-                accuracy_value = row.get('pre_prune_accuracy') or row.get('baseline_deployment_accuracy') or row.get('accuracy')
+                accuracy_value = row.get(accuracy_field) if accuracy_field else None
+                latency_value = row.get(latency_field) if latency_field else None
                 table_rows.append({
                     'preprocess': preprocess,
                     'model': str(algorithm).upper() if algorithm != 'protonet' else 'ProtoNet',
                     'shots': shots,
                     'accuracy': accuracy_value,
                     'accuracy_percent': _percent_value(accuracy_value),
-                    'latency_ms': _round_or_none(row.get('baseline_avg_latency_ms') or row.get('avg_latency_ms'), 4),
+                    'latency_ms': _round_or_none(latency_value, 4),
+                    'metric_protocol': metric_protocol,
                     'experiment_title': row.get('experiment_title'),
                 })
     return table_rows
 
 
-def build_few_shot_table(rows, allow_missing=False):
+def build_few_shot_table(rows, accuracy_field, metric_protocol, allow_missing=False):
     table_rows = []
     for shots in THESIS_FEW_SHOT_VALUES:
         _, row = _require_row(rows, algorithm=THESIS_PRIMARY_MODEL, shots=shots, allow_missing=allow_missing)
         if row is None:
             continue
-        accuracy_value = row.get('pre_prune_accuracy') or row.get('baseline_deployment_accuracy') or row.get('accuracy')
+        accuracy_value = row.get(accuracy_field) if accuracy_field else None
         table_rows.append({
             'model': THESIS_PRIMARY_MODEL.upper(),
             'shots': shots,
             'accuracy': accuracy_value,
             'accuracy_percent': _percent_value(accuracy_value),
+            'metric_protocol': metric_protocol,
             'experiment_title': row.get('experiment_title'),
         })
     return table_rows
@@ -144,6 +167,7 @@ def build_compression_table(rows, allow_missing=False):
             'parameter_count': row.get('parameter_count'),
             'model_size_mb': row.get('model_size_mb'),
             'runtime_backend': row.get('runtime_backend'),
+            'metric_protocol': row.get('metric_protocol'),
         })
     return table_rows
 
@@ -228,6 +252,7 @@ def build_markdown_report(model_table, few_shot_table, compression_table, system
     display_model_table = [
         {
             'Model': row.get('model'),
+            'Metric Protocol': row.get('metric_protocol'),
             'Accuracy (%)': _display_value(row.get('accuracy_percent'), '%'),
         }
         for row in model_table
@@ -236,6 +261,7 @@ def build_markdown_report(model_table, few_shot_table, compression_table, system
         {
             'Model': row.get('model'),
             'Shot': row.get('shots'),
+            'Metric Protocol': row.get('metric_protocol'),
             'Accuracy (%)': _display_value(row.get('accuracy_percent'), '%'),
         }
         for row in few_shot_table
@@ -243,6 +269,7 @@ def build_markdown_report(model_table, few_shot_table, compression_table, system
     display_compression_table = [
         {
             'Variant': row.get('model_variant'),
+            'Metric Protocol': row.get('metric_protocol'),
             'Accuracy (%)': _display_value(row.get('accuracy_percent'), '%'),
             'Latency (ms)': _display_value(row.get('latency_ms')),
             'Parameter Count': _display_value(row.get('parameter_count')),
@@ -288,6 +315,7 @@ def build_overnight_markdown_report(preprocess_table, model_table, few_shot_tabl
             'Preprocess': row.get('preprocess'),
             'Model': row.get('model'),
             'Shot': row.get('shots'),
+            'Metric Protocol': row.get('metric_protocol'),
             'Accuracy (%)': _display_value(row.get('accuracy_percent'), '%'),
             'Latency (ms)': _display_value(row.get('latency_ms')),
         }
@@ -360,9 +388,26 @@ def main():
 
     all_rows = load_all_rows(args.summary_glob)
     rows = [(summary, row) for summary, row in all_rows if row_matches_thesis_profile(row)]
-    preprocess_matrix = build_preprocess_model_matrix_table(all_rows)
-    model_table = build_model_performance_table(rows, allow_missing=args.allow_missing)
-    few_shot_table = build_few_shot_table(rows, allow_missing=args.allow_missing)
+    matrix_protocol, matrix_accuracy_field, matrix_latency_field = _resolve_accuracy_protocol(all_rows)
+    thesis_protocol, thesis_accuracy_field, _ = _resolve_accuracy_protocol(rows)
+    preprocess_matrix = build_preprocess_model_matrix_table(
+        all_rows,
+        accuracy_field=matrix_accuracy_field,
+        latency_field=matrix_latency_field,
+        metric_protocol=matrix_protocol,
+    )
+    model_table = build_model_performance_table(
+        rows,
+        accuracy_field=thesis_accuracy_field,
+        metric_protocol=thesis_protocol,
+        allow_missing=args.allow_missing,
+    )
+    few_shot_table = build_few_shot_table(
+        rows,
+        accuracy_field=thesis_accuracy_field,
+        metric_protocol=thesis_protocol,
+        allow_missing=args.allow_missing,
+    )
     compression_table = build_compression_table(rows, allow_missing=args.allow_missing)
     system_stats = _load_system_stats(path=args.system_stats_path, url=args.system_stats_url)
     system_table = build_system_performance_table(system_stats, channel=args.system_channel)

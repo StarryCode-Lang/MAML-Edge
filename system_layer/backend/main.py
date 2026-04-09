@@ -107,6 +107,13 @@ def _list_summary_catalog():
     return catalog
 
 
+def _resolve_repo_path(path_value):
+    candidate = Path(path_value)
+    if not candidate.is_absolute():
+        candidate = Path(ROOT_DIR) / candidate
+    return candidate
+
+
 def _detect_capabilities():
     torch_available = importlib.util.find_spec('torch') is not None
     return {
@@ -114,16 +121,17 @@ def _detect_capabilities():
         'supports_mqtt_publish': True,
         'supports_direct_simulation': True,
         'supports_runtime_adaptation': predictor.service.adaptation_supported(),
-        'webui_path': '/',
+        'webui_path': '/webui',
     }
 
 
 def _reload_predictor(summary_path=None, runtime_backend=None, prefer_int8=None):
     global predictor
     if summary_path is not None:
-        if not os.path.exists(summary_path):
+        resolved_summary_path = _resolve_repo_path(summary_path)
+        if not resolved_summary_path.exists():
             raise FileNotFoundError('Compression summary not found: {}'.format(summary_path))
-        settings.model_summary_path = summary_path
+        settings.model_summary_path = str(resolved_summary_path)
     if runtime_backend is not None:
         settings.runtime_backend = runtime_backend
     if prefer_int8 is not None:
