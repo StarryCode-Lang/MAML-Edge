@@ -26,7 +26,6 @@ PLAN_ONLY=0
 clean_outputs() {
   pkill -f "python .*train.py" >/dev/null 2>&1 || true
   pkill -f "python .*deploy.py" >/dev/null 2>&1 || true
-  pkill -f "bash .*run_controlled_overnight.sh" >/dev/null 2>&1 || true
   shopt -s nullglob
   rm -rf "${RUN_ROOT}" "${TABLES_DIR}" "${ROOT_DIR}/logs/thesis_runs/latest"
   rm -f "${ROOT_DIR}/logs/thesis_benchmark_rows.csv"
