@@ -16,8 +16,6 @@ RUN_ROOT="${ROOT_DIR}/logs/overnight_runs/controlled"
 LATEST_DIR="${RUN_ROOT}/latest"
 LOG_ROOT="${LATEST_DIR}/logs"
 TABLES_DIR="${ROOT_DIR}/logs/thesis_tables/controlled"
-STDOUT_LOG="${RUN_ROOT}/overnight_stdout.log"
-PID_FILE="${RUN_ROOT}/controlled_overnight.pid"
 CURRENT_STEP_FILE="${RUN_ROOT}/current_step.txt"
 STATUS_FILE="${RUN_ROOT}/step_status.tsv"
 FAILED_STEPS_FILE="${RUN_ROOT}/failed_steps.txt"
@@ -28,7 +26,7 @@ PLAN_ONLY=0
 clean_outputs() {
   pkill -f "python .*train.py" >/dev/null 2>&1 || true
   pkill -f "python .*deploy.py" >/dev/null 2>&1 || true
-  pkill -f "bash .*run_controlled_overnight.sh _run_internal" >/dev/null 2>&1 || true
+  pkill -f "bash .*run_controlled_overnight.sh" >/dev/null 2>&1 || true
   shopt -s nullglob
   rm -rf "${RUN_ROOT}" "${TABLES_DIR}" "${ROOT_DIR}/logs/thesis_runs/latest"
   rm -f "${ROOT_DIR}/logs/thesis_benchmark_rows.csv"
@@ -282,39 +280,13 @@ run_internal() {
 }
 
 start_run() {
-  mkdir -p "${RUN_ROOT}"
-  nohup bash "${ROOT_DIR}/test_layer/run_controlled_overnight.sh" _run_internal > "${STDOUT_LOG}" 2>&1 < /dev/null &
-  echo $! > "${PID_FILE}"
-  echo "PID=$(cat "${PID_FILE}")"
-}
-
-show_status() {
-  if [[ -f "${PID_FILE}" ]]; then
-    echo "PID=$(cat "${PID_FILE}")"
-    ps -fp "$(cat "${PID_FILE}")" || true
-  else
-    echo "PID file not found."
-  fi
-  if [[ -f "${CURRENT_STEP_FILE}" ]]; then
-    echo "CURRENT_STEP=$(cat "${CURRENT_STEP_FILE}")"
-  fi
-  if compgen -G "${LOG_ROOT}/*/*/*.log" > /dev/null; then
-    tail -n 40 "$(ls -t ${LOG_ROOT}/*/*/*.log | head -n 1)"
-  else
-    echo "No experiment logs yet."
-  fi
+  run_internal
 }
 
 ACTION="${1:-restart}"
 case "${ACTION}" in
   clean)
     clean_outputs
-    ;;
-  start)
-    start_run
-    ;;
-  status)
-    show_status
     ;;
   print)
     mkdir -p "${RUN_ROOT}"
@@ -325,11 +297,11 @@ case "${ACTION}" in
     clean_outputs
     start_run
     ;;
-  _run_internal)
-    run_internal
+  run)
+    start_run
     ;;
   *)
-    echo "Usage: bash test_layer/run_controlled_overnight.sh [restart|start|clean|status|print]" >&2
+    echo "Usage: bash test_layer/run_controlled_overnight.sh [clean|print|run|restart]" >&2
     exit 1
     ;;
 esac
