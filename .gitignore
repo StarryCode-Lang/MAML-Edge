@@ -19,3 +19,7 @@ system_layer/storage/runtime/
 logs/overnight_runs/
 logs/thesis_runs/
 logs/thesis_tables/
+
+checkpoints/
+deploy_artifacts/
+logs/

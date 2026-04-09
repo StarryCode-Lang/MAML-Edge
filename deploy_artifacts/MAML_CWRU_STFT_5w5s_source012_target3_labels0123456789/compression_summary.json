@@ -1,34 +1,77 @@
 {
+  "summary_version": 2,
   "experiment_title": "MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789",
   "algorithm": "maml",
+  "experiment": {
+    "experiment_title": "MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789",
+    "algorithm": "maml",
+    "dataset": "CWRU",
+    "preprocess": "STFT",
+    "ways": 5,
+    "shots": 5,
+    "query_shots": 5,
+    "train_domains": [
+      0,
+      1,
+      2
+    ],
+    "test_domain": 3,
+    "fault_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "eval_support_ratio": 0.5,
+    "runtime_backend": "onnxruntime",
+    "onnx_opset": 17,
+    "prune_ratio": 0.4,
+    "enable_qat_recovery": false,
+    "compression_output_path": "./deploy_artifacts"
+  },
   "best_training_record": {
-    "iteration": 64,
-    "meta_train_acc": 1.0,
-    "meta_train_loss": 0.07970203988952562,
-    "meta_test_acc": 0.994799997806549,
-    "meta_test_loss": 0.1029098017886281
+    "iteration": 79,
+    "meta_train_acc": 0.9824999943375587,
+    "meta_train_loss": 0.12451968248933554,
+    "meta_test_acc": 0.9935999965667724,
+    "meta_test_loss": 0.12854711204767227
   },
   "meta_eval_before_prune": {
-    "loss": 0.12666795644909143,
-    "accuracy": 0.985599993467331
+    "loss": 0.1583575986325741,
+    "accuracy": 0.9759999907016754
   },
   "meta_eval_after_recovery": {
-    "loss": 0.19093538247048855,
-    "accuracy": 0.9815999925136566
+    "loss": 0.17678086340427399,
+    "accuracy": 0.9735999882221222
+  },
+  "baseline_deployment_metrics": {
+    "loss": 0.05928469076752663,
+    "accuracy": 0.9989462592202318,
+    "avg_latency_ms": 0.9468664367093427,
+    "providers": [
+      "CPUExecutionProvider"
+    ],
+    "runtime_backend": "onnxruntime"
   },
   "deployment_float_metrics": {
-    "loss": 0.06753195822238922,
-    "accuracy": 0.9989462592202318,
-    "avg_latency_ms": 0.6049487060691584,
+    "loss": 0.03945491835474968,
+    "accuracy": 1.0,
+    "avg_latency_ms": 0.8546966505879722,
     "providers": [
       "CPUExecutionProvider"
     ],
     "runtime_backend": "onnxruntime"
   },
   "deployment_int8_metrics": {
-    "loss": 0.07305116951465607,
-    "accuracy": 0.9989462592202318,
-    "avg_latency_ms": 0.5254362002250643,
+    "loss": 0.04026760160923004,
+    "accuracy": 1.0,
+    "avg_latency_ms": 0.7251099701990443,
     "providers": [
       "CPUExecutionProvider"
     ],
@@ -43,13 +86,56 @@
       38
     ]
   },
+  "deployment_type": "classifier",
+  "selected_labels": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "baseline_float_model_path": "./deploy_artifacts/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_baseline_float.onnx",
   "float_model_path": "./deploy_artifacts/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_float.onnx",
   "int8_model_path": "./deploy_artifacts/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_int8.onnx",
+  "baseline_prototype_path": null,
   "prototype_path": null,
   "quantization_warning": null,
   "deployment_backend": "onnxruntime",
+  "training_artifacts": {
+    "best_checkpoint_path": "./checkpoints/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_best.pt",
+    "history_path": "./checkpoints/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_history.json"
+  },
+  "artifact_paths": {
+    "baseline_float_model_path": "./deploy_artifacts/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_baseline_float.onnx",
+    "float_model_path": "./deploy_artifacts/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_float.onnx",
+    "int8_model_path": "./deploy_artifacts/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_int8.onnx",
+    "baseline_prototype_path": null,
+    "prototype_path": null,
+    "best_checkpoint_path": "./checkpoints/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_best.pt",
+    "history_path": "./checkpoints/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_history.json"
+  },
+  "artifact_sizes_bytes": {
+    "baseline_float_model": 457250,
+    "float_model": 166570,
+    "int8_model": 59703,
+    "baseline_prototype_bundle": null,
+    "prototype_bundle": null,
+    "best_checkpoint": 468196,
+    "history_json": 16289
+  },
+  "artifact_sizes_mb": {
+    "baseline_float_model": 0.436068,
+    "float_model": 0.158854,
+    "int8_model": 0.056937,
+    "baseline_prototype_bundle": null,
+    "prototype_bundle": null,
+    "best_checkpoint": 0.446507,
+    "history_json": 0.015534
+  },
   "model_profile": {
     "baseline_params": 113738,
-    "pruned_params": 40860
+    "pruned_params": 40860,
+    "parameter_reduction_ratio": 0.6407533102393219,
+    "prune_ratio": 0.4
   }
 }

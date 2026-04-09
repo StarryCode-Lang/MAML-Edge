@@ -1,34 +1,77 @@
 {
+  "summary_version": 2,
   "experiment_title": "ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789",
   "algorithm": "protonet",
+  "experiment": {
+    "experiment_title": "ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789",
+    "algorithm": "protonet",
+    "dataset": "CWRU",
+    "preprocess": "STFT",
+    "ways": 5,
+    "shots": 5,
+    "query_shots": 5,
+    "train_domains": [
+      0,
+      1,
+      2
+    ],
+    "test_domain": 3,
+    "fault_labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "eval_support_ratio": 0.5,
+    "runtime_backend": "onnxruntime",
+    "onnx_opset": 17,
+    "prune_ratio": 0.4,
+    "enable_qat_recovery": false,
+    "compression_output_path": "./deploy_artifacts"
+  },
   "best_training_record": {
     "iteration": 54,
     "meta_train_acc": 1.0,
-    "meta_train_loss": 0.001057868757094127,
-    "meta_test_acc": 0.9987999993562698,
-    "meta_test_loss": 0.010969723711514234
+    "meta_train_loss": 0.0010204314753536892,
+    "meta_test_acc": 0.9991999995708466,
+    "meta_test_loss": 0.008670376853915513
   },
   "meta_eval_before_prune": {
-    "loss": 0.011636946566941333,
+    "loss": 0.015123836478978773,
     "accuracy": 0.9975999987125397
   },
   "meta_eval_after_recovery": {
-    "loss": 0.022601946472132112,
-    "accuracy": 0.9939999967813492
+    "loss": 0.011989008803798242,
+    "accuracy": 0.9967999982833863
+  },
+  "baseline_deployment_metrics": {
+    "loss": 0.0033323492389172316,
+    "accuracy": 0.9989462592202318,
+    "avg_latency_ms": 0.8388962420007828,
+    "providers": [
+      "CPUExecutionProvider"
+    ],
+    "runtime_backend": "onnxruntime"
   },
   "deployment_float_metrics": {
-    "loss": 0.009642145596444607,
-    "accuracy": 0.9978925184404637,
-    "avg_latency_ms": 0.929826340619455,
+    "loss": 0.004351763054728508,
+    "accuracy": 0.9989462592202318,
+    "avg_latency_ms": 0.6180394625387403,
     "providers": [
       "CPUExecutionProvider"
     ],
     "runtime_backend": "onnxruntime"
   },
   "deployment_int8_metrics": {
-    "loss": 0.010604755021631718,
-    "accuracy": 0.9978925184404637,
-    "avg_latency_ms": 0.7580396207981793,
+    "loss": 0.004222108982503414,
+    "accuracy": 0.9989462592202318,
+    "avg_latency_ms": 0.8097499436271958,
     "providers": [
       "CPUExecutionProvider"
     ],
@@ -52,6 +95,7 @@
       13,
       15,
       16,
+      17,
       18,
       20,
       22,
@@ -78,18 +122,60 @@
       56,
       57,
       59,
-      61,
       62,
       63
     ]
   },
+  "deployment_type": "encoder_with_prototypes",
+  "selected_labels": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "baseline_float_model_path": "./deploy_artifacts/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_baseline_float.onnx",
   "float_model_path": "./deploy_artifacts/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_float.onnx",
   "int8_model_path": "./deploy_artifacts/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_int8.onnx",
+  "baseline_prototype_path": "./deploy_artifacts/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_baseline_float_prototypes.npz",
   "prototype_path": "./deploy_artifacts/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_float_prototypes.npz",
   "quantization_warning": null,
   "deployment_backend": "onnxruntime",
+  "training_artifacts": {
+    "best_checkpoint_path": "./checkpoints/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_best.pt",
+    "history_path": "./checkpoints/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_history.json"
+  },
+  "artifact_paths": {
+    "baseline_float_model_path": "./deploy_artifacts/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_baseline_float.onnx",
+    "float_model_path": "./deploy_artifacts/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_float.onnx",
+    "int8_model_path": "./deploy_artifacts/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_int8.onnx",
+    "baseline_prototype_path": "./deploy_artifacts/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_baseline_float_prototypes.npz",
+    "prototype_path": "./deploy_artifacts/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_float_prototypes.npz",
+    "best_checkpoint_path": "./checkpoints/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_best.pt",
+    "history_path": "./checkpoints/ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789_history.json"
+  },
+  "artifact_sizes_bytes": {
+    "baseline_float_model": 454016,
+    "float_model": 164376,
+    "int8_model": 56663,
+    "baseline_prototype_bundle": 1856,
+    "prototype_bundle": 1336,
+    "best_checkpoint": 465154,
+    "history_json": 15808
+  },
+  "artifact_sizes_mb": {
+    "baseline_float_model": 0.432983,
+    "float_model": 0.156761,
+    "int8_model": 0.054038,
+    "baseline_prototype_bundle": 0.00177,
+    "prototype_bundle": 0.001274,
+    "best_checkpoint": 0.443605,
+    "history_json": 0.015076
+  },
   "model_profile": {
     "baseline_params": 113088,
-    "pruned_params": 40470
+    "pruned_params": 40470,
+    "parameter_reduction_ratio": 0.6421370967741935,
+    "prune_ratio": 0.4
   }
 }
