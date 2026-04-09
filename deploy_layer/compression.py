@@ -3,7 +3,6 @@ import logging
 import os
 from pathlib import Path
 
-import learn2learn as l2l
 import numpy as np
 import torch
 
@@ -24,6 +23,17 @@ from model_layer.utils import (
     protonet_fast_adapt,
     write_json,
 )
+
+
+def _require_learn2learn():
+    try:
+        import learn2learn as l2l  # type: ignore
+    except ImportError as exc:
+        raise ImportError(
+            'learn2learn is required for MAML compression/evaluation paths. '
+            'Install it in the active Python environment before running MAML deployment flows.'
+        ) from exc
+    return l2l
 
 
 def _safe_file_size_bytes(path):
@@ -396,6 +406,7 @@ def recover_pruned_model(algorithm, args, model, train_tasks, device):
 
 
 def recover_pruned_maml_model(args, model, train_tasks, device):
+    l2l = _require_learn2learn()
     model = model.to(device)
     model.train()
     maml_wrapper = l2l.algorithms.MAML(model, lr=args.fast_lr, first_order=args.first_order)
@@ -485,6 +496,7 @@ def evaluate_meta_model(algorithm, args, model, test_dataset, test_pools, device
     accuracy_sum = 0.0
 
     if algorithm == 'maml':
+        l2l = _require_learn2learn()
         model.train()
         maml_wrapper = l2l.algorithms.MAML(model, lr=args.fast_lr, first_order=args.first_order)
         for episode in range(args.test_task_num):
@@ -678,6 +690,7 @@ def build_fixed_deployment_split(dataset, support_pools, query_pools, ways, shot
 
 
 def adapt_maml_for_deployment(args, model, support_data, support_labels, device):
+    l2l = _require_learn2learn()
     base_model = copy.deepcopy(model).to(device).train()
     learner = l2l.algorithms.MAML(base_model, lr=args.fast_lr, first_order=args.first_order).clone()
     loss = nn.CrossEntropyLoss(reduction='mean')

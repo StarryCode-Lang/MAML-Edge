@@ -16,9 +16,9 @@ from test_layer.experiment_runner import (
     infer_expected_summary_path_from_config,
 )
 from test_layer.thesis_config import (
-    OVERNIGHT_PRESET_NAME,
+    CONTROLLED_OVERNIGHT_PRESET_NAME,
     THESIS_DEFAULT_SYSTEM_CHANNEL,
-    build_overnight_experiment_records,
+    build_controlled_overnight_records,
     row_matches_thesis_profile,
 )
 from test_layer.thesis_tables import (
@@ -39,6 +39,12 @@ def _resolve_deploy_command(train_command, algorithm):
         algorithm,
         *train_command[6:],
     ]
+
+
+def _build_log_path(log_dir, config, expected_summary_path):
+    preprocess_dir = str(config.get('preprocess', 'unknown')).lower()
+    algorithm_dir = str(config.get('algorithm', 'unknown')).lower()
+    return log_dir / preprocess_dir / algorithm_dir / '{}.log'.format(expected_summary_path.parent.name)
 
 
 def _run_logged_command(command, log_path):
@@ -65,6 +71,26 @@ def _load_all_rows(summary_paths):
         row = build_benchmark_row(summary)
         rows.append((summary, row))
     return rows
+
+
+def _persist_outputs(manifest_dir, output_dir, output_format, records, benchmark_rows, summary_paths, args):
+    export_manifest(
+        {
+            'generated_at': datetime.now().isoformat(timespec='seconds'),
+            'preset': args.preset,
+            'max_attempts': args.max_attempts,
+            'skip_existing': args.skip_existing,
+            'records': records,
+            'benchmark_rows': benchmark_rows,
+        },
+        manifest_dir,
+    )
+    export_rows(
+        benchmark_rows,
+        output_path=str(manifest_dir / 'benchmark_rows.{}'.format(output_format)),
+        output_format=output_format,
+    )
+    _export_tables(output_dir, output_format, summary_paths)
 
 
 def _export_tables(output_dir, output_format, summary_paths):
@@ -106,15 +132,20 @@ def _export_tables(output_dir, output_format, summary_paths):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Run the full overnight A10 experiment pipeline and export benchmark/table artifacts.',
+        description='Run the controlled overnight experiment pipeline and export benchmark/table artifacts.',
     )
-    parser.add_argument('--preset', type=str, default=OVERNIGHT_PRESET_NAME, choices=[OVERNIGHT_PRESET_NAME])
+    parser.add_argument(
+        '--preset',
+        type=str,
+        default=CONTROLLED_OVERNIGHT_PRESET_NAME,
+        choices=[CONTROLLED_OVERNIGHT_PRESET_NAME],
+    )
     parser.add_argument('--max_attempts', type=int, default=2,
                         help='Maximum train attempts per experiment before marking it failed.')
     parser.add_argument('--skip_existing', action='store_true',
                         help='Skip experiments whose compression summary already exists.')
-    parser.add_argument('--manifest_dir', type=str, default='logs/overnight_runs/latest')
-    parser.add_argument('--tables_dir', type=str, default='logs/thesis_tables')
+    parser.add_argument('--manifest_dir', type=str, default='logs/overnight_runs/controlled/latest')
+    parser.add_argument('--tables_dir', type=str, default='logs/thesis_tables/controlled')
     parser.add_argument('--output_format', type=str, default='csv', choices=['json', 'csv'])
     args = parser.parse_args()
 
@@ -123,12 +154,12 @@ def main():
     summary_paths = []
     manifest_dir = ROOT_DIR / args.manifest_dir
     log_dir = manifest_dir / 'logs'
-    configs = build_overnight_experiment_records()
+    configs = build_controlled_overnight_records()
 
     for config in configs:
         command = build_command(config)
         expected_summary_path = infer_expected_summary_path_from_config(config)
-        log_path = log_dir / '{}.log'.format(expected_summary_path.parent.name)
+        log_path = _build_log_path(log_dir, config, expected_summary_path)
         record = {
             'generated_at': datetime.now().isoformat(timespec='seconds'),
             'config': config,
@@ -148,6 +179,7 @@ def main():
             summary_paths.append(expected_summary_path)
             record['status'] = 'skipped_existing'
             records.append(record)
+            _persist_outputs(manifest_dir, ROOT_DIR / args.tables_dir, args.output_format, records, benchmark_rows, summary_paths, args)
             continue
 
         for attempt in range(1, args.max_attempts + 1):
@@ -171,25 +203,9 @@ def main():
         else:
             record['status'] = 'failed'
         records.append(record)
+        _persist_outputs(manifest_dir, ROOT_DIR / args.tables_dir, args.output_format, records, benchmark_rows, summary_paths, args)
 
-    manifest_path = export_manifest(
-        {
-            'generated_at': datetime.now().isoformat(timespec='seconds'),
-            'preset': args.preset,
-            'max_attempts': args.max_attempts,
-            'skip_existing': args.skip_existing,
-            'records': records,
-            'benchmark_rows': benchmark_rows,
-        },
-        manifest_dir,
-    )
-
-    export_rows(
-        benchmark_rows,
-        output_path=str(manifest_dir / 'benchmark_rows.{}'.format(args.output_format)),
-        output_format=args.output_format,
-    )
-    _export_tables(ROOT_DIR / args.tables_dir, args.output_format, summary_paths)
+    manifest_path = manifest_dir / 'experiment_manifest.json'
 
     print(manifest_path)
 

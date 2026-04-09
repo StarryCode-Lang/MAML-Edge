@@ -11,9 +11,9 @@ if str(ROOT_DIR) not in sys.path:
 
 from test_layer.benchmark import build_benchmark_row, load_summary
 from test_layer.thesis_config import (
-    OVERNIGHT_PRESET_NAME,
+    CONTROLLED_OVERNIGHT_PRESET_NAME,
     THESIS_PRESET_NAME,
-    build_overnight_experiment_records,
+    build_controlled_overnight_records,
     build_thesis_experiment_records,
 )
 
@@ -185,8 +185,8 @@ def main():
         description='Run or dry-run a thesis-oriented experiment matrix on top of train.py.',
     )
     parser.add_argument('--preset', type=str, default=None,
-                        choices=[THESIS_PRESET_NAME, OVERNIGHT_PRESET_NAME],
-                        help='Optional locked experiment preset. Use thesis_final or overnight_a10.')
+                        choices=[THESIS_PRESET_NAME, CONTROLLED_OVERNIGHT_PRESET_NAME],
+                        help='Optional locked experiment preset. Use thesis_final or overnight_controlled.')
     parser.add_argument('--group', type=str, default='all',
                         choices=['all', 'model_compare', 'few_shot'],
                         help='Experiment group filter when using a locked preset.')
@@ -225,11 +225,11 @@ def main():
 
     manifest_records = []
     benchmark_rows = []
-    if args.preset in {THESIS_PRESET_NAME, OVERNIGHT_PRESET_NAME}:
+    if args.preset in {THESIS_PRESET_NAME, CONTROLLED_OVERNIGHT_PRESET_NAME}:
         if args.preset == THESIS_PRESET_NAME:
             base_records = build_thesis_experiment_records()
         else:
-            base_records = build_overnight_experiment_records()
+            base_records = build_controlled_overnight_records()
         if args.group != 'all':
             base_records = [record for record in base_records if record.get('group') == args.group]
 
@@ -319,7 +319,7 @@ def main():
     for repeat_index in range(args.repeat):
         for config in expanded_configs:
             command = build_command(config)
-            if args.preset in {THESIS_PRESET_NAME, OVERNIGHT_PRESET_NAME}:
+            if args.preset in {THESIS_PRESET_NAME, CONTROLLED_OVERNIGHT_PRESET_NAME}:
                 expected_summary_path = infer_expected_summary_path_from_config(config)
             else:
                 expected_summary_path = infer_expected_summary_path(command, config['algorithm'])

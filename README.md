@@ -264,10 +264,10 @@ python test_layer/experiment_runner.py --preset thesis_final --group model_compa
 python test_layer/experiment_runner.py --preset thesis_final --group few_shot --execute
 ```
 
-### 3.5 一条命令跑完 A10 过夜实验
+### 3.5 一条命令跑完受控过夜实验
 
 ```bash
-python test_layer/overnight_pipeline.py --max_attempts 2
+bash test_layer/run_controlled_overnight.sh restart
 ```
 
 这个入口会顺序执行：
@@ -276,7 +276,7 @@ python test_layer/overnight_pipeline.py --max_attempts 2
 - `FFT / STFT / WT`
 - `5-shot / 10-shot / 15-shot`
 - 自动训练、剪枝恢复、ONNX 导出、INT8 PTQ、benchmark 聚合
-- 自动导出 `logs/thesis_tables/` 下的表格文件
+- 自动导出 `logs/thesis_tables/controlled/` 下的表格文件
 
 完整矩阵共 `27` 组：
 
@@ -284,12 +284,20 @@ python test_layer/overnight_pipeline.py --max_attempts 2
 - `STFT + CNN/MAML/ProtoNet + 5/10/15-shot`
 - `WT + CNN/MAML/ProtoNet + 5/10/15-shot`
 
-默认统一调度：
+受控统一调度：
 
-- `FFT`: `MAML / ProtoNet iters = 1200`
-- `STFT`: `MAML / ProtoNet iters = 200`
-- `WT`: `MAML / ProtoNet iters = 200`
-- `CNN epochs`: `FFT = 80`, `STFT = 60`, `WT = 60`
+- `FFT`: `MAML / ProtoNet iters = 400`
+- `STFT`: `MAML / ProtoNet iters = 80`
+- `WT`: `MAML / ProtoNet iters = 80`
+- `CNN epochs`: `FFT = 40`, `STFT = 30`, `WT = 30`
+- `test_task_num = 50`
+- `compression_finetune_iters = 80`
+
+日志按预处理和算法分类保存：
+
+```text
+logs/overnight_runs/controlled/latest/logs/<preprocess>/<algorithm>/
+```
 
 ### 4. 导出单实验 benchmark
 
