@@ -16,10 +16,9 @@ __pycache__/
 env/
 data/
 system_layer/storage/runtime/
-logs/overnight_runs/
-logs/thesis_runs/
-logs/thesis_tables/
 
+# Runtime info
 checkpoints/
 deploy_artifacts/
 logs/
+images/
