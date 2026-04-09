@@ -236,35 +236,22 @@ deploy_artifacts/<experiment_title>/
 
 ## test_layer 怎么用
 
-`test_layer` 现在不是通用测试杂项，而是**论文实验执行与出表层**。
+`test_layer` 现在不是通用测试杂项，而是**运行结果分析与论文出表层**。
 
 核心文件：
 
 - [benchmark.py](/D:/Desktop/MAML-Edge/test_layer/benchmark.py)
-- [experiment_runner.py](/D:/Desktop/MAML-Edge/test_layer/experiment_runner.py)
 - [result_aggregator.py](/D:/Desktop/MAML-Edge/test_layer/result_aggregator.py)
+- [run_controlled_overnight.sh](/D:/Desktop/MAML-Edge/test_layer/run_controlled_overnight.sh)
 - [thesis_config.py](/D:/Desktop/MAML-Edge/test_layer/thesis_config.py)
 - [thesis_tables.py](/D:/Desktop/MAML-Edge/test_layer/thesis_tables.py)
 
-### 1. 查看最终实验清单
+约束边界：
 
-```bash
-python test_layer/experiment_runner.py --preset thesis_final
-```
+- `run_controlled_overnight.sh` 负责执行你原本会在终端里手动输入的训练与部署命令
+- `test_layer` 中的 Python 文件只负责读取运行后的 `logs/`、`deploy_artifacts/`、`checkpoints/` 并做分析导出
 
-### 2. 跑模型对比实验
-
-```bash
-python test_layer/experiment_runner.py --preset thesis_final --group model_compare --execute
-```
-
-### 3. 跑少样本实验
-
-```bash
-python test_layer/experiment_runner.py --preset thesis_final --group few_shot --execute
-```
-
-### 3.5 一条命令跑完受控过夜实验
+### 1. 一条命令跑完受控过夜实验
 
 ```bash
 bash test_layer/run_controlled_overnight.sh restart
@@ -299,14 +286,20 @@ bash test_layer/run_controlled_overnight.sh restart
 logs/overnight_runs/controlled/latest/logs/<preprocess>/<algorithm>/
 ```
 
-### 4. 导出单实验 benchmark
+如需先查看脚本里会顺序执行的全部终端命令：
+
+```bash
+bash test_layer/run_controlled_overnight.sh print
+```
+
+### 2. 导出单实验 benchmark
 
 ```bash
 python test_layer/benchmark.py \
   --summary_path deploy_artifacts/<experiment_title>/compression_summary.json
 ```
 
-### 5. 导出单实验论文行
+### 3. 导出单实验论文行
 
 ```bash
 python test_layer/benchmark.py \
@@ -316,7 +309,7 @@ python test_layer/benchmark.py \
   --output_path logs/<experiment_title>_benchmark_row.csv
 ```
 
-### 6. 聚合全部部署结果
+### 4. 聚合全部部署结果
 
 ```bash
 python test_layer/result_aggregator.py \
@@ -325,7 +318,7 @@ python test_layer/result_aggregator.py \
   --output_path logs/thesis_benchmark_rows.csv
 ```
 
-### 7. 直接导出论文四张表
+### 5. 直接导出论文四张表
 
 ```bash
 python test_layer/thesis_tables.py \
@@ -343,7 +336,7 @@ python test_layer/thesis_tables.py \
 
 其中 `thesis_tables.md` 是论文草稿和答辩整理最方便看的版本。
 
-### 8. 导出系统性能表
+### 6. 导出系统性能表
 
 先启动系统并让它跑过一轮 MQTT 联调，再执行：
 
