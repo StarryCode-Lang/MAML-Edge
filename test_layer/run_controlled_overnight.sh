@@ -12,13 +12,24 @@ if [[ -z "$PYTHON_BIN" ]]; then
   fi
 fi
 
-RUN_ROOT="${ROOT_DIR}/logs/overnight_runs/controlled"
-LATEST_DIR="${RUN_ROOT}/latest"
-LOG_ROOT="${LATEST_DIR}/logs"
-TABLES_DIR="${ROOT_DIR}/logs/thesis_tables/controlled"
+RUN_NAMESPACE="${RUN_NAMESPACE:-controlled}"
+RUN_ROOT="${RUN_ROOT:-${ROOT_DIR}/logs/overnight_runs/${RUN_NAMESPACE}}"
+LATEST_DIR="${LATEST_DIR:-${RUN_ROOT}/latest}"
+LOG_ROOT="${LOG_ROOT:-${LATEST_DIR}/logs}"
+TABLES_DIR="${TABLES_DIR:-${ROOT_DIR}/logs/thesis_tables/${RUN_NAMESPACE}}"
+BENCHMARK_ROWS_OUTPUT="${BENCHMARK_ROWS_OUTPUT:-${TABLES_DIR}/benchmark_rows.csv}"
+SUMMARY_GLOB="${SUMMARY_GLOB:-deploy_artifacts/*/compression_summary.json}"
+CHECKPOINT_ROOT="${CHECKPOINT_ROOT:-${ROOT_DIR}/checkpoints}"
+COMPRESSION_OUTPUT_ROOT="${COMPRESSION_OUTPUT_ROOT:-${ROOT_DIR}/deploy_artifacts}"
 CURRENT_STEP_FILE="${RUN_ROOT}/current_step.txt"
 STATUS_FILE="${RUN_ROOT}/step_status.tsv"
 FAILED_STEPS_FILE="${RUN_ROOT}/failed_steps.txt"
+EXPERIMENT_SEED="${EXPERIMENT_SEED:-42}"
+TRAIN_DOMAINS_OVERRIDE="${TRAIN_DOMAINS_OVERRIDE:-0,1,2}"
+TEST_DOMAIN_OVERRIDE="${TEST_DOMAIN_OVERRIDE:-3}"
+FAULT_LABELS_OVERRIDE="${FAULT_LABELS_OVERRIDE:-0,1,2,3,4,5,6,7,8,9}"
+TEST_TASK_NUM_OVERRIDE="${TEST_TASK_NUM_OVERRIDE:-}"
+DEPLOYMENT_LABEL_SAMPLING="${DEPLOYMENT_LABEL_SAMPLING:-random_per_episode}"
 MAX_ATTEMPTS="${MAX_ATTEMPTS:-1}"
 PLANNED_TRAIN_STEPS=27
 PLANNED_AUX_STEPS=2
@@ -57,9 +68,15 @@ print_run_header() {
   echo "=== Controlled Overnight Run ==="
   echo "Root: ${ROOT_DIR}"
   echo "Python: ${PYTHON_BIN}"
+  echo "Run namespace: ${RUN_NAMESPACE}"
   echo "Planned steps: ${TOTAL_PLANNED_STEPS} (train=${PLANNED_TRAIN_STEPS}, analysis=${PLANNED_AUX_STEPS})"
   echo "Logs: ${LOG_ROOT}"
   echo "Tables: ${TABLES_DIR}"
+  echo "Checkpoints: ${CHECKPOINT_ROOT}"
+  echo "Deploy artifacts: ${COMPRESSION_OUTPUT_ROOT}"
+  echo "Seed: ${EXPERIMENT_SEED}"
+  echo "Domains: source=${TRAIN_DOMAINS_OVERRIDE} target=${TEST_DOMAIN_OVERRIDE}"
+  echo "Deployment label sampling: ${DEPLOYMENT_LABEL_SAMPLING}"
   echo "Live monitor: every ${MONITOR_INTERVAL}s, tail ${MONITOR_TAIL_LINES} lines"
   echo
 }
@@ -150,39 +167,43 @@ clean_outputs() {
   shopt -s nullglob
   rm -rf "${RUN_ROOT}" "${TABLES_DIR}" "${ROOT_DIR}/logs/thesis_runs/latest"
   rm -f "${ROOT_DIR}/logs/thesis_benchmark_rows.csv"
+  if [[ "${CHECKPOINT_ROOT}" != "${ROOT_DIR}/checkpoints" || "${COMPRESSION_OUTPUT_ROOT}" != "${ROOT_DIR}/deploy_artifacts" ]]; then
+    rm -rf "${CHECKPOINT_ROOT}" "${COMPRESSION_OUTPUT_ROOT}"
+    return 0
+  fi
   rm -f \
     "${ROOT_DIR}"/logs/CNN_CWRU_*.log \
     "${ROOT_DIR}"/logs/MAML_CWRU_*.log \
     "${ROOT_DIR}"/logs/ProtoNet_CWRU_*.log
   rm -rf \
-    "${ROOT_DIR}"/deploy_artifacts/CNN_CWRU_FFT_* \
-    "${ROOT_DIR}"/deploy_artifacts/CNN_CWRU_STFT_* \
-    "${ROOT_DIR}"/deploy_artifacts/CNN_CWRU_WT_* \
-    "${ROOT_DIR}"/deploy_artifacts/MAML_CWRU_FFT_* \
-    "${ROOT_DIR}"/deploy_artifacts/MAML_CWRU_STFT_* \
-    "${ROOT_DIR}"/deploy_artifacts/MAML_CWRU_WT_* \
-    "${ROOT_DIR}"/deploy_artifacts/ProtoNet_CWRU_FFT_* \
-    "${ROOT_DIR}"/deploy_artifacts/ProtoNet_CWRU_STFT_* \
-    "${ROOT_DIR}"/deploy_artifacts/ProtoNet_CWRU_WT_*
+    "${COMPRESSION_OUTPUT_ROOT}"/CNN_CWRU_FFT_* \
+    "${COMPRESSION_OUTPUT_ROOT}"/CNN_CWRU_STFT_* \
+    "${COMPRESSION_OUTPUT_ROOT}"/CNN_CWRU_WT_* \
+    "${COMPRESSION_OUTPUT_ROOT}"/MAML_CWRU_FFT_* \
+    "${COMPRESSION_OUTPUT_ROOT}"/MAML_CWRU_STFT_* \
+    "${COMPRESSION_OUTPUT_ROOT}"/MAML_CWRU_WT_* \
+    "${COMPRESSION_OUTPUT_ROOT}"/ProtoNet_CWRU_FFT_* \
+    "${COMPRESSION_OUTPUT_ROOT}"/ProtoNet_CWRU_STFT_* \
+    "${COMPRESSION_OUTPUT_ROOT}"/ProtoNet_CWRU_WT_*
   rm -f \
-    "${ROOT_DIR}"/checkpoints/CNN_CWRU_FFT_*_best.pt \
-    "${ROOT_DIR}"/checkpoints/CNN_CWRU_FFT_*_history.json \
-    "${ROOT_DIR}"/checkpoints/CNN_CWRU_STFT_*_best.pt \
-    "${ROOT_DIR}"/checkpoints/CNN_CWRU_STFT_*_history.json \
-    "${ROOT_DIR}"/checkpoints/CNN_CWRU_WT_*_best.pt \
-    "${ROOT_DIR}"/checkpoints/CNN_CWRU_WT_*_history.json \
-    "${ROOT_DIR}"/checkpoints/MAML_CWRU_FFT_*_best.pt \
-    "${ROOT_DIR}"/checkpoints/MAML_CWRU_FFT_*_history.json \
-    "${ROOT_DIR}"/checkpoints/MAML_CWRU_STFT_*_best.pt \
-    "${ROOT_DIR}"/checkpoints/MAML_CWRU_STFT_*_history.json \
-    "${ROOT_DIR}"/checkpoints/MAML_CWRU_WT_*_best.pt \
-    "${ROOT_DIR}"/checkpoints/MAML_CWRU_WT_*_history.json \
-    "${ROOT_DIR}"/checkpoints/ProtoNet_CWRU_FFT_*_best.pt \
-    "${ROOT_DIR}"/checkpoints/ProtoNet_CWRU_FFT_*_history.json \
-    "${ROOT_DIR}"/checkpoints/ProtoNet_CWRU_STFT_*_best.pt \
-    "${ROOT_DIR}"/checkpoints/ProtoNet_CWRU_STFT_*_history.json \
-    "${ROOT_DIR}"/checkpoints/ProtoNet_CWRU_WT_*_best.pt \
-    "${ROOT_DIR}"/checkpoints/ProtoNet_CWRU_WT_*_history.json
+    "${CHECKPOINT_ROOT}"/CNN_CWRU_FFT_*_best.pt \
+    "${CHECKPOINT_ROOT}"/CNN_CWRU_FFT_*_history.json \
+    "${CHECKPOINT_ROOT}"/CNN_CWRU_STFT_*_best.pt \
+    "${CHECKPOINT_ROOT}"/CNN_CWRU_STFT_*_history.json \
+    "${CHECKPOINT_ROOT}"/CNN_CWRU_WT_*_best.pt \
+    "${CHECKPOINT_ROOT}"/CNN_CWRU_WT_*_history.json \
+    "${CHECKPOINT_ROOT}"/MAML_CWRU_FFT_*_best.pt \
+    "${CHECKPOINT_ROOT}"/MAML_CWRU_FFT_*_history.json \
+    "${CHECKPOINT_ROOT}"/MAML_CWRU_STFT_*_best.pt \
+    "${CHECKPOINT_ROOT}"/MAML_CWRU_STFT_*_history.json \
+    "${CHECKPOINT_ROOT}"/MAML_CWRU_WT_*_best.pt \
+    "${CHECKPOINT_ROOT}"/MAML_CWRU_WT_*_history.json \
+    "${CHECKPOINT_ROOT}"/ProtoNet_CWRU_FFT_*_best.pt \
+    "${CHECKPOINT_ROOT}"/ProtoNet_CWRU_FFT_*_history.json \
+    "${CHECKPOINT_ROOT}"/ProtoNet_CWRU_STFT_*_best.pt \
+    "${CHECKPOINT_ROOT}"/ProtoNet_CWRU_STFT_*_history.json \
+    "${CHECKPOINT_ROOT}"/ProtoNet_CWRU_WT_*_best.pt \
+    "${CHECKPOINT_ROOT}"/ProtoNet_CWRU_WT_*_history.json
 }
 
 prepare_run_dirs() {
@@ -266,18 +287,73 @@ append_log_path_if_missing() {
   printf '%s\n' "${command_args[@]}"
 }
 
+upsert_command_arg() {
+  local array_name="$1"
+  local flag="$2"
+  local value="$3"
+  local -n command_ref="${array_name}"
+  local index=0
+  while [[ "${index}" -lt "${#command_ref[@]}" ]]; do
+    if [[ "${command_ref[${index}]}" == "${flag}" ]]; then
+      if [[ $((index + 1)) -lt "${#command_ref[@]}" ]]; then
+        command_ref[$((index + 1))]="${value}"
+      else
+        command_ref+=("${value}")
+      fi
+      return 0
+    fi
+    index=$((index + 1))
+  done
+  command_ref+=("${flag}" "${value}")
+}
+
+compact_csv_digits() {
+  local value="$1"
+  printf '%s' "${value//,/}"
+}
+
+resolve_experiment_title() {
+  local experiment_title="$1"
+  local compact_domains
+  local compact_labels
+  compact_domains="$(compact_csv_digits "${TRAIN_DOMAINS_OVERRIDE}")"
+  compact_labels="$(compact_csv_digits "${FAULT_LABELS_OVERRIDE}")"
+  experiment_title="$(printf '%s\n' "${experiment_title}" | sed -E "s/_source[0-9]+_target/_source${compact_domains}_target/")"
+  experiment_title="$(printf '%s\n' "${experiment_title}" | sed -E "s/_target[0-9]+_labels/_target${TEST_DOMAIN_OVERRIDE}_labels/")"
+  experiment_title="$(printf '%s\n' "${experiment_title}" | sed -E "s/_labels[0-9,]+$/_labels${compact_labels}/")"
+  printf '%s\n' "${experiment_title}"
+}
+
+rewrite_train_command() {
+  local array_name="$1"
+  local -n command_ref="${array_name}"
+  upsert_command_arg "${array_name}" "--seed" "${EXPERIMENT_SEED}"
+  upsert_command_arg "${array_name}" "--train_domains" "${TRAIN_DOMAINS_OVERRIDE}"
+  upsert_command_arg "${array_name}" "--test_domain" "${TEST_DOMAIN_OVERRIDE}"
+  upsert_command_arg "${array_name}" "--fault_labels" "${FAULT_LABELS_OVERRIDE}"
+  upsert_command_arg "${array_name}" "--checkpoint_path" "${CHECKPOINT_ROOT}"
+  upsert_command_arg "${array_name}" "--compression_output_path" "${COMPRESSION_OUTPUT_ROOT}"
+  upsert_command_arg "${array_name}" "--deployment_label_sampling" "${DEPLOYMENT_LABEL_SAMPLING}"
+  if [[ -n "${TEST_TASK_NUM_OVERRIDE}" ]]; then
+    upsert_command_arg "${array_name}" "--test_task_num" "${TEST_TASK_NUM_OVERRIDE}"
+  fi
+}
+
 run_train_step() {
   local preprocess="$1"
   local algorithm="$2"
-  local experiment_title="$3"
+  local base_experiment_title="$3"
   shift 3
 
-  local summary_path="${ROOT_DIR}/deploy_artifacts/${experiment_title}/compression_summary.json"
+  local experiment_title
+  experiment_title="$(resolve_experiment_title "${base_experiment_title}")"
+  local summary_path="${COMPRESSION_OUTPUT_ROOT}/${experiment_title}/compression_summary.json"
   local step_log_dir="${LOG_ROOT}/${preprocess}/${algorithm}"
   local attempt=1
   local success=1
   local -a train_command=()
   mapfile -t train_command < <(append_log_path_if_missing "${step_log_dir}" "$@")
+  rewrite_train_command train_command
 
   while [[ "${attempt}" -le "${MAX_ATTEMPTS}" ]]; do
     if run_logged_command "${preprocess}" "${algorithm}" "${experiment_title}" "train" "1" "${train_command[@]}"; then
@@ -382,14 +458,14 @@ run_matrix_commands() {
 
   run_aux_step "aggregation" "benchmark_rows_export" \
     "${PYTHON_BIN}" test_layer/result_aggregator.py \
-    --summary_glob 'deploy_artifacts/*/compression_summary.json' \
+    --summary_glob "${SUMMARY_GLOB}" \
     --output_format csv \
-    --output_path logs/thesis_tables/controlled/benchmark_rows.csv || failures=$((failures + 1))
+    --output_path "${BENCHMARK_ROWS_OUTPUT}" || failures=$((failures + 1))
 
   run_aux_step "aggregation" "thesis_tables_export" \
     "${PYTHON_BIN}" test_layer/thesis_tables.py \
-    --summary_glob 'deploy_artifacts/*/compression_summary.json' \
-    --output_dir logs/thesis_tables/controlled \
+    --summary_glob "${SUMMARY_GLOB}" \
+    --output_dir "${TABLES_DIR}" \
     --allow_missing || failures=$((failures + 1))
 
   return "${failures}"

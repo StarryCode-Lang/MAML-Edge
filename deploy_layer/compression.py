@@ -58,6 +58,15 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
     base_model = build_model_from_config(training_result['model_config'])
     base_model.load_state_dict(training_result['best_state_dict'])
     base_model.to(device)
+    deployment_split = build_deployment_split(
+        dataset=test_dataset,
+        support_pools=test_pools[0],
+        query_pools=test_pools[1],
+        ways=args.ways,
+        shots=args.shots,
+        seed=args.seed,
+        label_sampling_mode=getattr(args, 'deployment_label_sampling', 'fixed_first_k'),
+    )
 
     meta_eval_before = evaluate_meta_model(
         algorithm=algorithm,
@@ -74,6 +83,7 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
         test_dataset=test_dataset,
         test_pools=test_pools,
         device=device,
+        deployment_split=deployment_split,
     )
     baseline_float_model_path = os.path.join(artifact_dir, '{}_baseline_float.onnx'.format(experiment_title))
     onnx_exporter.export_deployment_bundle_to_onnx(
@@ -86,9 +96,36 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
         deployment_bundle=baseline_deployment_bundle,
         runtime_backend=getattr(args, 'runtime_backend', 'onnxruntime'),
     )
+    baseline_int8_model_path, baseline_int8_metrics, baseline_int8_warning = runtime_backends.quantize_and_evaluate_onnx(
+        args=args,
+        deployment_bundle=baseline_deployment_bundle,
+        float_model_path=baseline_float_model_path,
+        artifact_dir=artifact_dir,
+        experiment_title='{}_baseline'.format(experiment_title),
+    )
 
     pruned_model, prune_metadata = structured_prune_model(base_model.cpu(), args.prune_ratio)
     pruned_model.to(device)
+    prune_only_bundle = build_deployment_bundle(
+        algorithm=algorithm,
+        args=args,
+        model=pruned_model,
+        test_dataset=test_dataset,
+        test_pools=test_pools,
+        device=device,
+        deployment_split=deployment_split,
+    )
+    prune_only_model_path = os.path.join(artifact_dir, '{}_prune_only_float.onnx'.format(experiment_title))
+    onnx_exporter.export_deployment_bundle_to_onnx(
+        deployment_bundle=prune_only_bundle,
+        onnx_path=prune_only_model_path,
+        opset_version=args.onnx_opset,
+    )
+    prune_only_runtime_metrics = runtime_backends.evaluate_onnx_bundle(
+        onnx_path=prune_only_model_path,
+        deployment_bundle=prune_only_bundle,
+        runtime_backend=getattr(args, 'runtime_backend', 'onnxruntime'),
+    )
 
     recovered_model = recover_pruned_model(
         algorithm=algorithm,
@@ -114,6 +151,7 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
         test_dataset=test_dataset,
         test_pools=test_pools,
         device=device,
+        deployment_split=deployment_split,
     )
 
     float_model_path = os.path.join(artifact_dir, '{}_float.onnx'.format(experiment_title))
@@ -128,7 +166,7 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
         runtime_backend=getattr(args, 'runtime_backend', 'onnxruntime'),
     )
 
-    quant_model_path, quant_metrics, quant_warning = runtime_backends.quantize_and_evaluate_onnx(
+    quant_model_path, quant_metrics, recovered_quant_warning = runtime_backends.quantize_and_evaluate_onnx(
         args=args,
         deployment_bundle=deployment_bundle,
         float_model_path=float_model_path,
@@ -150,7 +188,7 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
             deployment_bundle=qat_bundle,
             runtime_backend=getattr(args, 'runtime_backend', 'onnxruntime'),
         )
-        quant_model_path, quant_metrics, quant_warning = runtime_backends.quantize_and_evaluate_onnx(
+        quant_model_path, quant_metrics, recovered_quant_warning = runtime_backends.quantize_and_evaluate_onnx(
             args=args,
             deployment_bundle=qat_bundle,
             float_model_path=qat_float_path,
@@ -163,6 +201,8 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
     baseline_params = count_parameters(base_model)
     pruned_params = count_parameters(recovered_model)
     baseline_float_model_size_bytes = _safe_file_size_bytes(baseline_float_model_path)
+    baseline_int8_model_size_bytes = _safe_file_size_bytes(baseline_int8_model_path)
+    prune_only_model_size_bytes = _safe_file_size_bytes(prune_only_model_path)
     float_model_size_bytes = _safe_file_size_bytes(float_model_path)
     int8_model_size_bytes = _safe_file_size_bytes(quant_model_path)
     baseline_prototype_path = baseline_deployment_bundle.get('prototype_path')
@@ -176,26 +216,38 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
     experiment_descriptor = build_experiment_descriptor(args, algorithm, experiment_title=experiment_title)
 
     summary = {
-        'summary_version': 2,
+        'summary_version': 3,
         'experiment_title': experiment_title,
         'algorithm': algorithm,
+        'seed': getattr(args, 'seed', None),
         'experiment': experiment_descriptor,
         'best_training_record': training_result['best_record'],
         'meta_eval_before_prune': meta_eval_before,
         'meta_eval_after_recovery': meta_eval_after,
         'baseline_deployment_metrics': baseline_runtime_metrics,
+        'baseline_int8_metrics': baseline_int8_metrics,
+        'prune_only_metrics': prune_only_runtime_metrics,
         'deployment_float_metrics': float_runtime_metrics,
         'deployment_int8_metrics': quant_metrics,
         'qat_float_metrics': qat_metrics,
         'prune_metadata': prune_metadata,
         'deployment_type': deployment_bundle.get('deployment_type'),
         'selected_labels': deployment_bundle.get('selected_labels'),
+        'label_pool': deployment_bundle.get('label_pool'),
+        'label_sampling_mode': deployment_bundle.get('label_sampling_mode'),
+        'deployment_eval_episode_count': deployment_bundle.get('deployment_eval_episode_count'),
         'baseline_float_model_path': baseline_float_model_path,
+        'baseline_int8_model_path': baseline_int8_model_path,
+        'prune_only_model_path': prune_only_model_path,
         'float_model_path': float_model_path,
         'int8_model_path': quant_model_path,
         'baseline_prototype_path': baseline_prototype_path,
         'prototype_path': prototype_path,
-        'quantization_warning': quant_warning,
+        'quantization_warning': recovered_quant_warning,
+        'quantization_warnings': {
+            'baseline_int8': baseline_int8_warning,
+            'recovered_int8': recovered_quant_warning,
+        },
         'deployment_backend': getattr(args, 'runtime_backend', 'onnxruntime'),
         'training_artifacts': {
             'best_checkpoint_path': best_checkpoint_path,
@@ -203,6 +255,8 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
         },
         'artifact_paths': {
             'baseline_float_model_path': baseline_float_model_path,
+            'baseline_int8_model_path': baseline_int8_model_path,
+            'prune_only_model_path': prune_only_model_path,
             'float_model_path': float_model_path,
             'int8_model_path': quant_model_path,
             'baseline_prototype_path': baseline_prototype_path,
@@ -212,6 +266,8 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
         },
         'artifact_sizes_bytes': {
             'baseline_float_model': baseline_float_model_size_bytes,
+            'baseline_int8_model': baseline_int8_model_size_bytes,
+            'prune_only_model': prune_only_model_size_bytes,
             'float_model': float_model_size_bytes,
             'int8_model': int8_model_size_bytes,
             'baseline_prototype_bundle': baseline_prototype_size_bytes,
@@ -221,6 +277,8 @@ def run_compression_pipeline(args, algorithm, experiment_title, training_result,
         },
         'artifact_sizes_mb': {
             'baseline_float_model': _bytes_to_megabytes(baseline_float_model_size_bytes),
+            'baseline_int8_model': _bytes_to_megabytes(baseline_int8_model_size_bytes),
+            'prune_only_model': _bytes_to_megabytes(prune_only_model_size_bytes),
             'float_model': _bytes_to_megabytes(float_model_size_bytes),
             'int8_model': _bytes_to_megabytes(int8_model_size_bytes),
             'baseline_prototype_bundle': _bytes_to_megabytes(baseline_prototype_size_bytes),
@@ -559,15 +617,22 @@ def evaluate_meta_model(algorithm, args, model, test_dataset, test_pools, device
     }
 
 
-def build_deployment_bundle(algorithm, args, model, test_dataset, test_pools, device):
-    support_data, support_labels, query_data, query_labels, selected_labels = build_fixed_deployment_split(
-        dataset=test_dataset,
-        support_pools=test_pools[0],
-        query_pools=test_pools[1],
-        ways=args.ways,
-        shots=args.shots,
-        seed=args.seed,
-    )
+def build_deployment_bundle(algorithm, args, model, test_dataset, test_pools, device, deployment_split=None):
+    if deployment_split is None:
+        deployment_split = build_deployment_split(
+            dataset=test_dataset,
+            support_pools=test_pools[0],
+            query_pools=test_pools[1],
+            ways=args.ways,
+            shots=args.shots,
+            seed=args.seed,
+            label_sampling_mode=getattr(args, 'deployment_label_sampling', 'fixed_first_k'),
+        )
+    support_data = deployment_split['support_data']
+    support_labels = deployment_split['support_labels']
+    query_data = deployment_split['query_data']
+    query_labels = deployment_split['query_labels']
+    selected_labels = deployment_split['selected_labels']
     if algorithm == 'maml':
         deployment_model = adapt_maml_for_deployment(args, model, support_data, support_labels, device)
         return {
@@ -580,6 +645,9 @@ def build_deployment_bundle(algorithm, args, model, test_dataset, test_pools, de
             'query_data': query_data.cpu(),
             'query_labels': query_labels.cpu(),
             'selected_labels': selected_labels,
+            'label_pool': deployment_split['label_pool'],
+            'label_sampling_mode': deployment_split['label_sampling_mode'],
+            'deployment_eval_episode_count': deployment_split['deployment_eval_episode_count'],
         }
 
     if algorithm == 'protonet':
@@ -595,6 +663,9 @@ def build_deployment_bundle(algorithm, args, model, test_dataset, test_pools, de
             'query_data': query_data.cpu(),
             'query_labels': query_labels.cpu(),
             'selected_labels': selected_labels,
+            'label_pool': deployment_split['label_pool'],
+            'label_sampling_mode': deployment_split['label_sampling_mode'],
+            'deployment_eval_episode_count': deployment_split['deployment_eval_episode_count'],
             'prototypes': prototypes.cpu(),
             'prototype_path': prototype_path,
         }
@@ -618,6 +689,9 @@ def build_deployment_bundle(algorithm, args, model, test_dataset, test_pools, de
             'query_data': query_data.cpu(),
             'query_labels': query_labels.cpu(),
             'selected_labels': selected_labels,
+            'label_pool': deployment_split['label_pool'],
+            'label_sampling_mode': deployment_split['label_sampling_mode'],
+            'deployment_eval_episode_count': deployment_split['deployment_eval_episode_count'],
         }
 
     raise ValueError('Unsupported algorithm: {}'.format(algorithm))
@@ -653,7 +727,7 @@ def infer_deployment_model_config(model):
     raise ValueError('Unsupported deployment model type: {}'.format(type(model).__name__))
 
 
-def build_fixed_deployment_split(dataset, support_pools, query_pools, ways, shots, seed):
+def build_deployment_split(dataset, support_pools, query_pools, ways, shots, seed, label_sampling_mode='fixed_first_k'):
     rng = np.random.RandomState(seed)
     available_labels = [
         label for label in sorted(support_pools.keys())
@@ -661,8 +735,54 @@ def build_fixed_deployment_split(dataset, support_pools, query_pools, ways, shot
     ]
     if len(available_labels) < ways:
         raise ValueError('Not enough labels for deployment split.')
+    if label_sampling_mode == 'fixed_first_k':
+        selected_labels = available_labels[:ways]
+    elif label_sampling_mode == 'random_per_episode':
+        selected_labels = sorted(rng.choice(np.asarray(available_labels), size=ways, replace=False).tolist())
+    else:
+        raise ValueError('Unsupported deployment label sampling mode: {}'.format(label_sampling_mode))
+    return _build_deployment_split_from_labels(
+        dataset=dataset,
+        support_pools=support_pools,
+        query_pools=query_pools,
+        shots=shots,
+        seed=seed,
+        selected_labels=selected_labels,
+        available_labels=available_labels,
+        label_sampling_mode=label_sampling_mode,
+    )
 
-    selected_labels = available_labels[:ways]
+
+def build_fixed_deployment_split(dataset, support_pools, query_pools, ways, shots, seed):
+    available_labels = [
+        label for label in sorted(support_pools.keys())
+        if len(support_pools[label]) >= shots and len(query_pools[label]) > 0
+    ]
+    if len(available_labels) < ways:
+        raise ValueError('Not enough labels for deployment split.')
+    return _build_deployment_split_from_labels(
+        dataset=dataset,
+        support_pools=support_pools,
+        query_pools=query_pools,
+        shots=shots,
+        seed=seed,
+        selected_labels=available_labels[:ways],
+        available_labels=available_labels,
+        label_sampling_mode='fixed_first_k',
+    )
+
+
+def _build_deployment_split_from_labels(
+    dataset,
+    support_pools,
+    query_pools,
+    shots,
+    seed,
+    selected_labels,
+    available_labels,
+    label_sampling_mode,
+):
+    rng = np.random.RandomState(seed)
     support_samples = []
     support_labels = []
     query_samples = []
@@ -680,13 +800,16 @@ def build_fixed_deployment_split(dataset, support_pools, query_pools, ways, shot
             query_samples.append(sample)
             query_labels.append(new_label)
 
-    return (
-        torch.stack(support_samples),
-        torch.tensor(support_labels, dtype=torch.int64),
-        torch.stack(query_samples),
-        torch.tensor(query_labels, dtype=torch.int64),
-        selected_labels,
-    )
+    return {
+        'support_data': torch.stack(support_samples),
+        'support_labels': torch.tensor(support_labels, dtype=torch.int64),
+        'query_data': torch.stack(query_samples),
+        'query_labels': torch.tensor(query_labels, dtype=torch.int64),
+        'selected_labels': [int(label) for label in selected_labels],
+        'label_pool': [int(label) for label in available_labels],
+        'label_sampling_mode': label_sampling_mode,
+        'deployment_eval_episode_count': 1,
+    }
 
 
 def adapt_maml_for_deployment(args, model, support_data, support_labels, device):

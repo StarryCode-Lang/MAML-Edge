@@ -111,6 +111,9 @@ def parse_args(argv=None):
     parser.add_argument('--runtime_backend', type=str, default='onnxruntime',
                         choices=['onnxruntime', 'tensorrt', 'openvino'],
                         help='Deployment runtime backend, default=onnxruntime')
+    parser.add_argument('--deployment_label_sampling', type=str, default='fixed_first_k',
+                        choices=['fixed_first_k', 'random_per_episode'],
+                        help='Deployment support/query label selection mode, default=fixed_first_k')
 
     return parser.parse_args(argv)
 

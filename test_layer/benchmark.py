@@ -83,6 +83,8 @@ def build_benchmark_row(summary):
     pre_prune_metrics = get_metrics_block(summary, 'meta_eval_before_prune')
     post_recovery_metrics = get_metrics_block(summary, 'meta_eval_after_recovery')
     baseline_deployment_metrics = get_metrics_block(summary, 'baseline_deployment_metrics')
+    baseline_int8_metrics = get_metrics_block(summary, 'baseline_int8_metrics')
+    prune_only_metrics = get_metrics_block(summary, 'prune_only_metrics')
     float_deployment_metrics = get_metrics_block(summary, 'deployment_float_metrics')
     int8_deployment_metrics = get_metrics_block(summary, 'deployment_int8_metrics')
     artifact_paths = summary.get('artifact_paths') or {}
@@ -93,6 +95,7 @@ def build_benchmark_row(summary):
         'summary_version': summary.get('summary_version'),
         'experiment_title': summary.get('experiment_title'),
         'algorithm': summary.get('algorithm') or experiment.get('algorithm') or legacy.get('algorithm'),
+        'seed': summary.get('seed') or experiment.get('seed'),
         'dataset': experiment.get('dataset') or legacy.get('dataset'),
         'preprocess': experiment.get('preprocess') or legacy.get('preprocess'),
         'ways': experiment.get('ways') or legacy.get('ways'),
@@ -102,6 +105,9 @@ def build_benchmark_row(summary):
         'test_domain': experiment.get('test_domain') or legacy.get('test_domain'),
         'fault_labels': ','.join(str(item) for item in (experiment.get('fault_labels') or legacy.get('fault_labels') or [])),
         'selected_labels': ','.join(str(item) for item in selected_labels),
+        'label_pool': ','.join(str(item) for item in (summary.get('label_pool') or [])),
+        'label_sampling_mode': summary.get('label_sampling_mode') or experiment.get('deployment_label_sampling'),
+        'deployment_eval_episode_count': summary.get('deployment_eval_episode_count'),
         'deployment_type': summary.get('deployment_type'),
         'deployment_backend': summary.get('deployment_backend'),
         'accuracy': deployment_metrics.get('accuracy'),
@@ -117,6 +123,12 @@ def build_benchmark_row(summary):
         'baseline_deployment_accuracy': baseline_deployment_metrics.get('accuracy'),
         'baseline_deployment_loss': baseline_deployment_metrics.get('loss'),
         'baseline_avg_latency_ms': baseline_deployment_metrics.get('avg_latency_ms'),
+        'baseline_int8_accuracy': baseline_int8_metrics.get('accuracy'),
+        'baseline_int8_loss': baseline_int8_metrics.get('loss'),
+        'baseline_int8_avg_latency_ms': baseline_int8_metrics.get('avg_latency_ms'),
+        'prune_only_accuracy': prune_only_metrics.get('accuracy'),
+        'prune_only_loss': prune_only_metrics.get('loss'),
+        'prune_only_avg_latency_ms': prune_only_metrics.get('avg_latency_ms'),
         'float_accuracy': float_deployment_metrics.get('accuracy'),
         'float_loss': float_deployment_metrics.get('loss'),
         'float_avg_latency_ms': float_deployment_metrics.get('avg_latency_ms'),
@@ -128,6 +140,12 @@ def build_benchmark_row(summary):
         'baseline_float_model_path': (
             summary.get('baseline_float_model_path') or artifact_paths.get('baseline_float_model_path')
         ),
+        'baseline_int8_model_path': (
+            summary.get('baseline_int8_model_path') or artifact_paths.get('baseline_int8_model_path')
+        ),
+        'prune_only_model_path': (
+            summary.get('prune_only_model_path') or artifact_paths.get('prune_only_model_path')
+        ),
         'float_model_path': summary.get('float_model_path'),
         'int8_model_path': summary.get('int8_model_path'),
         'baseline_prototype_path': (
@@ -135,11 +153,15 @@ def build_benchmark_row(summary):
         ),
         'prototype_path': summary.get('prototype_path'),
         'baseline_float_model_size_mb': size_mb.get('baseline_float_model'),
+        'baseline_int8_model_size_mb': size_mb.get('baseline_int8_model'),
+        'prune_only_model_size_mb': size_mb.get('prune_only_model'),
         'float_model_size_mb': size_mb.get('float_model'),
         'int8_model_size_mb': size_mb.get('int8_model'),
         'baseline_prototype_size_mb': size_mb.get('baseline_prototype_bundle'),
         'prototype_size_mb': size_mb.get('prototype_bundle'),
         'baseline_float_model_size_bytes': size_bytes.get('baseline_float_model'),
+        'baseline_int8_model_size_bytes': size_bytes.get('baseline_int8_model'),
+        'prune_only_model_size_bytes': size_bytes.get('prune_only_model'),
         'float_model_size_bytes': size_bytes.get('float_model'),
         'int8_model_size_bytes': size_bytes.get('int8_model'),
         'baseline_prototype_size_bytes': size_bytes.get('baseline_prototype_bundle'),
@@ -214,6 +236,69 @@ def build_compression_rows(summary):
             'latency_semantics': LATENCY_SEMANTICS,
         })
 
+    return rows
+
+
+def build_compression_ablation_rows(summary):
+    row = build_benchmark_row(summary)
+    variants = [
+        {
+            'variant': 'baseline',
+            'accuracy': row.get('baseline_deployment_accuracy'),
+            'avg_latency_ms': row.get('baseline_avg_latency_ms'),
+            'parameter_count': row.get('baseline_params'),
+            'model_size_mb': row.get('baseline_float_model_size_mb'),
+            'metric_protocol': 'deployment_baseline',
+        },
+        {
+            'variant': 'int8_only',
+            'accuracy': row.get('baseline_int8_accuracy'),
+            'avg_latency_ms': row.get('baseline_int8_avg_latency_ms'),
+            'parameter_count': row.get('baseline_params'),
+            'model_size_mb': row.get('baseline_int8_model_size_mb'),
+            'metric_protocol': 'deployment_baseline_int8',
+        },
+        {
+            'variant': 'prune_only',
+            'accuracy': row.get('prune_only_accuracy'),
+            'avg_latency_ms': row.get('prune_only_avg_latency_ms'),
+            'parameter_count': row.get('pruned_params'),
+            'model_size_mb': row.get('prune_only_model_size_mb'),
+            'metric_protocol': 'deployment_prune_only',
+        },
+        {
+            'variant': 'prune_recovery_float',
+            'accuracy': row.get('float_accuracy'),
+            'avg_latency_ms': row.get('float_avg_latency_ms'),
+            'parameter_count': row.get('pruned_params'),
+            'model_size_mb': row.get('float_model_size_mb'),
+            'metric_protocol': 'deployment_float',
+        },
+        {
+            'variant': 'prune_recovery_int8',
+            'accuracy': row.get('int8_accuracy'),
+            'avg_latency_ms': row.get('int8_avg_latency_ms'),
+            'parameter_count': row.get('pruned_params'),
+            'model_size_mb': row.get('int8_model_size_mb'),
+            'metric_protocol': 'deployment_int8',
+        },
+    ]
+    rows = []
+    for variant in variants:
+        if variant['accuracy'] is None:
+            continue
+        rows.append({
+            'experiment_title': row.get('experiment_title'),
+            'algorithm': row.get('algorithm'),
+            'variant': variant['variant'],
+            'accuracy': variant['accuracy'],
+            'avg_latency_ms': variant['avg_latency_ms'],
+            'parameter_count': variant['parameter_count'],
+            'model_size_mb': variant['model_size_mb'],
+            'runtime_backend': row.get('runtime_backend'),
+            'metric_protocol': variant['metric_protocol'],
+            'latency_semantics': LATENCY_SEMANTICS,
+        })
     return rows
 
 

@@ -288,8 +288,15 @@ logs/overnight_runs/controlled/latest/logs/<preprocess>/<algorithm>/
 
 如需先查看脚本里会顺序执行的全部终端命令：
 
+`run_controlled_overnight.sh` 现只支持 `clean | run | restart`。
+
+论文增强实验入口：
+
 ```bash
-bash test_layer/run_controlled_overnight.sh print
+bash test_layer/run_seed_extension.sh restart
+bash test_layer/run_domain_extension.sh restart
+bash test_layer/run_compression_ablation.sh restart
+bash test_layer/run_paper_suite.sh restart
 ```
 
 ### 2. 导出单实验 benchmark
@@ -335,6 +342,13 @@ python test_layer/thesis_tables.py \
 - `thesis_tables.md`
 
 其中 `thesis_tables.md` 是论文草稿和答辩整理最方便看的版本。
+
+### 6. 导出论文增强版统计表
+
+```bash
+python test_layer/paper_tables.py \
+  --output_dir logs/thesis_tables/paper_balanced
+```
 
 ### 6. 导出系统性能表
 

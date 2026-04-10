@@ -88,7 +88,7 @@ async def _process_payload(payload, source='direct'):
 def _list_summary_catalog():
     catalog = []
     artifact_root = Path(ROOT_DIR) / 'deploy_artifacts'
-    for summary_path in sorted(artifact_root.glob('*/compression_summary.json')):
+    for summary_path in sorted(artifact_root.glob('**/compression_summary.json')):
         try:
             summary = json.loads(summary_path.read_text(encoding='utf-8'))
         except (OSError, json.JSONDecodeError):

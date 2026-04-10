@@ -5,7 +5,7 @@ from pathlib import Path
 
 def _find_latest_summary(root_dir):
     summary_files = sorted(
-        root_dir.glob('deploy_artifacts/*/compression_summary.json'),
+        root_dir.glob('deploy_artifacts/**/compression_summary.json'),
         key=lambda item: item.stat().st_mtime,
         reverse=True,
     )

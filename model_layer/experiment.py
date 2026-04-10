@@ -8,6 +8,7 @@ from .utils import resolve_fault_labels
 DEFAULT_FFT_CHANNELS = (32, 64, 64)
 DEFAULT_IMAGE_CHANNELS = (64, 64, 64, 64)
 DEFAULT_FFT_POOLED_LENGTH = 64
+VALID_DEPLOYMENT_LABEL_SAMPLING = ('fixed_first_k', 'random_per_episode')
 
 
 def default_schedule_step(total_steps):
@@ -76,6 +77,16 @@ def normalize_shared_args(args, require_query_shots=False):
         expected_length=4,
         default_channels=DEFAULT_IMAGE_CHANNELS,
     )
+    deployment_label_sampling = getattr(args, 'deployment_label_sampling', 'fixed_first_k')
+    if deployment_label_sampling in (None, ''):
+        deployment_label_sampling = 'fixed_first_k'
+    if deployment_label_sampling not in VALID_DEPLOYMENT_LABEL_SAMPLING:
+        raise ValueError(
+            'deployment_label_sampling must be one of {}.'.format(
+                ', '.join(VALID_DEPLOYMENT_LABEL_SAMPLING),
+            )
+        )
+    args.deployment_label_sampling = deployment_label_sampling
     args.fft_pooled_length = int(getattr(args, 'fft_pooled_length', DEFAULT_FFT_POOLED_LENGTH))
     if args.fft_pooled_length <= 0:
         raise ValueError('fft_pooled_length must be positive.')
@@ -157,6 +168,7 @@ def build_experiment_descriptor(args, algorithm, experiment_title=None):
     return {
         'experiment_title': experiment_title,
         'algorithm': algorithm,
+        'seed': getattr(args, 'seed', None),
         'dataset': getattr(args, 'dataset', None),
         'preprocess': getattr(args, 'preprocess', None),
         'ways': getattr(args, 'ways', None),
@@ -169,6 +181,7 @@ def build_experiment_descriptor(args, algorithm, experiment_title=None):
         'runtime_backend': getattr(args, 'runtime_backend', None),
         'onnx_opset': getattr(args, 'onnx_opset', None),
         'prune_ratio': getattr(args, 'prune_ratio', None),
+        'deployment_label_sampling': getattr(args, 'deployment_label_sampling', None),
         'enable_qat_recovery': getattr(args, 'enable_qat_recovery', None),
         'compression_output_path': getattr(args, 'compression_output_path', None),
     }
