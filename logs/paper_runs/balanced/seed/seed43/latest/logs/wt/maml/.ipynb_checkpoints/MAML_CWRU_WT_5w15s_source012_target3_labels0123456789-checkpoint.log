@@ -1,0 +1,93 @@
+
+=== 2026-04-11T17:08:54+08:00 ===
+$ /root/miniconda3/envs/fault_env/bin/python train.py --mode train --algorithm maml --dataset CWRU --preprocess WT --ways 5 --shots 15 --query_shots 15 --train_domains 0\,1\,2 --test_domain 3 --fault_labels 0\,1\,2\,3\,4\,5\,6\,7\,8\,9 --runtime_backend onnxruntime --enable_compression true --prune_ratio 0.4 --plot false --log true --cuda true --calibration_size 64 --enable_qat_recovery false --onnx_opset 17 --iters 80 --meta_batch_size 16 --train_task_num 100 --test_task_num 200 --compression_finetune_iters 80 --compression_meta_batch_size 8 --log_path /root/workspace/MAML-Edge/logs/paper_runs/balanced/seed/seed43/latest/logs/wt/maml --seed 43 --checkpoint_path /root/workspace/MAML-Edge/checkpoints/paper_balanced/seed/seed43 --compression_output_path /root/workspace/MAML-Edge/deploy_artifacts/paper_balanced/seed/seed43 --deployment_label_sampling random_per_episode 
+/root/miniconda3/envs/fault_env/lib/python3.9/site-packages/sklearn/utils/fixes.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import parse_version  # type: ignore
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+Experiment: MAML_CWRU_WT_5w15s_source012_target3_labels0123456789
+Training MAML with 1 GPU(s).
+Training domains: [0, 1, 2].
+Testing domain: 3.
+Iteration 1:
+Meta Train Results:
+Meta Train Error: 0.9728452749550343.
+Meta Train Accuracy: 0.9141666814684868.
+Meta Test Results:
+Meta Test Error: 0.8249937725067139.
+Meta Test Accuracy: 0.9401333540678024.
+
+Iteration 2:
+Meta Train Results:
+Meta Train Error: 0.850752629339695.
+Meta Train Accuracy: 0.9316666834056377.
+Meta Test Results:
+Meta Test Error: 0.7690483590960503.
+Meta Test Accuracy: 0.9415333542227745.
+
+Iteration 3:
+Meta Train Results:
+Meta Train Error: 0.8218446038663387.
+Meta Train Accuracy: 0.934166681021452.
+Meta Test Results:
+Meta Test Error: 0.7226364789903164.
+Meta Test Accuracy: 0.9432666864991188.
+
+Iteration 4:
+Meta Train Results:
+Meta Train Error: 0.7698837257921696.
+Meta Train Accuracy: 0.9366666823625565.
+Meta Test Results:
+Meta Test Error: 0.6754627601802349.
+Meta Test Accuracy: 0.9449333554506302.
+
+Iteration 5:
+Meta Train Results:
+Meta Train Error: 0.6638588588684797.
+Meta Train Accuracy: 0.943333350121975.
+Meta Test Results:
+Meta Test Error: 0.6173349966108799.
+Meta Test Accuracy: 0.9504000177979469.
+
+Iteration 6:
+Meta Train Results:
+Meta Train Error: 0.650211825966835.
+Meta Train Accuracy: 0.9533333480358124.
+Meta Test Results:
+Meta Test Error: 0.5863309761881829.
+Meta Test Accuracy: 0.9476666861772537.
+
+Iteration 7:
+Meta Train Results:
+Meta Train Error: 0.6129097938537598.
+Meta Train Accuracy: 0.9408333450555801.
+Meta Test Results:
+Meta Test Error: 0.5467939615994691.
+Meta Test Accuracy: 0.9546000176668167.
+
+Iteration 8:
+Meta Train Results:
+Meta Train Error: 0.5563865713775158.
+Meta Train Accuracy: 0.9633333534002304.
+Meta Test Results:
+Meta Test Error: 0.5238120295107365.
+Meta Test Accuracy: 0.958933351635933.
+
+Iteration 9:
+Meta Train Results:
+Meta Train Error: 0.49150428734719753.
+Meta Train Accuracy: 0.9558333493769169.
+Meta Test Results:
+Meta Test Error: 0.5153140081465244.
+Meta Test Accuracy: 0.9567333516478539.
+
+Iteration 10:
+Meta Train Results:
+Meta Train Error: 0.45054723881185055.
+Meta Train Accuracy: 0.9808333516120911.
+Meta Test Results:
+Meta Test Error: 0.4841405234485865.
+Meta Test Accuracy: 0.9588666850328446.
+

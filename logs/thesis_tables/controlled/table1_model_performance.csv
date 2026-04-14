@@ -1,0 +1,4 @@
+model,accuracy,accuracy_percent,metric_protocol,experiment_title
+CNN,0.9905362776025236,99.05,deployment_baseline,CNN_CWRU_STFT_5w5s5q_source012_target3_labels0123456789
+MAML,0.9915878023133544,99.16,deployment_baseline,MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789
+ProtoNet,1.0,100.0,deployment_baseline,ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789

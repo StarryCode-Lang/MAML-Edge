@@ -1,0 +1,104 @@
+{
+  "base_url": "http://127.0.0.1:8000",
+  "selected_model": {
+    "experiment_title": "MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789",
+    "algorithm": "maml",
+    "deployment_type": "classifier",
+    "runtime_backend": "onnxruntime",
+    "providers": [
+      "CPUExecutionProvider"
+    ],
+    "model_path": "/root/workspace/MAML-Edge/deploy_artifacts/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_int8.onnx",
+    "prototype_path": null,
+    "summary_path": "/root/workspace/MAML-Edge/deploy_artifacts/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789/compression_summary.json",
+    "deployment_backend": "onnxruntime",
+    "selected_labels": [
+      0,
+      1,
+      5,
+      7,
+      8
+    ],
+    "adaptation_supported": false,
+    "prototype_labels": [],
+    "prototype_count": 0,
+    "prototype_support_counts": {}
+  },
+  "source": "cwru",
+  "domain": 3,
+  "labels": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "request_count": 100,
+  "interval": 0.0,
+  "channels": [
+    {
+      "channel": "direct",
+      "request_count": 100,
+      "avg_preprocess_latency_ms": 56.237949104979634,
+      "avg_inference_latency_ms": 0.9051739238202572,
+      "avg_end_to_end_latency_ms": 57.25805023685098,
+      "snapshot": {
+        "started_at": 1776128020.724944,
+        "uptime_seconds": 7.959123611450195,
+        "channels": {
+          "direct": {
+            "request_count": 100,
+            "avg_preprocess_latency_ms": 56.237949104979634,
+            "avg_inference_latency_ms": 0.9051739238202572,
+            "avg_end_to_end_latency_ms": 57.25805023685098,
+            "last_result": {
+              "device_id": "esp32-sim-01",
+              "timestamp": 1776128028,
+              "predicted_label": 4,
+              "confidence": 0.46588268876075745
+            }
+          },
+          "mqtt": {
+            "request_count": 0,
+            "avg_preprocess_latency_ms": null,
+            "avg_inference_latency_ms": null,
+            "avg_end_to_end_latency_ms": null,
+            "last_result": null
+          }
+        },
+        "alerts_triggered": 13,
+        "adaptation": {
+          "request_count": 0,
+          "sample_count": 0,
+          "updated_labels": [],
+          "last_status": null,
+          "last_result": null
+        },
+        "current_model": {
+          "experiment_title": "MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789",
+          "algorithm": "maml",
+          "deployment_type": "classifier",
+          "runtime_backend": "onnxruntime",
+          "providers": [
+            "CPUExecutionProvider"
+          ],
+          "model_path": "/root/workspace/MAML-Edge/deploy_artifacts/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789_int8.onnx",
+          "prototype_path": null,
+          "summary_path": "/root/workspace/MAML-Edge/deploy_artifacts/MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789/compression_summary.json",
+          "deployment_backend": "onnxruntime",
+          "selected_labels": [
+            0,
+            1,
+            5,
+            7,
+            8
+          ],
+          "adaptation_supported": false,
+          "prototype_labels": [],
+          "prototype_count": 0,
+          "prototype_support_counts": {}
+        }
+      }
+    }
+  ]
+}

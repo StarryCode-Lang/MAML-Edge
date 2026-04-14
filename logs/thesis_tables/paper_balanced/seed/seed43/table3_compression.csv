@@ -1,0 +1,4 @@
+model_variant,accuracy,accuracy_percent,latency_ms,parameter_count,model_size_mb,runtime_backend,metric_protocol
+Original MAML,0.9848484848484849,98.48,2.9263,113738,0.436068,onnxruntime,deployment_baseline
+Pruned,0.98989898989899,98.99,2.8617,40860,0.158854,onnxruntime,deployment_float
+Pruned + INT8,0.9882154882154882,98.82,3.455,40860,0.056937,onnxruntime,deployment_int8

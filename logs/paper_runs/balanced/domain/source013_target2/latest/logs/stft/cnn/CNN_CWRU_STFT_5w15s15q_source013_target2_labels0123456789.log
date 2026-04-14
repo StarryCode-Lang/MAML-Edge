@@ -1,0 +1,194 @@
+
+=== 2026-04-12T13:57:03+08:00 ===
+$ /root/miniconda3/envs/fault_env/bin/python train.py --mode train --algorithm cnn --dataset CWRU --preprocess STFT --ways 5 --shots 15 --query_shots 15 --train_domains 0\,1\,3 --test_domain 2 --fault_labels 0\,1\,2\,3\,4\,5\,6\,7\,8\,9 --runtime_backend onnxruntime --enable_compression true --prune_ratio 0.4 --plot false --log true --cuda true --calibration_size 64 --enable_qat_recovery false --onnx_opset 17 --epochs 30 --batch_size 64 --finetune_epochs 15 --finetune_lr 0.0003 --test_task_num 200 --compression_finetune_iters 80 --log_path /root/workspace/MAML-Edge/logs/paper_runs/balanced/domain/source013_target2/latest/logs/stft/cnn --seed 42 --checkpoint_path /root/workspace/MAML-Edge/checkpoints/paper_balanced/domain/source013_target2 --compression_output_path /root/workspace/MAML-Edge/deploy_artifacts/paper_balanced/domain/source013_target2 --deployment_label_sampling random_per_episode 
+/root/miniconda3/envs/fault_env/lib/python3.9/site-packages/sklearn/utils/fixes.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import parse_version  # type: ignore
+Experiment: CNN_CWRU_STFT_5w15s15q_source013_target2_labels0123456789
+Training CNN baseline with 1 GPU(s).
+Epoch 1:
+Source Train Loss: 0.435405
+Source Train Accuracy: 0.944635
+Target Fine-tune Loss: 0.741879
+Target Fine-tune Accuracy: 0.811000
+
+Epoch 2:
+Source Train Loss: 0.030780
+Source Train Accuracy: 0.998858
+Target Fine-tune Loss: 0.698054
+Target Fine-tune Accuracy: 0.782533
+
+Epoch 3:
+Source Train Loss: 0.011468
+Source Train Accuracy: 0.999886
+Target Fine-tune Loss: 0.695761
+Target Fine-tune Accuracy: 0.790733
+
+Epoch 4:
+Source Train Loss: 0.005973
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.663990
+Target Fine-tune Accuracy: 0.778600
+
+Epoch 5:
+Source Train Loss: 0.003146
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.729826
+Target Fine-tune Accuracy: 0.753067
+
+Epoch 6:
+Source Train Loss: 0.002283
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.646938
+Target Fine-tune Accuracy: 0.797867
+
+Epoch 7:
+Source Train Loss: 0.001863
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.738614
+Target Fine-tune Accuracy: 0.764600
+
+Epoch 8:
+Source Train Loss: 0.001302
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.687697
+Target Fine-tune Accuracy: 0.770200
+
+Epoch 9:
+Source Train Loss: 0.000945
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.658789
+Target Fine-tune Accuracy: 0.791933
+
+Epoch 10:
+Source Train Loss: 0.000791
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.673006
+Target Fine-tune Accuracy: 0.782867
+
+Epoch 11:
+Source Train Loss: 0.000659
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.769784
+Target Fine-tune Accuracy: 0.737933
+
+Epoch 12:
+Source Train Loss: 0.000569
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.673308
+Target Fine-tune Accuracy: 0.770733
+
+Epoch 13:
+Source Train Loss: 0.000449
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.691914
+Target Fine-tune Accuracy: 0.771000
+
+Epoch 14:
+Source Train Loss: 0.000400
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.796260
+Target Fine-tune Accuracy: 0.740467
+
+Epoch 15:
+Source Train Loss: 0.000321
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.709316
+Target Fine-tune Accuracy: 0.760400
+
+Epoch 16:
+Source Train Loss: 0.000284
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.716522
+Target Fine-tune Accuracy: 0.770800
+
+Epoch 17:
+Source Train Loss: 0.000329
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.725406
+Target Fine-tune Accuracy: 0.759400
+
+Epoch 18:
+Source Train Loss: 0.000223
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.757777
+Target Fine-tune Accuracy: 0.754733
+
+Epoch 19:
+Source Train Loss: 0.000194
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.713338
+Target Fine-tune Accuracy: 0.765067
+
+Epoch 20:
+Source Train Loss: 0.000175
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.776369
+Target Fine-tune Accuracy: 0.744200
+
+Epoch 21:
+Source Train Loss: 0.000149
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.779918
+Target Fine-tune Accuracy: 0.755067
+
+Epoch 22:
+Source Train Loss: 0.000146
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.783665
+Target Fine-tune Accuracy: 0.751000
+
+Epoch 23:
+Source Train Loss: 0.000129
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.742063
+Target Fine-tune Accuracy: 0.751400
+
+Epoch 24:
+Source Train Loss: 0.000114
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.761194
+Target Fine-tune Accuracy: 0.759467
+
+Epoch 25:
+Source Train Loss: 0.000093
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.797355
+Target Fine-tune Accuracy: 0.749933
+
+Epoch 26:
+Source Train Loss: 0.000092
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.835699
+Target Fine-tune Accuracy: 0.729933
+
+Epoch 27:
+Source Train Loss: 0.000104
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.831121
+Target Fine-tune Accuracy: 0.720400
+
+Epoch 28:
+Source Train Loss: 0.000084
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.743959
+Target Fine-tune Accuracy: 0.743533
+
+Epoch 29:
+Source Train Loss: 0.000074
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.828213
+Target Fine-tune Accuracy: 0.751467
+
+Epoch 30:
+Source Train Loss: 0.000065
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.792541
+Target Fine-tune Accuracy: 0.744533
+
+Please consider to run pre-processing before quantization. Refer to example: https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+Please consider pre-processing before quantization. See https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+Please consider to run pre-processing before quantization. Refer to example: https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+Please consider pre-processing before quantization. See https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+Compression summary saved to /root/workspace/MAML-Edge/deploy_artifacts/paper_balanced/domain/source013_target2/CNN_CWRU_STFT_5w15s15q_source013_target2_labels0123456789/compression_summary.json.
+
+[return_code] 0

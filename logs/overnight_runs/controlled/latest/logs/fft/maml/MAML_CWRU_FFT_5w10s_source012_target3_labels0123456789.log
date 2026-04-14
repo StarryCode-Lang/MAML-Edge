@@ -1,0 +1,3344 @@
+
+=== 2026-04-10T23:55:53+08:00 ===
+$ /root/miniconda3/envs/fault_env/bin/python train.py --mode train --algorithm maml --dataset CWRU --preprocess FFT --ways 5 --shots 10 --query_shots 10 --train_domains 0\,1\,2 --test_domain 3 --fault_labels 0\,1\,2\,3\,4\,5\,6\,7\,8\,9 --runtime_backend onnxruntime --enable_compression true --prune_ratio 0.4 --plot false --log true --cuda true --calibration_size 64 --enable_qat_recovery false --onnx_opset 17 --iters 400 --meta_batch_size 16 --train_task_num 100 --test_task_num 50 --compression_finetune_iters 80 --compression_meta_batch_size 8 --log_path /root/workspace/MAML-Edge/logs/overnight_runs/controlled/latest/logs/fft/maml --seed 42 --checkpoint_path /root/workspace/MAML-Edge/checkpoints --compression_output_path /root/workspace/MAML-Edge/deploy_artifacts --deployment_label_sampling random_per_episode 
+/root/miniconda3/envs/fault_env/lib/python3.9/site-packages/sklearn/utils/fixes.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import parse_version  # type: ignore
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+Experiment: MAML_CWRU_FFT_5w10s_source012_target3_labels0123456789
+Training MAML with 1 GPU(s).
+Training domains: [0, 1, 2].
+Testing domain: 3.
+Domain: 0, normalization: False, time_steps: 1024, overlap_ratio: 0.5.
+Loading Data: fault type: 0, total num: 243938, sample num: 475
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 1, total num: 121265, sample num: 235
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 2, total num: 122571, sample num: 238
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 3, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 4, total num: 121846, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 5, total num: 121846, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 6, total num: 121846, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 7, total num: 122136, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 8, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 9, total num: 122426, sample num: 238
+Data is shuffled using random seed: 42
+
+Domain: 1, normalization: False, time_steps: 1024, overlap_ratio: 0.5.
+Loading Data: fault type: 0, total num: 483903, sample num: 944
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 1, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 2, total num: 121410, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 3, total num: 122426, sample num: 238
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 4, total num: 121846, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 5, total num: 122136, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 6, total num: 122136, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 7, total num: 121556, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 8, total num: 121701, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 9, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Domain: 2, normalization: False, time_steps: 1024, overlap_ratio: 0.5.
+Loading Data: fault type: 0, total num: 485063, sample num: 946
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 1, total num: 122136, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 2, total num: 121556, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 3, total num: 121410, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 4, total num: 121846, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 5, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 6, total num: 121846, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 7, total num: 121846, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 8, total num: 122136, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 9, total num: 122281, sample num: 237
+Data is shuffled using random seed: 42
+
+Domain: 3, normalization: False, time_steps: 1024, overlap_ratio: 0.5.
+Loading Data: fault type: 0, total num: 485643, sample num: 947
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 1, total num: 122917, sample num: 239
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 2, total num: 121556, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 3, total num: 122571, sample num: 238
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 4, total num: 121701, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 5, total num: 122136, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 6, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 7, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 8, total num: 122136, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 9, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Iteration 1:
+Meta Train Results:
+Meta Train Error: 3.411181221716106.
+Meta Train Accuracy: 0.6687499806284904.
+Meta Test Results:
+Meta Test Error: 2.7203401114232837.
+Meta Test Accuracy: 0.7203999757766724.
+
+Iteration 2:
+Meta Train Results:
+Meta Train Error: 2.4593516141176224.
+Meta Train Accuracy: 0.7124999761581421.
+Meta Test Results:
+Meta Test Error: 2.9959588069841265.
+Meta Test Accuracy: 0.7407999736070633.
+
+Iteration 3:
+Meta Train Results:
+Meta Train Error: 3.365838042460382.
+Meta Train Accuracy: 0.6837499681860209.
+Meta Test Results:
+Meta Test Error: 2.62699944794178.
+Meta Test Accuracy: 0.6663999748229981.
+
+Iteration 4:
+Meta Train Results:
+Meta Train Error: 2.4438257180154324.
+Meta Train Accuracy: 0.6224999763071537.
+Meta Test Results:
+Meta Test Error: 3.243896405696869.
+Meta Test Accuracy: 0.6791999793052673.
+
+Iteration 5:
+Meta Train Results:
+Meta Train Error: 2.6995399985462427.
+Meta Train Accuracy: 0.6912499684840441.
+Meta Test Results:
+Meta Test Error: 3.384365117251873.
+Meta Test Accuracy: 0.6863999748229981.
+
+Iteration 6:
+Meta Train Results:
+Meta Train Error: 3.6247381046414375.
+Meta Train Accuracy: 0.6749999783933163.
+Meta Test Results:
+Meta Test Error: 1.8502236279845237.
+Meta Test Accuracy: 0.681599975824356.
+
+Iteration 7:
+Meta Train Results:
+Meta Train Error: 2.484498968347907.
+Meta Train Accuracy: 0.6762499697506428.
+Meta Test Results:
+Meta Test Error: 2.9828048759698866.
+Meta Test Accuracy: 0.6951999735832214.
+
+Iteration 8:
+Meta Train Results:
+Meta Train Error: 1.665783079341054.
+Meta Train Accuracy: 0.8137499801814556.
+Meta Test Results:
+Meta Test Error: 2.722381339669228.
+Meta Test Accuracy: 0.6727999752759933.
+
+Iteration 9:
+Meta Train Results:
+Meta Train Error: 2.8789329258725047.
+Meta Train Accuracy: 0.716249980032444.
+Meta Test Results:
+Meta Test Error: 1.7930984883010388.
+Meta Test Accuracy: 0.7139999771118164.
+
+Iteration 10:
+Meta Train Results:
+Meta Train Error: 2.4490963496500626.
+Meta Train Accuracy: 0.7374999821186066.
+Meta Test Results:
+Meta Test Error: 1.4308278545737267.
+Meta Test Accuracy: 0.774799975156784.
+
+Iteration 11:
+Meta Train Results:
+Meta Train Error: 2.3871893789619207.
+Meta Train Accuracy: 0.7237499821931124.
+Meta Test Results:
+Meta Test Error: 1.4505752727389336.
+Meta Test Accuracy: 0.7287999722361564.
+
+Iteration 12:
+Meta Train Results:
+Meta Train Error: 1.4439533073455095.
+Meta Train Accuracy: 0.7162499725818634.
+Meta Test Results:
+Meta Test Error: 1.697703248411417.
+Meta Test Accuracy: 0.7575999730825425.
+
+Iteration 13:
+Meta Train Results:
+Meta Train Error: 2.137897181324661.
+Meta Train Accuracy: 0.7687499709427357.
+Meta Test Results:
+Meta Test Error: 1.5736955204606056.
+Meta Test Accuracy: 0.7323999756574631.
+
+Iteration 14:
+Meta Train Results:
+Meta Train Error: 0.7445022594183683.
+Meta Train Accuracy: 0.8524999804794788.
+Meta Test Results:
+Meta Test Error: 2.4496936932206155.
+Meta Test Accuracy: 0.7595999735593796.
+
+Iteration 15:
+Meta Train Results:
+Meta Train Error: 1.22258086130023.
+Meta Train Accuracy: 0.8249999769032001.
+Meta Test Results:
+Meta Test Error: 1.7526834256947041.
+Meta Test Accuracy: 0.7587999773025512.
+
+Iteration 16:
+Meta Train Results:
+Meta Train Error: 3.642861396074295.
+Meta Train Accuracy: 0.6899999752640724.
+Meta Test Results:
+Meta Test Error: 1.2530632439255713.
+Meta Test Accuracy: 0.7547999733686447.
+
+Iteration 17:
+Meta Train Results:
+Meta Train Error: 1.5998019808903337.
+Meta Train Accuracy: 0.7799999751150608.
+Meta Test Results:
+Meta Test Error: 2.1703435707092287.
+Meta Test Accuracy: 0.7471999722719193.
+
+Iteration 18:
+Meta Train Results:
+Meta Train Error: 1.045973002910614.
+Meta Train Accuracy: 0.827499981969595.
+Meta Test Results:
+Meta Test Error: 1.7178251099586488.
+Meta Test Accuracy: 0.7675999784469605.
+
+Iteration 19:
+Meta Train Results:
+Meta Train Error: 1.693279389059171.
+Meta Train Accuracy: 0.8049999736249447.
+Meta Test Results:
+Meta Test Error: 1.8792929241061211.
+Meta Test Accuracy: 0.7795999756455422.
+
+Iteration 20:
+Meta Train Results:
+Meta Train Error: 1.2402716623619199.
+Meta Train Accuracy: 0.8124999776482582.
+Meta Test Results:
+Meta Test Error: 0.785352675318718.
+Meta Test Accuracy: 0.8151999759674072.
+
+Iteration 21:
+Meta Train Results:
+Meta Train Error: 0.8941638702526689.
+Meta Train Accuracy: 0.8687499761581421.
+Meta Test Results:
+Meta Test Error: 0.8799731054902077.
+Meta Test Accuracy: 0.8075999766588211.
+
+Iteration 22:
+Meta Train Results:
+Meta Train Error: 0.8084590202197433.
+Meta Train Accuracy: 0.886249978095293.
+Meta Test Results:
+Meta Test Error: 1.7171789833903313.
+Meta Test Accuracy: 0.7639999800920486.
+
+Iteration 23:
+Meta Train Results:
+Meta Train Error: 1.2810390070080757.
+Meta Train Accuracy: 0.8699999824166298.
+Meta Test Results:
+Meta Test Error: 1.402672764211893.
+Meta Test Accuracy: 0.7823999762535095.
+
+Iteration 24:
+Meta Train Results:
+Meta Train Error: 0.737845839234069.
+Meta Train Accuracy: 0.8649999871850014.
+Meta Test Results:
+Meta Test Error: 1.0770267677307128.
+Meta Test Accuracy: 0.8095999777317047.
+
+Iteration 25:
+Meta Train Results:
+Meta Train Error: 1.102504441398196.
+Meta Train Accuracy: 0.8287499807775021.
+Meta Test Results:
+Meta Test Error: 0.7787537551671266.
+Meta Test Accuracy: 0.8299999809265137.
+
+Iteration 26:
+Meta Train Results:
+Meta Train Error: 1.0042634600540623.
+Meta Train Accuracy: 0.8699999861419201.
+Meta Test Results:
+Meta Test Error: 1.3453176143765448.
+Meta Test Accuracy: 0.8051999777555465.
+
+Iteration 27:
+Meta Train Results:
+Meta Train Error: 1.0028990195132792.
+Meta Train Accuracy: 0.8274999838322401.
+Meta Test Results:
+Meta Test Error: 1.2229967986047268.
+Meta Test Accuracy: 0.8155999797582626.
+
+Iteration 28:
+Meta Train Results:
+Meta Train Error: 0.9443661545519717.
+Meta Train Accuracy: 0.849999975413084.
+Meta Test Results:
+Meta Test Error: 1.1838582818210126.
+Meta Test Accuracy: 0.8367999827861786.
+
+Iteration 29:
+Meta Train Results:
+Meta Train Error: 1.523799128306564.
+Meta Train Accuracy: 0.8574999831616879.
+Meta Test Results:
+Meta Test Error: 1.9522877571731805.
+Meta Test Accuracy: 0.8031999838352203.
+
+Iteration 30:
+Meta Train Results:
+Meta Train Error: 1.2019018908031285.
+Meta Train Accuracy: 0.8874999843537807.
+Meta Test Results:
+Meta Test Error: 1.5617527124285697.
+Meta Test Accuracy: 0.7879999768733978.
+
+Iteration 31:
+Meta Train Results:
+Meta Train Error: 1.6291010035201907.
+Meta Train Accuracy: 0.8512499816715717.
+Meta Test Results:
+Meta Test Error: 1.04394094735384.
+Meta Test Accuracy: 0.8319999825954437.
+
+Iteration 32:
+Meta Train Results:
+Meta Train Error: 1.4887268375605345.
+Meta Train Accuracy: 0.8187499903142452.
+Meta Test Results:
+Meta Test Error: 0.8944282454252243.
+Meta Test Accuracy: 0.856399981379509.
+
+Iteration 33:
+Meta Train Results:
+Meta Train Error: 1.0073048509657383.
+Meta Train Accuracy: 0.8537499792873859.
+Meta Test Results:
+Meta Test Error: 0.9426151663064957.
+Meta Test Accuracy: 0.8235999798774719.
+
+Iteration 34:
+Meta Train Results:
+Meta Train Error: 2.8845489639788866.
+Meta Train Accuracy: 0.8374999836087227.
+Meta Test Results:
+Meta Test Error: 0.9495564505457879.
+Meta Test Accuracy: 0.8163999778032303.
+
+Iteration 35:
+Meta Train Results:
+Meta Train Error: 1.7008536774665117.
+Meta Train Accuracy: 0.8387499749660492.
+Meta Test Results:
+Meta Test Error: 1.4465351226925849.
+Meta Test Accuracy: 0.8243999755382538.
+
+Iteration 36:
+Meta Train Results:
+Meta Train Error: 1.9438939881511033.
+Meta Train Accuracy: 0.763749971985817.
+Meta Test Results:
+Meta Test Error: 1.4240743763744832.
+Meta Test Accuracy: 0.84079998254776.
+
+Iteration 37:
+Meta Train Results:
+Meta Train Error: 1.363212363794446.
+Meta Train Accuracy: 0.8424999825656414.
+Meta Test Results:
+Meta Test Error: 1.7733829514682293.
+Meta Test Accuracy: 0.7939999783039093.
+
+Iteration 38:
+Meta Train Results:
+Meta Train Error: 2.2161901858635247.
+Meta Train Accuracy: 0.7837499789893627.
+Meta Test Results:
+Meta Test Error: 1.6616286241263152.
+Meta Test Accuracy: 0.8179999828338623.
+
+Iteration 39:
+Meta Train Results:
+Meta Train Error: 1.0683184736408293.
+Meta Train Accuracy: 0.8662499785423279.
+Meta Test Results:
+Meta Test Error: 1.3303553773462773.
+Meta Test Accuracy: 0.8191999757289886.
+
+Iteration 40:
+Meta Train Results:
+Meta Train Error: 1.3034933172166348.
+Meta Train Accuracy: 0.8862499855458736.
+Meta Test Results:
+Meta Test Error: 1.1377645960450173.
+Meta Test Accuracy: 0.8299999797344207.
+
+Iteration 41:
+Meta Train Results:
+Meta Train Error: 2.448380107060075.
+Meta Train Accuracy: 0.7949999757111073.
+Meta Test Results:
+Meta Test Error: 1.2631157109141349.
+Meta Test Accuracy: 0.8451999795436859.
+
+Iteration 42:
+Meta Train Results:
+Meta Train Error: 0.5301525425165892.
+Meta Train Accuracy: 0.9212499894201756.
+Meta Test Results:
+Meta Test Error: 1.169717433154583.
+Meta Test Accuracy: 0.7991999799013138.
+
+Iteration 43:
+Meta Train Results:
+Meta Train Error: 0.6250330046750605.
+Meta Train Accuracy: 0.9162499830126762.
+Meta Test Results:
+Meta Test Error: 1.063389081656933.
+Meta Test Accuracy: 0.8635999727249145.
+
+Iteration 44:
+Meta Train Results:
+Meta Train Error: 1.1258342349901795.
+Meta Train Accuracy: 0.8674999848008156.
+Meta Test Results:
+Meta Test Error: 1.4063764180243015.
+Meta Test Accuracy: 0.8175999784469604.
+
+Iteration 45:
+Meta Train Results:
+Meta Train Error: 2.855021641589701.
+Meta Train Accuracy: 0.8437499813735485.
+Meta Test Results:
+Meta Test Error: 1.2101254685223102.
+Meta Test Accuracy: 0.8471999794244767.
+
+Iteration 46:
+Meta Train Results:
+Meta Train Error: 0.5088535603135824.
+Meta Train Accuracy: 0.9474999904632568.
+Meta Test Results:
+Meta Test Error: 0.8668637880682946.
+Meta Test Accuracy: 0.8795999836921692.
+
+Iteration 47:
+Meta Train Results:
+Meta Train Error: 0.7558777537196875.
+Meta Train Accuracy: 0.8962499834597111.
+Meta Test Results:
+Meta Test Error: 0.9748075878620148.
+Meta Test Accuracy: 0.8339999806880951.
+
+Iteration 48:
+Meta Train Results:
+Meta Train Error: 0.5824469816870987.
+Meta Train Accuracy: 0.9249999783933163.
+Meta Test Results:
+Meta Test Error: 1.2937405179440975.
+Meta Test Accuracy: 0.8339999806880951.
+
+Iteration 49:
+Meta Train Results:
+Meta Train Error: 0.6138039934448898.
+Meta Train Accuracy: 0.9112499803304672.
+Meta Test Results:
+Meta Test Error: 0.8562767527997494.
+Meta Test Accuracy: 0.8683999782800674.
+
+Iteration 50:
+Meta Train Results:
+Meta Train Error: 0.6382379028946161.
+Meta Train Accuracy: 0.9212499856948853.
+Meta Test Results:
+Meta Test Error: 0.9989827165007591.
+Meta Test Accuracy: 0.8523999774456024.
+
+Iteration 51:
+Meta Train Results:
+Meta Train Error: 1.5169449808890931.
+Meta Train Accuracy: 0.854999978095293.
+Meta Test Results:
+Meta Test Error: 0.8355165049433708.
+Meta Test Accuracy: 0.8711999785900116.
+
+Iteration 52:
+Meta Train Results:
+Meta Train Error: 1.0264651053585112.
+Meta Train Accuracy: 0.9099999852478504.
+Meta Test Results:
+Meta Test Error: 0.986361494064331.
+Meta Test Accuracy: 0.8559999787807464.
+
+Iteration 53:
+Meta Train Results:
+Meta Train Error: 1.0247267730301246.
+Meta Train Accuracy: 0.8749999850988388.
+Meta Test Results:
+Meta Test Error: 1.0782481563091277.
+Meta Test Accuracy: 0.845199978351593.
+
+Iteration 54:
+Meta Train Results:
+Meta Train Error: 0.7784952726215124.
+Meta Train Accuracy: 0.8712499886751175.
+Meta Test Results:
+Meta Test Error: 0.8777590540796518.
+Meta Test Accuracy: 0.8827999806404114.
+
+Iteration 55:
+Meta Train Results:
+Meta Train Error: 0.6913877781480551.
+Meta Train Accuracy: 0.9287499822676182.
+Meta Test Results:
+Meta Test Error: 0.9596135081350803.
+Meta Test Accuracy: 0.841199979186058.
+
+Iteration 56:
+Meta Train Results:
+Meta Train Error: 0.4222857686690986.
+Meta Train Accuracy: 0.9637499824166298.
+Meta Test Results:
+Meta Test Error: 0.7168406574428081.
+Meta Test Accuracy: 0.8823999762535095.
+
+Iteration 57:
+Meta Train Results:
+Meta Train Error: 0.6174772763624787.
+Meta Train Accuracy: 0.952499981969595.
+Meta Test Results:
+Meta Test Error: 0.8562888450920582.
+Meta Test Accuracy: 0.845599980354309.
+
+Iteration 58:
+Meta Train Results:
+Meta Train Error: 0.37404797598719597.
+Meta Train Accuracy: 0.9274999834597111.
+Meta Test Results:
+Meta Test Error: 0.8924252241849899.
+Meta Test Accuracy: 0.8439999806880951.
+
+Iteration 59:
+Meta Train Results:
+Meta Train Error: 0.4507308481261134.
+Meta Train Accuracy: 0.9174999855458736.
+Meta Test Results:
+Meta Test Error: 0.7655861437320709.
+Meta Test Accuracy: 0.8819999814033508.
+
+Iteration 60:
+Meta Train Results:
+Meta Train Error: 0.2934445298742503.
+Meta Train Accuracy: 0.9712499864399433.
+Meta Test Results:
+Meta Test Error: 0.7429510360956192.
+Meta Test Accuracy: 0.8607999777793884.
+
+Iteration 61:
+Meta Train Results:
+Meta Train Error: 0.6309722769074142.
+Meta Train Accuracy: 0.8924999870359898.
+Meta Test Results:
+Meta Test Error: 0.6129909767210484.
+Meta Test Accuracy: 0.8719999778270722.
+
+Iteration 62:
+Meta Train Results:
+Meta Train Error: 0.4671803331002593.
+Meta Train Accuracy: 0.9324999786913395.
+Meta Test Results:
+Meta Test Error: 0.5946526326239109.
+Meta Test Accuracy: 0.8903999865055084.
+
+Iteration 63:
+Meta Train Results:
+Meta Train Error: 0.5846641482785344.
+Meta Train Accuracy: 0.9187499843537807.
+Meta Test Results:
+Meta Test Error: 0.68053825289011.
+Meta Test Accuracy: 0.8603999793529511.
+
+Iteration 64:
+Meta Train Results:
+Meta Train Error: 0.34996791719459.
+Meta Train Accuracy: 0.9324999824166298.
+Meta Test Results:
+Meta Test Error: 0.5415855003893375.
+Meta Test Accuracy: 0.899199982881546.
+
+Iteration 65:
+Meta Train Results:
+Meta Train Error: 0.7686498435214162.
+Meta Train Accuracy: 0.9287499897181988.
+Meta Test Results:
+Meta Test Error: 0.726162847429514.
+Meta Test Accuracy: 0.8575999808311462.
+
+Iteration 66:
+Meta Train Results:
+Meta Train Error: 0.6188292049337178.
+Meta Train Accuracy: 0.9062499944120646.
+Meta Test Results:
+Meta Test Error: 0.6922388516366482.
+Meta Test Accuracy: 0.8635999786853791.
+
+Iteration 67:
+Meta Train Results:
+Meta Train Error: 0.9988831211812794.
+Meta Train Accuracy: 0.8724999744445086.
+Meta Test Results:
+Meta Test Error: 0.6449886637926102.
+Meta Test Accuracy: 0.9023999810218811.
+
+Iteration 68:
+Meta Train Results:
+Meta Train Error: 0.4335170420818031.
+Meta Train Accuracy: 0.9574999921023846.
+Meta Test Results:
+Meta Test Error: 0.7349830496311188.
+Meta Test Accuracy: 0.859599974155426.
+
+Iteration 69:
+Meta Train Results:
+Meta Train Error: 0.3243157083634287.
+Meta Train Accuracy: 0.9499999843537807.
+Meta Test Results:
+Meta Test Error: 0.7023293425142765.
+Meta Test Accuracy: 0.8723999845981598.
+
+Iteration 70:
+Meta Train Results:
+Meta Train Error: 0.3693166524171829.
+Meta Train Accuracy: 0.9549999870359898.
+Meta Test Results:
+Meta Test Error: 0.5631497874855995.
+Meta Test Accuracy: 0.8859999787807464.
+
+Iteration 71:
+Meta Train Results:
+Meta Train Error: 0.40960337803699076.
+Meta Train Accuracy: 0.9249999932944775.
+Meta Test Results:
+Meta Test Error: 0.6937323945760727.
+Meta Test Accuracy: 0.8631999790668488.
+
+Iteration 72:
+Meta Train Results:
+Meta Train Error: 0.7584348050877452.
+Meta Train Accuracy: 0.9224999770522118.
+Meta Test Results:
+Meta Test Error: 0.6550544004142285.
+Meta Test Accuracy: 0.8823999774456024.
+
+Iteration 73:
+Meta Train Results:
+Meta Train Error: 1.2538970517925918.
+Meta Train Accuracy: 0.9149999842047691.
+Meta Test Results:
+Meta Test Error: 0.516064085662365.
+Meta Test Accuracy: 0.9159999883174896.
+
+Iteration 74:
+Meta Train Results:
+Meta Train Error: 0.31742996722459793.
+Meta Train Accuracy: 0.953749991953373.
+Meta Test Results:
+Meta Test Error: 0.5020397634804249.
+Meta Test Accuracy: 0.897199981212616.
+
+Iteration 75:
+Meta Train Results:
+Meta Train Error: 0.7248341097729281.
+Meta Train Accuracy: 0.9174999929964542.
+Meta Test Results:
+Meta Test Error: 0.5451986321061849.
+Meta Test Accuracy: 0.8903999823331833.
+
+Iteration 76:
+Meta Train Results:
+Meta Train Error: 0.5336461956612766.
+Meta Train Accuracy: 0.9174999818205833.
+Meta Test Results:
+Meta Test Error: 0.4860317873954773.
+Meta Test Accuracy: 0.8947999787330627.
+
+Iteration 77:
+Meta Train Results:
+Meta Train Error: 0.6708339666947722.
+Meta Train Accuracy: 0.9312499761581421.
+Meta Test Results:
+Meta Test Error: 0.6965096573531627.
+Meta Test Accuracy: 0.8847999829053879.
+
+Iteration 78:
+Meta Train Results:
+Meta Train Error: 0.36866040085442364.
+Meta Train Accuracy: 0.9424999840557575.
+Meta Test Results:
+Meta Test Error: 0.7404532055556774.
+Meta Test Accuracy: 0.8787999820709228.
+
+Iteration 79:
+Meta Train Results:
+Meta Train Error: 0.23225213249679655.
+Meta Train Accuracy: 0.9712499864399433.
+Meta Test Results:
+Meta Test Error: 0.8465873358398676.
+Meta Test Accuracy: 0.8855999779701232.
+
+Iteration 80:
+Meta Train Results:
+Meta Train Error: 0.6986941639333963.
+Meta Train Accuracy: 0.9024999812245369.
+Meta Test Results:
+Meta Test Error: 0.5056352084875106.
+Meta Test Accuracy: 0.8963999783992768.
+
+Iteration 81:
+Meta Train Results:
+Meta Train Error: 0.3038777072215453.
+Meta Train Accuracy: 0.9724999852478504.
+Meta Test Results:
+Meta Test Error: 0.5985410888493061.
+Meta Test Accuracy: 0.8803999876976013.
+
+Iteration 82:
+Meta Train Results:
+Meta Train Error: 0.31442138785496354.
+Meta Train Accuracy: 0.9499999843537807.
+Meta Test Results:
+Meta Test Error: 0.521661626547575.
+Meta Test Accuracy: 0.8963999783992768.
+
+Iteration 83:
+Meta Train Results:
+Meta Train Error: 0.41638850793242455.
+Meta Train Accuracy: 0.9412499777972698.
+Meta Test Results:
+Meta Test Error: 0.40522414214909075.
+Meta Test Accuracy: 0.9175999796390534.
+
+Iteration 84:
+Meta Train Results:
+Meta Train Error: 0.40354955685324967.
+Meta Train Accuracy: 0.9549999795854092.
+Meta Test Results:
+Meta Test Error: 0.4317281008511782.
+Meta Test Accuracy: 0.9099999833106994.
+
+Iteration 85:
+Meta Train Results:
+Meta Train Error: 0.5136872843140736.
+Meta Train Accuracy: 0.9599999934434891.
+Meta Test Results:
+Meta Test Error: 0.3823603229224682.
+Meta Test Accuracy: 0.922399982213974.
+
+Iteration 86:
+Meta Train Results:
+Meta Train Error: 0.29868196067400277.
+Meta Train Accuracy: 0.9287499822676182.
+Meta Test Results:
+Meta Test Error: 0.6547471509873867.
+Meta Test Accuracy: 0.9127999842166901.
+
+Iteration 87:
+Meta Train Results:
+Meta Train Error: 1.0203661657869816.
+Meta Train Accuracy: 0.9012499824166298.
+Meta Test Results:
+Meta Test Error: 0.5828193234652281.
+Meta Test Accuracy: 0.8863999855518341.
+
+Iteration 88:
+Meta Train Results:
+Meta Train Error: 0.2897601695731282.
+Meta Train Accuracy: 0.9599999934434891.
+Meta Test Results:
+Meta Test Error: 0.6947377289831639.
+Meta Test Accuracy: 0.9047999858856202.
+
+Iteration 89:
+Meta Train Results:
+Meta Train Error: 0.49593179940711707.
+Meta Train Accuracy: 0.9274999871850014.
+Meta Test Results:
+Meta Test Error: 0.4534629089385271.
+Meta Test Accuracy: 0.9091999846696853.
+
+Iteration 90:
+Meta Train Results:
+Meta Train Error: 0.2488134407903999.
+Meta Train Accuracy: 0.9624999836087227.
+Meta Test Results:
+Meta Test Error: 0.36408262699842453.
+Meta Test Accuracy: 0.9371999824047088.
+
+Iteration 91:
+Meta Train Results:
+Meta Train Error: 0.27537017222493887.
+Meta Train Accuracy: 0.9699999839067459.
+Meta Test Results:
+Meta Test Error: 0.579694416821003.
+Meta Test Accuracy: 0.8991999793052673.
+
+Iteration 92:
+Meta Train Results:
+Meta Train Error: 0.8976081765722483.
+Meta Train Accuracy: 0.9412499852478504.
+Meta Test Results:
+Meta Test Error: 0.46196480222046377.
+Meta Test Accuracy: 0.903999981880188.
+
+Iteration 93:
+Meta Train Results:
+Meta Train Error: 0.19748812218313105.
+Meta Train Accuracy: 0.9612499848008156.
+Meta Test Results:
+Meta Test Error: 0.4950209191441536.
+Meta Test Accuracy: 0.9403999805450439.
+
+Iteration 94:
+Meta Train Results:
+Meta Train Error: 0.8298096815124154.
+Meta Train Accuracy: 0.9374999888241291.
+Meta Test Results:
+Meta Test Error: 0.46949312195181847.
+Meta Test Accuracy: 0.917999985218048.
+
+Iteration 95:
+Meta Train Results:
+Meta Train Error: 0.2794853978557512.
+Meta Train Accuracy: 0.9649999886751175.
+Meta Test Results:
+Meta Test Error: 0.4978885218501091.
+Meta Test Accuracy: 0.934399985074997.
+
+Iteration 96:
+Meta Train Results:
+Meta Train Error: 0.28865378908813.
+Meta Train Accuracy: 0.9587499909102917.
+Meta Test Results:
+Meta Test Error: 0.6749358884990215.
+Meta Test Accuracy: 0.8939999830722809.
+
+Iteration 97:
+Meta Train Results:
+Meta Train Error: 0.22562111995648593.
+Meta Train Accuracy: 0.9749999903142452.
+Meta Test Results:
+Meta Test Error: 0.5507206774502993.
+Meta Test Accuracy: 0.9347999864816665.
+
+Iteration 98:
+Meta Train Results:
+Meta Train Error: 0.23641772050177678.
+Meta Train Accuracy: 0.9737499915063381.
+Meta Test Results:
+Meta Test Error: 0.49928462363779547.
+Meta Test Accuracy: 0.9411999797821045.
+
+Iteration 99:
+Meta Train Results:
+Meta Train Error: 0.3429092577425763.
+Meta Train Accuracy: 0.9474999867379665.
+Meta Test Results:
+Meta Test Error: 0.5527312512695789.
+Meta Test Accuracy: 0.9175999796390534.
+
+Iteration 100:
+Meta Train Results:
+Meta Train Error: 0.29247019556351006.
+Meta Train Accuracy: 0.9524999782443047.
+Meta Test Results:
+Meta Test Error: 0.5725202169269323.
+Meta Test Accuracy: 0.9155999851226807.
+
+Iteration 101:
+Meta Train Results:
+Meta Train Error: 0.31231577368453145.
+Meta Train Accuracy: 0.9724999815225601.
+Meta Test Results:
+Meta Test Error: 0.4255127722024918.
+Meta Test Accuracy: 0.9271999859809875.
+
+Iteration 102:
+Meta Train Results:
+Meta Train Error: 0.32495130036841147.
+Meta Train Accuracy: 0.9712499864399433.
+Meta Test Results:
+Meta Test Error: 0.4867437396943569.
+Meta Test Accuracy: 0.9175999855995178.
+
+Iteration 103:
+Meta Train Results:
+Meta Train Error: 0.35483034877688624.
+Meta Train Accuracy: 0.9512499868869781.
+Meta Test Results:
+Meta Test Error: 0.5628803284466266.
+Meta Test Accuracy: 0.9047999811172486.
+
+Iteration 104:
+Meta Train Results:
+Meta Train Error: 0.5471753412857652.
+Meta Train Accuracy: 0.9224999807775021.
+Meta Test Results:
+Meta Test Error: 0.45155834876000883.
+Meta Test Accuracy: 0.9415999865531921.
+
+Iteration 105:
+Meta Train Results:
+Meta Train Error: 0.4038056143326685.
+Meta Train Accuracy: 0.9474999830126762.
+Meta Test Results:
+Meta Test Error: 0.5936035212129355.
+Meta Test Accuracy: 0.9219999814033508.
+
+Iteration 106:
+Meta Train Results:
+Meta Train Error: 0.39642354054376483.
+Meta Train Accuracy: 0.9549999833106995.
+Meta Test Results:
+Meta Test Error: 0.42324917048215865.
+Meta Test Accuracy: 0.9319999849796295.
+
+Iteration 107:
+Meta Train Results:
+Meta Train Error: 0.4654694793280214.
+Meta Train Accuracy: 0.9399999864399433.
+Meta Test Results:
+Meta Test Error: 0.49358728535473345.
+Meta Test Accuracy: 0.9231999802589417.
+
+Iteration 108:
+Meta Train Results:
+Meta Train Error: 0.4223548909649253.
+Meta Train Accuracy: 0.9462499804794788.
+Meta Test Results:
+Meta Test Error: 0.5161503180116415.
+Meta Test Accuracy: 0.9267999851703643.
+
+Iteration 109:
+Meta Train Results:
+Meta Train Error: 0.40294763693236746.
+Meta Train Accuracy: 0.9649999886751175.
+Meta Test Results:
+Meta Test Error: 0.5337081453204156.
+Meta Test Accuracy: 0.9103999835252762.
+
+Iteration 110:
+Meta Train Results:
+Meta Train Error: 0.20968998409807682.
+Meta Train Accuracy: 0.9699999913573265.
+Meta Test Results:
+Meta Test Error: 0.46305002450942995.
+Meta Test Accuracy: 0.9187999880313873.
+
+Iteration 111:
+Meta Train Results:
+Meta Train Error: 0.42381808441132307.
+Meta Train Accuracy: 0.9512499868869781.
+Meta Test Results:
+Meta Test Error: 0.4638371720910072.
+Meta Test Accuracy: 0.9355999851226806.
+
+Iteration 112:
+Meta Train Results:
+Meta Train Error: 0.44256982184015214.
+Meta Train Accuracy: 0.9399999789893627.
+Meta Test Results:
+Meta Test Error: 0.6010051906853914.
+Meta Test Accuracy: 0.9227999866008758.
+
+Iteration 113:
+Meta Train Results:
+Meta Train Error: 0.7438302771188319.
+Meta Train Accuracy: 0.9337499849498272.
+Meta Test Results:
+Meta Test Error: 0.7179700016602873.
+Meta Test Accuracy: 0.8943999874591827.
+
+Iteration 114:
+Meta Train Results:
+Meta Train Error: 0.3494434942258522.
+Meta Train Accuracy: 0.9637499824166298.
+Meta Test Results:
+Meta Test Error: 0.566649626865983.
+Meta Test Accuracy: 0.9171999883651734.
+
+Iteration 115:
+Meta Train Results:
+Meta Train Error: 0.4965805059764534.
+Meta Train Accuracy: 0.9237499870359898.
+Meta Test Results:
+Meta Test Error: 0.40497805215418337.
+Meta Test Accuracy: 0.9403999829292298.
+
+Iteration 116:
+Meta Train Results:
+Meta Train Error: 0.18492667516693473.
+Meta Train Accuracy: 0.993749987334013.
+Meta Test Results:
+Meta Test Error: 0.39415465205907824.
+Meta Test Accuracy: 0.9495999896526337.
+
+Iteration 117:
+Meta Train Results:
+Meta Train Error: 0.3692454928532243.
+Meta Train Accuracy: 0.97749999538064.
+Meta Test Results:
+Meta Test Error: 0.4135906757041812.
+Meta Test Accuracy: 0.9303999817371369.
+
+Iteration 118:
+Meta Train Results:
+Meta Train Error: 0.22230275068432093.
+Meta Train Accuracy: 0.9699999913573265.
+Meta Test Results:
+Meta Test Error: 0.32720541387796404.
+Meta Test Accuracy: 0.9559999907016754.
+
+Iteration 119:
+Meta Train Results:
+Meta Train Error: 0.28480387409217656.
+Meta Train Accuracy: 0.9574999809265137.
+Meta Test Results:
+Meta Test Error: 0.37042486552149057.
+Meta Test Accuracy: 0.9351999819278717.
+
+Iteration 120:
+Meta Train Results:
+Meta Train Error: 0.43018145678797737.
+Meta Train Accuracy: 0.9562499858438969.
+Meta Test Results:
+Meta Test Error: 0.5028975315392017.
+Meta Test Accuracy: 0.9167999827861786.
+
+Iteration 121:
+Meta Train Results:
+Meta Train Error: 0.8869836569065228.
+Meta Train Accuracy: 0.9299999848008156.
+Meta Test Results:
+Meta Test Error: 0.44901471957564354.
+Meta Test Accuracy: 0.9291999816894532.
+
+Iteration 122:
+Meta Train Results:
+Meta Train Error: 0.16956098680384457.
+Meta Train Accuracy: 0.9837499894201756.
+Meta Test Results:
+Meta Test Error: 0.7346178593859076.
+Meta Test Accuracy: 0.9083999812602996.
+
+Iteration 123:
+Meta Train Results:
+Meta Train Error: 0.31566050136461854.
+Meta Train Accuracy: 0.9562499821186066.
+Meta Test Results:
+Meta Test Error: 0.5488649198412895.
+Meta Test Accuracy: 0.9255999827384949.
+
+Iteration 124:
+Meta Train Results:
+Meta Train Error: 0.2417049576761201.
+Meta Train Accuracy: 0.9474999904632568.
+Meta Test Results:
+Meta Test Error: 0.4482525426521897.
+Meta Test Accuracy: 0.9267999839782715.
+
+Iteration 125:
+Meta Train Results:
+Meta Train Error: 0.266681571258232.
+Meta Train Accuracy: 0.9574999883770943.
+Meta Test Results:
+Meta Test Error: 0.49684848606586457.
+Meta Test Accuracy: 0.9355999839305877.
+
+Iteration 126:
+Meta Train Results:
+Meta Train Error: 0.33882013731636107.
+Meta Train Accuracy: 0.9599999934434891.
+Meta Test Results:
+Meta Test Error: 0.6042265486717224.
+Meta Test Accuracy: 0.8927999818325043.
+
+Iteration 127:
+Meta Train Results:
+Meta Train Error: 0.5305822484660894.
+Meta Train Accuracy: 0.9424999803304672.
+Meta Test Results:
+Meta Test Error: 0.5526611959189176.
+Meta Test Accuracy: 0.8999999833106994.
+
+Iteration 128:
+Meta Train Results:
+Meta Train Error: 0.22111331336782314.
+Meta Train Accuracy: 0.9587499909102917.
+Meta Test Results:
+Meta Test Error: 0.6632978138048202.
+Meta Test Accuracy: 0.9219999849796295.
+
+Iteration 129:
+Meta Train Results:
+Meta Train Error: 0.29207536403555423.
+Meta Train Accuracy: 0.9537499882280827.
+Meta Test Results:
+Meta Test Error: 0.6103776976466179.
+Meta Test Accuracy: 0.9163999819755554.
+
+Iteration 130:
+Meta Train Results:
+Meta Train Error: 0.24422520236112177.
+Meta Train Accuracy: 0.9612499810755253.
+Meta Test Results:
+Meta Test Error: 0.4739699151366949.
+Meta Test Accuracy: 0.9043999814987183.
+
+Iteration 131:
+Meta Train Results:
+Meta Train Error: 0.2682007965631783.
+Meta Train Accuracy: 0.9499999918043613.
+Meta Test Results:
+Meta Test Error: 0.4225006624124944.
+Meta Test Accuracy: 0.9159999823570252.
+
+Iteration 132:
+Meta Train Results:
+Meta Train Error: 0.36986699608678464.
+Meta Train Accuracy: 0.9499999918043613.
+Meta Test Results:
+Meta Test Error: 0.40082678040489556.
+Meta Test Accuracy: 0.9391999822854996.
+
+Iteration 133:
+Meta Train Results:
+Meta Train Error: 0.17300109146162868.
+Meta Train Accuracy: 0.9862499870359898.
+Meta Test Results:
+Meta Test Error: 0.2865058221668005.
+Meta Test Accuracy: 0.9415999817848205.
+
+Iteration 134:
+Meta Train Results:
+Meta Train Error: 0.596397299785167.
+Meta Train Accuracy: 0.9087499901652336.
+Meta Test Results:
+Meta Test Error: 0.5237601587548852.
+Meta Test Accuracy: 0.9303999865055084.
+
+Iteration 135:
+Meta Train Results:
+Meta Train Error: 0.17874696059152484.
+Meta Train Accuracy: 0.9599999859929085.
+Meta Test Results:
+Meta Test Error: 0.6523152244836092.
+Meta Test Accuracy: 0.9011999762058258.
+
+Iteration 136:
+Meta Train Results:
+Meta Train Error: 0.22097063588444144.
+Meta Train Accuracy: 0.9724999889731407.
+Meta Test Results:
+Meta Test Error: 0.4905711603909731.
+Meta Test Accuracy: 0.911199985742569.
+
+Iteration 137:
+Meta Train Results:
+Meta Train Error: 0.16713120113126934.
+Meta Train Accuracy: 0.9699999839067459.
+Meta Test Results:
+Meta Test Error: 0.5495972212404012.
+Meta Test Accuracy: 0.9059999847412109.
+
+Iteration 138:
+Meta Train Results:
+Meta Train Error: 0.3121617967262864.
+Meta Train Accuracy: 0.9662499912083149.
+Meta Test Results:
+Meta Test Error: 0.5331893277168274.
+Meta Test Accuracy: 0.9051999795436859.
+
+Iteration 139:
+Meta Train Results:
+Meta Train Error: 0.4833339498145506.
+Meta Train Accuracy: 0.9362499825656414.
+Meta Test Results:
+Meta Test Error: 0.3562571135163307.
+Meta Test Accuracy: 0.9383999836444855.
+
+Iteration 140:
+Meta Train Results:
+Meta Train Error: 0.22039264102932066.
+Meta Train Accuracy: 0.9699999839067459.
+Meta Test Results:
+Meta Test Error: 0.5109865861944854.
+Meta Test Accuracy: 0.9155999827384949.
+
+Iteration 141:
+Meta Train Results:
+Meta Train Error: 0.23952836147509515.
+Meta Train Accuracy: 0.9624999836087227.
+Meta Test Results:
+Meta Test Error: 0.47889102071523665.
+Meta Test Accuracy: 0.9271999835968018.
+
+Iteration 142:
+Meta Train Results:
+Meta Train Error: 0.3911194092943333.
+Meta Train Accuracy: 0.967499990016222.
+Meta Test Results:
+Meta Test Error: 0.565296300444752.
+Meta Test Accuracy: 0.9195999836921692.
+
+Iteration 143:
+Meta Train Results:
+Meta Train Error: 0.22045109764439985.
+Meta Train Accuracy: 0.9649999849498272.
+Meta Test Results:
+Meta Test Error: 0.36646572399884464.
+Meta Test Accuracy: 0.9275999820232391.
+
+Iteration 144:
+Meta Train Results:
+Meta Train Error: 0.41402495093643665.
+Meta Train Accuracy: 0.957499984651804.
+Meta Test Results:
+Meta Test Error: 0.23758422274142504.
+Meta Test Accuracy: 0.9575999855995179.
+
+Iteration 145:
+Meta Train Results:
+Meta Train Error: 0.16829375887755305.
+Meta Train Accuracy: 0.9724999889731407.
+Meta Test Results:
+Meta Test Error: 0.2775541165471077.
+Meta Test Accuracy: 0.9447999870777131.
+
+Iteration 146:
+Meta Train Results:
+Meta Train Error: 0.21556371438782662.
+Meta Train Accuracy: 0.9662499837577343.
+Meta Test Results:
+Meta Test Error: 0.4982306195795536.
+Meta Test Accuracy: 0.9127999854087829.
+
+Iteration 147:
+Meta Train Results:
+Meta Train Error: 0.2837559073814191.
+Meta Train Accuracy: 0.9699999839067459.
+Meta Test Results:
+Meta Test Error: 0.42767136342823503.
+Meta Test Accuracy: 0.8975999832153321.
+
+Iteration 148:
+Meta Train Results:
+Meta Train Error: 0.41297083656536415.
+Meta Train Accuracy: 0.9637499935925007.
+Meta Test Results:
+Meta Test Error: 0.3739633326232433.
+Meta Test Accuracy: 0.9239999854564667.
+
+Iteration 149:
+Meta Train Results:
+Meta Train Error: 0.24410584836732596.
+Meta Train Accuracy: 0.9549999870359898.
+Meta Test Results:
+Meta Test Error: 0.26231825418770316.
+Meta Test Accuracy: 0.9491999864578247.
+
+Iteration 150:
+Meta Train Results:
+Meta Train Error: 0.15609248005785048.
+Meta Train Accuracy: 0.9899999909102917.
+Meta Test Results:
+Meta Test Error: 0.31604853479191664.
+Meta Test Accuracy: 0.936399986743927.
+
+Iteration 151:
+Meta Train Results:
+Meta Train Error: 0.16028760717017576.
+Meta Train Accuracy: 0.9599999859929085.
+Meta Test Results:
+Meta Test Error: 0.33938197504729034.
+Meta Test Accuracy: 0.9499999868869782.
+
+Iteration 152:
+Meta Train Results:
+Meta Train Error: 0.17403570492751896.
+Meta Train Accuracy: 0.9687499888241291.
+Meta Test Results:
+Meta Test Error: 0.3670467422902584.
+Meta Test Accuracy: 0.9127999854087829.
+
+Iteration 153:
+Meta Train Results:
+Meta Train Error: 0.16047957609407604.
+Meta Train Accuracy: 0.9674999937415123.
+Meta Test Results:
+Meta Test Error: 0.3918402752652764.
+Meta Test Accuracy: 0.9315999865531921.
+
+Iteration 154:
+Meta Train Results:
+Meta Train Error: 0.14001059450674802.
+Meta Train Accuracy: 0.9824999906122684.
+Meta Test Results:
+Meta Test Error: 0.6819325842708349.
+Meta Test Accuracy: 0.9147999811172486.
+
+Iteration 155:
+Meta Train Results:
+Meta Train Error: 0.09593742364086211.
+Meta Train Accuracy: 0.9874999932944775.
+Meta Test Results:
+Meta Test Error: 0.4404297791421413.
+Meta Test Accuracy: 0.9355999839305877.
+
+Iteration 156:
+Meta Train Results:
+Meta Train Error: 0.12425974331563339.
+Meta Train Accuracy: 0.9849999845027924.
+Meta Test Results:
+Meta Test Error: 0.38777444589883087.
+Meta Test Accuracy: 0.9135999864339829.
+
+Iteration 157:
+Meta Train Results:
+Meta Train Error: 0.470356434059795.
+Meta Train Accuracy: 0.9449999779462814.
+Meta Test Results:
+Meta Test Error: 0.49207483164966104.
+Meta Test Accuracy: 0.9131999891996384.
+
+Iteration 158:
+Meta Train Results:
+Meta Train Error: 0.2715729050687514.
+Meta Train Accuracy: 0.9512499794363976.
+Meta Test Results:
+Meta Test Error: 0.4049213267304003.
+Meta Test Accuracy: 0.9223999869823456.
+
+Iteration 159:
+Meta Train Results:
+Meta Train Error: 0.13535777782090008.
+Meta Train Accuracy: 0.9899999871850014.
+Meta Test Results:
+Meta Test Error: 0.44883535653352735.
+Meta Test Accuracy: 0.9403999853134155.
+
+Iteration 160:
+Meta Train Results:
+Meta Train Error: 1.0169976277975366.
+Meta Train Accuracy: 0.9249999895691872.
+Meta Test Results:
+Meta Test Error: 0.5875085166841746.
+Meta Test Accuracy: 0.8943999791145325.
+
+Iteration 161:
+Meta Train Results:
+Meta Train Error: 0.3906272801104933.
+Meta Train Accuracy: 0.9674999788403511.
+Meta Test Results:
+Meta Test Error: 0.4753780997544527.
+Meta Test Accuracy: 0.9267999827861786.
+
+Iteration 162:
+Meta Train Results:
+Meta Train Error: 0.9619629663357046.
+Meta Train Accuracy: 0.9299999885261059.
+Meta Test Results:
+Meta Test Error: 0.3606589823961258.
+Meta Test Accuracy: 0.9323999774456024.
+
+Iteration 163:
+Meta Train Results:
+Meta Train Error: 0.24162507380970055.
+Meta Train Accuracy: 0.9674999862909317.
+Meta Test Results:
+Meta Test Error: 0.5427323141135275.
+Meta Test Accuracy: 0.9167999839782714.
+
+Iteration 164:
+Meta Train Results:
+Meta Train Error: 0.5836311855819076.
+Meta Train Accuracy: 0.9487499855458736.
+Meta Test Results:
+Meta Test Error: 0.4601901873201132.
+Meta Test Accuracy: 0.9379999876022339.
+
+Iteration 165:
+Meta Train Results:
+Meta Train Error: 0.2639333247207105.
+Meta Train Accuracy: 0.9737499840557575.
+Meta Test Results:
+Meta Test Error: 0.5337864550948143.
+Meta Test Accuracy: 0.9247999835014343.
+
+Iteration 166:
+Meta Train Results:
+Meta Train Error: 0.3540151068009436.
+Meta Train Accuracy: 0.9737499915063381.
+Meta Test Results:
+Meta Test Error: 0.6394777157902718.
+Meta Test Accuracy: 0.9007999849319458.
+
+Iteration 167:
+Meta Train Results:
+Meta Train Error: 0.19476835016394034.
+Meta Train Accuracy: 0.9612499810755253.
+Meta Test Results:
+Meta Test Error: 0.3515879714488983.
+Meta Test Accuracy: 0.9527999913692474.
+
+Iteration 168:
+Meta Train Results:
+Meta Train Error: 0.2222252925275825.
+Meta Train Accuracy: 0.9699999913573265.
+Meta Test Results:
+Meta Test Error: 0.5710361559409648.
+Meta Test Accuracy: 0.9191999816894532.
+
+Iteration 169:
+Meta Train Results:
+Meta Train Error: 0.398472883796785.
+Meta Train Accuracy: 0.9562499895691872.
+Meta Test Results:
+Meta Test Error: 0.5190969382971525.
+Meta Test Accuracy: 0.9047999811172486.
+
+Iteration 170:
+Meta Train Results:
+Meta Train Error: 0.5621583860920509.
+Meta Train Accuracy: 0.943749975413084.
+Meta Test Results:
+Meta Test Error: 0.73460199682042.
+Meta Test Accuracy: 0.8887999808788299.
+
+Iteration 171:
+Meta Train Results:
+Meta Train Error: 0.432405237457715.
+Meta Train Accuracy: 0.9549999870359898.
+Meta Test Results:
+Meta Test Error: 0.5951669336110353.
+Meta Test Accuracy: 0.9235999894142151.
+
+Iteration 172:
+Meta Train Results:
+Meta Train Error: 0.47578868363052607.
+Meta Train Accuracy: 0.9712499901652336.
+Meta Test Results:
+Meta Test Error: 0.6216783137619495.
+Meta Test Accuracy: 0.9211999893188476.
+
+Iteration 173:
+Meta Train Results:
+Meta Train Error: 0.39018678475986235.
+Meta Train Accuracy: 0.9462499842047691.
+Meta Test Results:
+Meta Test Error: 0.6459991095215082.
+Meta Test Accuracy: 0.9103999900817871.
+
+Iteration 174:
+Meta Train Results:
+Meta Train Error: 0.3128130224067718.
+Meta Train Accuracy: 0.9574999809265137.
+Meta Test Results:
+Meta Test Error: 0.4541079904511571.
+Meta Test Accuracy: 0.9515999841690064.
+
+Iteration 175:
+Meta Train Results:
+Meta Train Error: 0.42020605970174074.
+Meta Train Accuracy: 0.9737499877810478.
+Meta Test Results:
+Meta Test Error: 0.5994080800935626.
+Meta Test Accuracy: 0.9215999865531921.
+
+Iteration 176:
+Meta Train Results:
+Meta Train Error: 0.6561325830407441.
+Meta Train Accuracy: 0.9474999904632568.
+Meta Test Results:
+Meta Test Error: 0.38974205493927.
+Meta Test Accuracy: 0.9323999857902527.
+
+Iteration 177:
+Meta Train Results:
+Meta Train Error: 0.31457655294798315.
+Meta Train Accuracy: 0.9349999837577343.
+Meta Test Results:
+Meta Test Error: 0.5222214531898498.
+Meta Test Accuracy: 0.9343999814987183.
+
+Iteration 178:
+Meta Train Results:
+Meta Train Error: 0.28640278574312106.
+Meta Train Accuracy: 0.9724999964237213.
+Meta Test Results:
+Meta Test Error: 0.4730736677534878.
+Meta Test Accuracy: 0.9319999814033508.
+
+Iteration 179:
+Meta Train Results:
+Meta Train Error: 0.39570619724690914.
+Meta Train Accuracy: 0.9687499888241291.
+Meta Test Results:
+Meta Test Error: 0.48253355878405274.
+Meta Test Accuracy: 0.9075999861955643.
+
+Iteration 180:
+Meta Train Results:
+Meta Train Error: 0.18407836672849953.
+Meta Train Accuracy: 0.9749999903142452.
+Meta Test Results:
+Meta Test Error: 0.3615575703792274.
+Meta Test Accuracy: 0.9463999891281127.
+
+Iteration 181:
+Meta Train Results:
+Meta Train Error: 0.155461466696579.
+Meta Train Accuracy: 0.9674999862909317.
+Meta Test Results:
+Meta Test Error: 0.6448059503734112.
+Meta Test Accuracy: 0.8827999830245972.
+
+Iteration 182:
+Meta Train Results:
+Meta Train Error: 0.2965810198802501.
+Meta Train Accuracy: 0.9549999907612801.
+Meta Test Results:
+Meta Test Error: 0.534477467238903.
+Meta Test Accuracy: 0.9123999834060669.
+
+Iteration 183:
+Meta Train Results:
+Meta Train Error: 0.36358223180286586.
+Meta Train Accuracy: 0.9724999852478504.
+Meta Test Results:
+Meta Test Error: 0.7416077093593776.
+Meta Test Accuracy: 0.9027999854087829.
+
+Iteration 184:
+Meta Train Results:
+Meta Train Error: 0.2860205387696624.
+Meta Train Accuracy: 0.939999982714653.
+Meta Test Results:
+Meta Test Error: 0.4599095073342323.
+Meta Test Accuracy: 0.9159999859333038.
+
+Iteration 185:
+Meta Train Results:
+Meta Train Error: 0.41852875566110015.
+Meta Train Accuracy: 0.9724999852478504.
+Meta Test Results:
+Meta Test Error: 0.5328116776607931.
+Meta Test Accuracy: 0.9227999830245972.
+
+Iteration 186:
+Meta Train Results:
+Meta Train Error: 0.3628045396471862.
+Meta Train Accuracy: 0.9787499830126762.
+Meta Test Results:
+Meta Test Error: 0.521412302851677.
+Meta Test Accuracy: 0.9015999853610992.
+
+Iteration 187:
+Meta Train Results:
+Meta Train Error: 0.1822992629604414.
+Meta Train Accuracy: 0.9862499907612801.
+Meta Test Results:
+Meta Test Error: 0.4875589690357447.
+Meta Test Accuracy: 0.9023999881744384.
+
+Iteration 188:
+Meta Train Results:
+Meta Train Error: 0.4939384387107566.
+Meta Train Accuracy: 0.9499999806284904.
+Meta Test Results:
+Meta Test Error: 0.5078261588513852.
+Meta Test Accuracy: 0.9199999868869781.
+
+Iteration 189:
+Meta Train Results:
+Meta Train Error: 0.2620131581206806.
+Meta Train Accuracy: 0.9699999839067459.
+Meta Test Results:
+Meta Test Error: 0.37906980406492946.
+Meta Test Accuracy: 0.9459999859333038.
+
+Iteration 190:
+Meta Train Results:
+Meta Train Error: 0.2148483938217396.
+Meta Train Accuracy: 0.9624999798834324.
+Meta Test Results:
+Meta Test Error: 0.31289113936014473.
+Meta Test Accuracy: 0.9455999851226806.
+
+Iteration 191:
+Meta Train Results:
+Meta Train Error: 0.2111285223509185.
+Meta Train Accuracy: 0.9787499830126762.
+Meta Test Results:
+Meta Test Error: 0.3026805191859603.
+Meta Test Accuracy: 0.955999984741211.
+
+Iteration 192:
+Meta Train Results:
+Meta Train Error: 0.11928853252902627.
+Meta Train Accuracy: 0.9912499897181988.
+Meta Test Results:
+Meta Test Error: 0.33443820506334304.
+Meta Test Accuracy: 0.9475999867916107.
+
+Iteration 193:
+Meta Train Results:
+Meta Train Error: 0.20365795795805752.
+Meta Train Accuracy: 0.9712499864399433.
+Meta Test Results:
+Meta Test Error: 0.2889913208037615.
+Meta Test Accuracy: 0.9571999883651734.
+
+Iteration 194:
+Meta Train Results:
+Meta Train Error: 0.15286403289064765.
+Meta Train Accuracy: 0.9737499915063381.
+Meta Test Results:
+Meta Test Error: 0.4773494654148817.
+Meta Test Accuracy: 0.9291999840736389.
+
+Iteration 195:
+Meta Train Results:
+Meta Train Error: 0.12738782697124407.
+Meta Train Accuracy: 0.9787499867379665.
+Meta Test Results:
+Meta Test Error: 0.522134390026331.
+Meta Test Accuracy: 0.9087999850511551.
+
+Iteration 196:
+Meta Train Results:
+Meta Train Error: 0.10010805347701535.
+Meta Train Accuracy: 0.984999991953373.
+Meta Test Results:
+Meta Test Error: 0.1506968813482672.
+Meta Test Accuracy: 0.9707999861240387.
+
+Iteration 197:
+Meta Train Results:
+Meta Train Error: 0.15206737857079133.
+Meta Train Accuracy: 0.9774999916553497.
+Meta Test Results:
+Meta Test Error: 0.4119884180277586.
+Meta Test Accuracy: 0.9287999856472016.
+
+Iteration 198:
+Meta Train Results:
+Meta Train Error: 0.11608320672530681.
+Meta Train Accuracy: 0.9812499843537807.
+Meta Test Results:
+Meta Test Error: 0.5726283258199691.
+Meta Test Accuracy: 0.9143999791145325.
+
+Iteration 199:
+Meta Train Results:
+Meta Train Error: 0.42708299844525754.
+Meta Train Accuracy: 0.9362499862909317.
+Meta Test Results:
+Meta Test Error: 0.3899294606223702.
+Meta Test Accuracy: 0.9195999801158905.
+
+Iteration 200:
+Meta Train Results:
+Meta Train Error: 0.10873324796557426.
+Meta Train Accuracy: 0.9824999831616879.
+Meta Test Results:
+Meta Test Error: 0.46373327551409604.
+Meta Test Accuracy: 0.9335999834537506.
+
+Iteration 201:
+Meta Train Results:
+Meta Train Error: 0.483600911393296.
+Meta Train Accuracy: 0.9437499903142452.
+Meta Test Results:
+Meta Test Error: 0.24465555120259525.
+Meta Test Accuracy: 0.9403999841213226.
+
+Iteration 202:
+Meta Train Results:
+Meta Train Error: 0.17172871029470116.
+Meta Train Accuracy: 0.9599999859929085.
+Meta Test Results:
+Meta Test Error: 0.2567226910963655.
+Meta Test Accuracy: 0.9523999869823456.
+
+Iteration 203:
+Meta Train Results:
+Meta Train Error: 0.36993154254741967.
+Meta Train Accuracy: 0.9624999761581421.
+Meta Test Results:
+Meta Test Error: 0.36629338312894105.
+Meta Test Accuracy: 0.9183999824523926.
+
+Iteration 204:
+Meta Train Results:
+Meta Train Error: 0.16289353277534246.
+Meta Train Accuracy: 0.971249982714653.
+Meta Test Results:
+Meta Test Error: 0.35818317146971823.
+Meta Test Accuracy: 0.9383999860286713.
+
+Iteration 205:
+Meta Train Results:
+Meta Train Error: 0.23577528161695227.
+Meta Train Accuracy: 0.9674999788403511.
+Meta Test Results:
+Meta Test Error: 0.38700946617871523.
+Meta Test Accuracy: 0.9171999824047089.
+
+Iteration 206:
+Meta Train Results:
+Meta Train Error: 0.21171661431435496.
+Meta Train Accuracy: 0.9624999836087227.
+Meta Test Results:
+Meta Test Error: 0.28676345482468607.
+Meta Test Accuracy: 0.9411999809741974.
+
+Iteration 207:
+Meta Train Results:
+Meta Train Error: 0.12907222323701717.
+Meta Train Accuracy: 0.9862499870359898.
+Meta Test Results:
+Meta Test Error: 0.8894904003571719.
+Meta Test Accuracy: 0.8803999841213226.
+
+Iteration 208:
+Meta Train Results:
+Meta Train Error: 0.4686464254045859.
+Meta Train Accuracy: 0.948749978095293.
+Meta Test Results:
+Meta Test Error: 0.3970473288372159.
+Meta Test Accuracy: 0.9267999857664109.
+
+Iteration 209:
+Meta Train Results:
+Meta Train Error: 0.1866021822206676.
+Meta Train Accuracy: 0.9649999849498272.
+Meta Test Results:
+Meta Test Error: 0.3601713759452105.
+Meta Test Accuracy: 0.9507999873161316.
+
+Iteration 210:
+Meta Train Results:
+Meta Train Error: 0.3030162692593876.
+Meta Train Accuracy: 0.9499999843537807.
+Meta Test Results:
+Meta Test Error: 0.3875858419761062.
+Meta Test Accuracy: 0.9403999841213226.
+
+Iteration 211:
+Meta Train Results:
+Meta Train Error: 0.2022166404640302.
+Meta Train Accuracy: 0.9649999849498272.
+Meta Test Results:
+Meta Test Error: 0.40532107366248965.
+Meta Test Accuracy: 0.9019999814033508.
+
+Iteration 212:
+Meta Train Results:
+Meta Train Error: 0.3868228492210619.
+Meta Train Accuracy: 0.9487499818205833.
+Meta Test Results:
+Meta Test Error: 0.4121746001020074.
+Meta Test Accuracy: 0.9063999831676484.
+
+Iteration 213:
+Meta Train Results:
+Meta Train Error: 0.5343545832438394.
+Meta Train Accuracy: 0.9437499828636646.
+Meta Test Results:
+Meta Test Error: 0.6040781908482313.
+Meta Test Accuracy: 0.9323999869823456.
+
+Iteration 214:
+Meta Train Results:
+Meta Train Error: 0.1418423865980003.
+Meta Train Accuracy: 0.9812499843537807.
+Meta Test Results:
+Meta Test Error: 0.5532513631507754.
+Meta Test Accuracy: 0.9163999843597412.
+
+Iteration 215:
+Meta Train Results:
+Meta Train Error: 0.10709162574494258.
+Meta Train Accuracy: 0.9812499918043613.
+Meta Test Results:
+Meta Test Error: 0.3608148331195116.
+Meta Test Accuracy: 0.9243999814987183.
+
+Iteration 216:
+Meta Train Results:
+Meta Train Error: 0.2296214327798225.
+Meta Train Accuracy: 0.9574999809265137.
+Meta Test Results:
+Meta Test Error: 0.5605366691388189.
+Meta Test Accuracy: 0.9171999812126159.
+
+Iteration 217:
+Meta Train Results:
+Meta Train Error: 0.201682212180458.
+Meta Train Accuracy: 0.972499992698431.
+Meta Test Results:
+Meta Test Error: 0.5130795428901911.
+Meta Test Accuracy: 0.9287999844551087.
+
+Iteration 218:
+Meta Train Results:
+Meta Train Error: 0.15418612270150334.
+Meta Train Accuracy: 0.9799999855458736.
+Meta Test Results:
+Meta Test Error: 0.33062612458365037.
+Meta Test Accuracy: 0.9451999878883361.
+
+Iteration 219:
+Meta Train Results:
+Meta Train Error: 0.20817045774310827.
+Meta Train Accuracy: 0.9649999924004078.
+Meta Test Results:
+Meta Test Error: 0.5681520951539278.
+Meta Test Accuracy: 0.9031999850273132.
+
+Iteration 220:
+Meta Train Results:
+Meta Train Error: 0.43530241047847085.
+Meta Train Accuracy: 0.9449999816715717.
+Meta Test Results:
+Meta Test Error: 0.5760851818323135.
+Meta Test Accuracy: 0.9191999864578247.
+
+Iteration 221:
+Meta Train Results:
+Meta Train Error: 0.153609177301405.
+Meta Train Accuracy: 0.9649999849498272.
+Meta Test Results:
+Meta Test Error: 0.4834456495568156.
+Meta Test Accuracy: 0.9151999843120575.
+
+Iteration 222:
+Meta Train Results:
+Meta Train Error: 0.36996828904375434.
+Meta Train Accuracy: 0.9562499821186066.
+Meta Test Results:
+Meta Test Error: 0.6392909084912389.
+Meta Test Accuracy: 0.9107999861240387.
+
+Iteration 223:
+Meta Train Results:
+Meta Train Error: 0.15524957433808595.
+Meta Train Accuracy: 0.9712499864399433.
+Meta Test Results:
+Meta Test Error: 0.37642681658267974.
+Meta Test Accuracy: 0.9415999841690064.
+
+Iteration 224:
+Meta Train Results:
+Meta Train Error: 0.1203792649037041.
+Meta Train Accuracy: 0.9874999895691872.
+Meta Test Results:
+Meta Test Error: 0.19598279913887381.
+Meta Test Accuracy: 0.9587999868392945.
+
+Iteration 225:
+Meta Train Results:
+Meta Train Error: 0.23629371120478027.
+Meta Train Accuracy: 0.9574999883770943.
+Meta Test Results:
+Meta Test Error: 0.5464983098208904.
+Meta Test Accuracy: 0.9251999866962433.
+
+Iteration 226:
+Meta Train Results:
+Meta Train Error: 0.1782431156025268.
+Meta Train Accuracy: 0.9774999842047691.
+Meta Test Results:
+Meta Test Error: 0.37424462009221315.
+Meta Test Accuracy: 0.917599983215332.
+
+Iteration 227:
+Meta Train Results:
+Meta Train Error: 0.1405711614061147.
+Meta Train Accuracy: 0.9787499830126762.
+Meta Test Results:
+Meta Test Error: 0.4679226744733751.
+Meta Test Accuracy: 0.9259999847412109.
+
+Iteration 228:
+Meta Train Results:
+Meta Train Error: 0.13922485674265772.
+Meta Train Accuracy: 0.9774999804794788.
+Meta Test Results:
+Meta Test Error: 0.5744400471635163.
+Meta Test Accuracy: 0.9091999840736389.
+
+Iteration 229:
+Meta Train Results:
+Meta Train Error: 0.271690740250051.
+Meta Train Accuracy: 0.9412499852478504.
+Meta Test Results:
+Meta Test Error: 0.4391937875188887.
+Meta Test Accuracy: 0.9227999866008758.
+
+Iteration 230:
+Meta Train Results:
+Meta Train Error: 0.41888009854301345.
+Meta Train Accuracy: 0.9524999931454659.
+Meta Test Results:
+Meta Test Error: 0.4855368656106293.
+Meta Test Accuracy: 0.9399999833106994.
+
+Iteration 231:
+Meta Train Results:
+Meta Train Error: 0.36247894712141715.
+Meta Train Accuracy: 0.9499999843537807.
+Meta Test Results:
+Meta Test Error: 0.383694531917572.
+Meta Test Accuracy: 0.9431999802589417.
+
+Iteration 232:
+Meta Train Results:
+Meta Train Error: 0.4137074595782906.
+Meta Train Accuracy: 0.9424999840557575.
+Meta Test Results:
+Meta Test Error: 0.5113259128807113.
+Meta Test Accuracy: 0.937999986410141.
+
+Iteration 233:
+Meta Train Results:
+Meta Train Error: 0.19751071932842024.
+Meta Train Accuracy: 0.976249985396862.
+Meta Test Results:
+Meta Test Error: 0.4809771744720638.
+Meta Test Accuracy: 0.9235999870300293.
+
+Iteration 234:
+Meta Train Results:
+Meta Train Error: 0.13722768402658403.
+Meta Train Accuracy: 0.976249985396862.
+Meta Test Results:
+Meta Test Error: 0.3299580020830035.
+Meta Test Accuracy: 0.9403999829292298.
+
+Iteration 235:
+Meta Train Results:
+Meta Train Error: 0.16745351417921484.
+Meta Train Accuracy: 0.9674999825656414.
+Meta Test Results:
+Meta Test Error: 0.41775045603513716.
+Meta Test Accuracy: 0.9207999849319458.
+
+Iteration 236:
+Meta Train Results:
+Meta Train Error: 0.35180425306316465.
+Meta Train Accuracy: 0.9474999904632568.
+Meta Test Results:
+Meta Test Error: 0.36071666341274977.
+Meta Test Accuracy: 0.9247999846935272.
+
+Iteration 237:
+Meta Train Results:
+Meta Train Error: 0.12298093736171722.
+Meta Train Accuracy: 0.9824999831616879.
+Meta Test Results:
+Meta Test Error: 0.36937078639864923.
+Meta Test Accuracy: 0.9295999884605408.
+
+Iteration 238:
+Meta Train Results:
+Meta Train Error: 0.10791263857390732.
+Meta Train Accuracy: 0.9837499894201756.
+Meta Test Results:
+Meta Test Error: 0.27743921674787997.
+Meta Test Accuracy: 0.9499999868869782.
+
+Iteration 239:
+Meta Train Results:
+Meta Train Error: 0.2374057947890833.
+Meta Train Accuracy: 0.9587499871850014.
+Meta Test Results:
+Meta Test Error: 0.23230388591066004.
+Meta Test Accuracy: 0.9467999839782715.
+
+Iteration 240:
+Meta Train Results:
+Meta Train Error: 0.09307914055534638.
+Meta Train Accuracy: 0.9849999882280827.
+Meta Test Results:
+Meta Test Error: 0.4295754522178322.
+Meta Test Accuracy: 0.9167999756336213.
+
+Iteration 241:
+Meta Train Results:
+Meta Train Error: 0.14857360976748168.
+Meta Train Accuracy: 0.9849999882280827.
+Meta Test Results:
+Meta Test Error: 0.3247935410216451.
+Meta Test Accuracy: 0.9395999872684478.
+
+Iteration 242:
+Meta Train Results:
+Meta Train Error: 0.3829701010254212.
+Meta Train Accuracy: 0.957499984651804.
+Meta Test Results:
+Meta Test Error: 0.4181703291554004.
+Meta Test Accuracy: 0.9371999847888947.
+
+Iteration 243:
+Meta Train Results:
+Meta Train Error: 0.12033559306291863.
+Meta Train Accuracy: 0.9862499907612801.
+Meta Test Results:
+Meta Test Error: 0.46773091457784177.
+Meta Test Accuracy: 0.885999983549118.
+
+Iteration 244:
+Meta Train Results:
+Meta Train Error: 0.1309429241809994.
+Meta Train Accuracy: 0.9787499867379665.
+Meta Test Results:
+Meta Test Error: 0.3033441370539367.
+Meta Test Accuracy: 0.932399982213974.
+
+Iteration 245:
+Meta Train Results:
+Meta Train Error: 0.1562397237867117.
+Meta Train Accuracy: 0.9699999876320362.
+Meta Test Results:
+Meta Test Error: 0.46597613122314213.
+Meta Test Accuracy: 0.9163999772071838.
+
+Iteration 246:
+Meta Train Results:
+Meta Train Error: 0.17362770870386157.
+Meta Train Accuracy: 0.9712499976158142.
+Meta Test Results:
+Meta Test Error: 0.4722658505104482.
+Meta Test Accuracy: 0.9067999851703644.
+
+Iteration 247:
+Meta Train Results:
+Meta Train Error: 0.23477278428617865.
+Meta Train Accuracy: 0.9412499852478504.
+Meta Test Results:
+Meta Test Error: 0.4562224870547652.
+Meta Test Accuracy: 0.9127999824285508.
+
+Iteration 248:
+Meta Train Results:
+Meta Train Error: 0.10251951514510438.
+Meta Train Accuracy: 0.9874999858438969.
+Meta Test Results:
+Meta Test Error: 0.3054415826685727.
+Meta Test Accuracy: 0.9339999783039094.
+
+Iteration 249:
+Meta Train Results:
+Meta Train Error: 0.13444581512885634.
+Meta Train Accuracy: 0.9774999879300594.
+Meta Test Results:
+Meta Test Error: 0.35388866893947124.
+Meta Test Accuracy: 0.9179999876022339.
+
+Iteration 250:
+Meta Train Results:
+Meta Train Error: 0.08493496387382038.
+Meta Train Accuracy: 0.9799999892711639.
+Meta Test Results:
+Meta Test Error: 0.3491910773515701.
+Meta Test Accuracy: 0.9291999804973602.
+
+Iteration 251:
+Meta Train Results:
+Meta Train Error: 0.12800540678290417.
+Meta Train Accuracy: 0.9812499955296516.
+Meta Test Results:
+Meta Test Error: 0.4799927962385118.
+Meta Test Accuracy: 0.9099999797344208.
+
+Iteration 252:
+Meta Train Results:
+Meta Train Error: 0.2294289178352642.
+Meta Train Accuracy: 0.957499984651804.
+Meta Test Results:
+Meta Test Error: 0.38298897044733166.
+Meta Test Accuracy: 0.9203999829292298.
+
+Iteration 253:
+Meta Train Results:
+Meta Train Error: 0.11731977550516604.
+Meta Train Accuracy: 0.9824999794363976.
+Meta Test Results:
+Meta Test Error: 0.3350721204094589.
+Meta Test Accuracy: 0.9367999815940857.
+
+Iteration 254:
+Meta Train Results:
+Meta Train Error: 0.1429633665829897.
+Meta Train Accuracy: 0.9837499894201756.
+Meta Test Results:
+Meta Test Error: 0.34326827683951705.
+Meta Test Accuracy: 0.9243999826908111.
+
+Iteration 255:
+Meta Train Results:
+Meta Train Error: 0.16690748243127018.
+Meta Train Accuracy: 0.9649999812245369.
+Meta Test Results:
+Meta Test Error: 0.45768631146289407.
+Meta Test Accuracy: 0.9207999843358994.
+
+Iteration 256:
+Meta Train Results:
+Meta Train Error: 0.18398575659375638.
+Meta Train Accuracy: 0.9512499757111073.
+Meta Test Results:
+Meta Test Error: 0.5059055924601853.
+Meta Test Accuracy: 0.8919999796152115.
+
+Iteration 257:
+Meta Train Results:
+Meta Train Error: 0.16345222614472732.
+Meta Train Accuracy: 0.9737499877810478.
+Meta Test Results:
+Meta Test Error: 0.3928425331413746.
+Meta Test Accuracy: 0.9207999813556671.
+
+Iteration 258:
+Meta Train Results:
+Meta Train Error: 0.4231568520190194.
+Meta Train Accuracy: 0.9287499859929085.
+Meta Test Results:
+Meta Test Error: 0.38246396731585264.
+Meta Test Accuracy: 0.9335999834537506.
+
+Iteration 259:
+Meta Train Results:
+Meta Train Error: 0.2554315321613103.
+Meta Train Accuracy: 0.9574999921023846.
+Meta Test Results:
+Meta Test Error: 0.323343443647027.
+Meta Test Accuracy: 0.919999988079071.
+
+Iteration 260:
+Meta Train Results:
+Meta Train Error: 0.16622145427390933.
+Meta Train Accuracy: 0.9649999849498272.
+Meta Test Results:
+Meta Test Error: 0.45502850161865355.
+Meta Test Accuracy: 0.9131999838352204.
+
+Iteration 261:
+Meta Train Results:
+Meta Train Error: 0.23543716204585508.
+Meta Train Accuracy: 0.9712499864399433.
+Meta Test Results:
+Meta Test Error: 0.30361352147534487.
+Meta Test Accuracy: 0.9439999866485596.
+
+Iteration 262:
+Meta Train Results:
+Meta Train Error: 0.16432828089455143.
+Meta Train Accuracy: 0.9649999886751175.
+Meta Test Results:
+Meta Test Error: 0.2705105919763446.
+Meta Test Accuracy: 0.9403999859094619.
+
+Iteration 263:
+Meta Train Results:
+Meta Train Error: 0.2655886283318978.
+Meta Train Accuracy: 0.9674999937415123.
+Meta Test Results:
+Meta Test Error: 0.5190791809372604.
+Meta Test Accuracy: 0.9295999878644943.
+
+Iteration 264:
+Meta Train Results:
+Meta Train Error: 0.09487010652082972.
+Meta Train Accuracy: 0.981249988079071.
+Meta Test Results:
+Meta Test Error: 0.3958640423184261.
+Meta Test Accuracy: 0.9259999847412109.
+
+Iteration 265:
+Meta Train Results:
+Meta Train Error: 0.13810147333424538.
+Meta Train Accuracy: 0.9737499877810478.
+Meta Test Results:
+Meta Test Error: 0.2360782469250262.
+Meta Test Accuracy: 0.941199984550476.
+
+Iteration 266:
+Meta Train Results:
+Meta Train Error: 0.32870315280160867.
+Meta Train Accuracy: 0.957499984651804.
+Meta Test Results:
+Meta Test Error: 0.4060417064279318.
+Meta Test Accuracy: 0.9143999874591827.
+
+Iteration 267:
+Meta Train Results:
+Meta Train Error: 0.15991496737115085.
+Meta Train Accuracy: 0.9649999886751175.
+Meta Test Results:
+Meta Test Error: 0.38380374481901525.
+Meta Test Accuracy: 0.9135999876260757.
+
+Iteration 268:
+Meta Train Results:
+Meta Train Error: 0.3574975731316954.
+Meta Train Accuracy: 0.9462499842047691.
+Meta Test Results:
+Meta Test Error: 0.4327289434708655.
+Meta Test Accuracy: 0.9247999852895736.
+
+Iteration 269:
+Meta Train Results:
+Meta Train Error: 0.19233823339163791.
+Meta Train Accuracy: 0.9499999843537807.
+Meta Test Results:
+Meta Test Error: 0.38148617634549736.
+Meta Test Accuracy: 0.9159999811649322.
+
+Iteration 270:
+Meta Train Results:
+Meta Train Error: 0.2838795525894966.
+Meta Train Accuracy: 0.9474999755620956.
+Meta Test Results:
+Meta Test Error: 0.467121386565268.
+Meta Test Accuracy: 0.9003999865055085.
+
+Iteration 271:
+Meta Train Results:
+Meta Train Error: 0.3424193463870324.
+Meta Train Accuracy: 0.9412499889731407.
+Meta Test Results:
+Meta Test Error: 0.4647099442221224.
+Meta Test Accuracy: 0.9079999887943268.
+
+Iteration 272:
+Meta Train Results:
+Meta Train Error: 0.12454208184499294.
+Meta Train Accuracy: 0.9762499891221523.
+Meta Test Results:
+Meta Test Error: 0.6069703365908936.
+Meta Test Accuracy: 0.8983999824523926.
+
+Iteration 273:
+Meta Train Results:
+Meta Train Error: 0.21171108912676573.
+Meta Train Accuracy: 0.9737499840557575.
+Meta Test Results:
+Meta Test Error: 0.36258852196857333.
+Meta Test Accuracy: 0.9007999801635742.
+
+Iteration 274:
+Meta Train Results:
+Meta Train Error: 0.39872869348619133.
+Meta Train Accuracy: 0.9424999915063381.
+Meta Test Results:
+Meta Test Error: 0.46035392554476856.
+Meta Test Accuracy: 0.9287999820709228.
+
+Iteration 275:
+Meta Train Results:
+Meta Train Error: 0.07262437778990716.
+Meta Train Accuracy: 0.9862499944865704.
+Meta Test Results:
+Meta Test Error: 0.37662904765456917.
+Meta Test Accuracy: 0.921199985742569.
+
+Iteration 276:
+Meta Train Results:
+Meta Train Error: 0.17717326525598764.
+Meta Train Accuracy: 0.9787499830126762.
+Meta Test Results:
+Meta Test Error: 0.3628973297774792.
+Meta Test Accuracy: 0.9159999883174896.
+
+Iteration 277:
+Meta Train Results:
+Meta Train Error: 0.21811172689922387.
+Meta Train Accuracy: 0.9412499815225601.
+Meta Test Results:
+Meta Test Error: 0.32949703238904476.
+Meta Test Accuracy: 0.9123999798297882.
+
+Iteration 278:
+Meta Train Results:
+Meta Train Error: 0.30533777992241085.
+Meta Train Accuracy: 0.9649999812245369.
+Meta Test Results:
+Meta Test Error: 0.7267726961802691.
+Meta Test Accuracy: 0.9219999825954437.
+
+Iteration 279:
+Meta Train Results:
+Meta Train Error: 0.46740736393257976.
+Meta Train Accuracy: 0.9312499910593033.
+Meta Test Results:
+Meta Test Error: 0.3080563644133508.
+Meta Test Accuracy: 0.9299999809265137.
+
+Iteration 280:
+Meta Train Results:
+Meta Train Error: 0.3278603038052097.
+Meta Train Accuracy: 0.9387499876320362.
+Meta Test Results:
+Meta Test Error: 0.31364680190570654.
+Meta Test Accuracy: 0.9531999814510346.
+
+Iteration 281:
+Meta Train Results:
+Meta Train Error: 0.12313536833971739.
+Meta Train Accuracy: 0.9712499864399433.
+Meta Test Results:
+Meta Test Error: 0.25180916354991495.
+Meta Test Accuracy: 0.9295999866724014.
+
+Iteration 282:
+Meta Train Results:
+Meta Train Error: 0.1841006006434327.
+Meta Train Accuracy: 0.9649999849498272.
+Meta Test Results:
+Meta Test Error: 0.6134697682410478.
+Meta Test Accuracy: 0.9159999889135361.
+
+Iteration 283:
+Meta Train Results:
+Meta Train Error: 0.1800655753177125.
+Meta Train Accuracy: 0.9462499804794788.
+Meta Test Results:
+Meta Test Error: 0.3593857358582318.
+Meta Test Accuracy: 0.9083999860286712.
+
+Iteration 284:
+Meta Train Results:
+Meta Train Error: 0.09572941626538523.
+Meta Train Accuracy: 0.981249988079071.
+Meta Test Results:
+Meta Test Error: 0.3700547113083303.
+Meta Test Accuracy: 0.9347999852895736.
+
+Iteration 285:
+Meta Train Results:
+Meta Train Error: 0.21042129697889322.
+Meta Train Accuracy: 0.9549999833106995.
+Meta Test Results:
+Meta Test Error: 0.3997035305667669.
+Meta Test Accuracy: 0.9115999794006348.
+
+Iteration 286:
+Meta Train Results:
+Meta Train Error: 0.3343165063415654.
+Meta Train Accuracy: 0.957499984651804.
+Meta Test Results:
+Meta Test Error: 0.6866242327447981.
+Meta Test Accuracy: 0.8999999845027924.
+
+Iteration 287:
+Meta Train Results:
+Meta Train Error: 0.22940890933386981.
+Meta Train Accuracy: 0.9462499767541885.
+Meta Test Results:
+Meta Test Error: 0.18725380282849075.
+Meta Test Accuracy: 0.9567999863624572.
+
+Iteration 288:
+Meta Train Results:
+Meta Train Error: 0.16032764399278676.
+Meta Train Accuracy: 0.9687499888241291.
+Meta Test Results:
+Meta Test Error: 0.3585225878097117.
+Meta Test Accuracy: 0.9359999847412109.
+
+Iteration 289:
+Meta Train Results:
+Meta Train Error: 0.15324398106895387.
+Meta Train Accuracy: 0.9762499928474426.
+Meta Test Results:
+Meta Test Error: 0.27645848497748376.
+Meta Test Accuracy: 0.9323999845981598.
+
+Iteration 290:
+Meta Train Results:
+Meta Train Error: 0.5014705409557791.
+Meta Train Accuracy: 0.9374999739229679.
+Meta Test Results:
+Meta Test Error: 0.38649509840644897.
+Meta Test Accuracy: 0.9291999804973602.
+
+Iteration 291:
+Meta Train Results:
+Meta Train Error: 0.2047770841163583.
+Meta Train Accuracy: 0.949999988079071.
+Meta Test Results:
+Meta Test Error: 0.35998173398897054.
+Meta Test Accuracy: 0.9139999818801879.
+
+Iteration 292:
+Meta Train Results:
+Meta Train Error: 0.17482162406668067.
+Meta Train Accuracy: 0.9749999903142452.
+Meta Test Results:
+Meta Test Error: 0.2754565617162734.
+Meta Test Accuracy: 0.9523999834060669.
+
+Iteration 293:
+Meta Train Results:
+Meta Train Error: 0.24980793392751366.
+Meta Train Accuracy: 0.962499987334013.
+Meta Test Results:
+Meta Test Error: 0.3640119649283588.
+Meta Test Accuracy: 0.9319999861717224.
+
+Iteration 294:
+Meta Train Results:
+Meta Train Error: 0.18207268766127527.
+Meta Train Accuracy: 0.9587499834597111.
+Meta Test Results:
+Meta Test Error: 0.2787958765029907.
+Meta Test Accuracy: 0.929199982881546.
+
+Iteration 295:
+Meta Train Results:
+Meta Train Error: 0.23152895263046958.
+Meta Train Accuracy: 0.9487499892711639.
+Meta Test Results:
+Meta Test Error: 0.3858918315730989.
+Meta Test Accuracy: 0.929999982714653.
+
+Iteration 296:
+Meta Train Results:
+Meta Train Error: 0.25940645253285766.
+Meta Train Accuracy: 0.9662499874830246.
+Meta Test Results:
+Meta Test Error: 0.3213083077734336.
+Meta Test Accuracy: 0.9267999815940857.
+
+Iteration 297:
+Meta Train Results:
+Meta Train Error: 0.3304998443927616.
+Meta Train Accuracy: 0.8824999779462814.
+Meta Test Results:
+Meta Test Error: 0.4042811340978369.
+Meta Test Accuracy: 0.9215999794006348.
+
+Iteration 298:
+Meta Train Results:
+Meta Train Error: 0.30231479270150885.
+Meta Train Accuracy: 0.9549999870359898.
+Meta Test Results:
+Meta Test Error: 0.46443549904972314.
+Meta Test Accuracy: 0.8903999775648117.
+
+Iteration 299:
+Meta Train Results:
+Meta Train Error: 0.18186325510032475.
+Meta Train Accuracy: 0.9649999812245369.
+Meta Test Results:
+Meta Test Error: 0.4137811720557511.
+Meta Test Accuracy: 0.9251999831199647.
+
+Iteration 300:
+Meta Train Results:
+Meta Train Error: 0.15653207237483002.
+Meta Train Accuracy: 0.9662499874830246.
+Meta Test Results:
+Meta Test Error: 0.5181718007288874.
+Meta Test Accuracy: 0.9139999842643738.
+
+Iteration 301:
+Meta Train Results:
+Meta Train Error: 0.15917653986252844.
+Meta Train Accuracy: 0.9724999852478504.
+Meta Test Results:
+Meta Test Error: 0.4928624697704799.
+Meta Test Accuracy: 0.920399979352951.
+
+Iteration 302:
+Meta Train Results:
+Meta Train Error: 0.2263393867688137.
+Meta Train Accuracy: 0.9574999883770943.
+Meta Test Results:
+Meta Test Error: 0.3957173078879714.
+Meta Test Accuracy: 0.9287999856472016.
+
+Iteration 303:
+Meta Train Results:
+Meta Train Error: 0.19322448063758202.
+Meta Train Accuracy: 0.9562499895691872.
+Meta Test Results:
+Meta Test Error: 0.7743693713285029.
+Meta Test Accuracy: 0.8907999813556671.
+
+Iteration 304:
+Meta Train Results:
+Meta Train Error: 0.1593523761839606.
+Meta Train Accuracy: 0.9649999812245369.
+Meta Test Results:
+Meta Test Error: 0.271300785895437.
+Meta Test Accuracy: 0.9395999825000763.
+
+Iteration 305:
+Meta Train Results:
+Meta Train Error: 0.11176562320906669.
+Meta Train Accuracy: 0.9762499928474426.
+Meta Test Results:
+Meta Test Error: 0.26419509671628477.
+Meta Test Accuracy: 0.9327999818325042.
+
+Iteration 306:
+Meta Train Results:
+Meta Train Error: 0.1849317483138293.
+Meta Train Accuracy: 0.9549999833106995.
+Meta Test Results:
+Meta Test Error: 0.3425514950603247.
+Meta Test Accuracy: 0.9171999824047089.
+
+Iteration 307:
+Meta Train Results:
+Meta Train Error: 0.22741643578046933.
+Meta Train Accuracy: 0.961249977350235.
+Meta Test Results:
+Meta Test Error: 0.4320099046267569.
+Meta Test Accuracy: 0.9247999835014343.
+
+Iteration 308:
+Meta Train Results:
+Meta Train Error: 0.7904665642709006.
+Meta Train Accuracy: 0.9137499816715717.
+Meta Test Results:
+Meta Test Error: 0.24591735158115624.
+Meta Test Accuracy: 0.9363999831676483.
+
+Iteration 309:
+Meta Train Results:
+Meta Train Error: 0.24578403303166851.
+Meta Train Accuracy: 0.9512499831616879.
+Meta Test Results:
+Meta Test Error: 0.3429574975837022.
+Meta Test Accuracy: 0.9155999827384949.
+
+Iteration 310:
+Meta Train Results:
+Meta Train Error: 0.24062340753152966.
+Meta Train Accuracy: 0.9474999830126762.
+Meta Test Results:
+Meta Test Error: 0.3416637389734387.
+Meta Test Accuracy: 0.9255999791622161.
+
+Iteration 311:
+Meta Train Results:
+Meta Train Error: 0.23281557648442686.
+Meta Train Accuracy: 0.9374999739229679.
+Meta Test Results:
+Meta Test Error: 0.36074908649548887.
+Meta Test Accuracy: 0.9359999853372574.
+
+Iteration 312:
+Meta Train Results:
+Meta Train Error: 0.18606659304350615.
+Meta Train Accuracy: 0.9724999815225601.
+Meta Test Results:
+Meta Test Error: 0.3285778593271971.
+Meta Test Accuracy: 0.9263999837636948.
+
+Iteration 313:
+Meta Train Results:
+Meta Train Error: 0.36888497486143024.
+Meta Train Accuracy: 0.9237499795854092.
+Meta Test Results:
+Meta Test Error: 0.35252555722370743.
+Meta Test Accuracy: 0.90279998421669.
+
+Iteration 314:
+Meta Train Results:
+Meta Train Error: 0.1657923128514085.
+Meta Train Accuracy: 0.971249982714653.
+Meta Test Results:
+Meta Test Error: 0.34767402342986314.
+Meta Test Accuracy: 0.9467999815940857.
+
+Iteration 315:
+Meta Train Results:
+Meta Train Error: 0.1322024098917609.
+Meta Train Accuracy: 0.981249988079071.
+Meta Test Results:
+Meta Test Error: 0.1523953172750771.
+Meta Test Accuracy: 0.9655999827384949.
+
+Iteration 316:
+Meta Train Results:
+Meta Train Error: 0.22396508062956855.
+Meta Train Accuracy: 0.9674999788403511.
+Meta Test Results:
+Meta Test Error: 0.2375848880968988.
+Meta Test Accuracy: 0.9387999868392944.
+
+Iteration 317:
+Meta Train Results:
+Meta Train Error: 0.17968443530844525.
+Meta Train Accuracy: 0.9762499891221523.
+Meta Test Results:
+Meta Test Error: 0.36190543077886106.
+Meta Test Accuracy: 0.936399984061718.
+
+Iteration 318:
+Meta Train Results:
+Meta Train Error: 0.4205411206930876.
+Meta Train Accuracy: 0.9499999806284904.
+Meta Test Results:
+Meta Test Error: 0.27370528046041726.
+Meta Test Accuracy: 0.9495999813079834.
+
+Iteration 319:
+Meta Train Results:
+Meta Train Error: 0.17549263109685853.
+Meta Train Accuracy: 0.9637499824166298.
+Meta Test Results:
+Meta Test Error: 0.21985500355251134.
+Meta Test Accuracy: 0.942799985408783.
+
+Iteration 320:
+Meta Train Results:
+Meta Train Error: 0.10069070218014531.
+Meta Train Accuracy: 0.9837499856948853.
+Meta Test Results:
+Meta Test Error: 0.2215877472795546.
+Meta Test Accuracy: 0.9519999861717224.
+
+Iteration 321:
+Meta Train Results:
+Meta Train Error: 0.32176184706804634.
+Meta Train Accuracy: 0.9424999766051769.
+Meta Test Results:
+Meta Test Error: 0.22594647370278836.
+Meta Test Accuracy: 0.9479999840259552.
+
+Iteration 322:
+Meta Train Results:
+Meta Train Error: 0.25357044965494424.
+Meta Train Accuracy: 0.9712499864399433.
+Meta Test Results:
+Meta Test Error: 0.44489813953638074.
+Meta Test Accuracy: 0.9239999824762344.
+
+Iteration 323:
+Meta Train Results:
+Meta Train Error: 0.2619715181645006.
+Meta Train Accuracy: 0.962499987334013.
+Meta Test Results:
+Meta Test Error: 0.2731995189189911.
+Meta Test Accuracy: 0.9515999853610992.
+
+Iteration 324:
+Meta Train Results:
+Meta Train Error: 0.1440069144591689.
+Meta Train Accuracy: 0.9587499797344208.
+Meta Test Results:
+Meta Test Error: 0.2905342308152467.
+Meta Test Accuracy: 0.9235999810695649.
+
+Iteration 325:
+Meta Train Results:
+Meta Train Error: 0.14363982947543263.
+Meta Train Accuracy: 0.9787499830126762.
+Meta Test Results:
+Meta Test Error: 0.5809000740759075.
+Meta Test Accuracy: 0.9071999853849411.
+
+Iteration 326:
+Meta Train Results:
+Meta Train Error: 0.1855333246057853.
+Meta Train Accuracy: 0.9724999889731407.
+Meta Test Results:
+Meta Test Error: 0.2564224720187485.
+Meta Test Accuracy: 0.9435999834537506.
+
+Iteration 327:
+Meta Train Results:
+Meta Train Error: 0.11030628983280621.
+Meta Train Accuracy: 0.9799999892711639.
+Meta Test Results:
+Meta Test Error: 0.5197690302599222.
+Meta Test Accuracy: 0.900399980545044.
+
+Iteration 328:
+Meta Train Results:
+Meta Train Error: 0.2270192726282403.
+Meta Train Accuracy: 0.9312499836087227.
+Meta Test Results:
+Meta Test Error: 0.32353342602029445.
+Meta Test Accuracy: 0.9315999853610992.
+
+Iteration 329:
+Meta Train Results:
+Meta Train Error: 0.21716731670312583.
+Meta Train Accuracy: 0.9424999840557575.
+Meta Test Results:
+Meta Test Error: 0.29290764408186076.
+Meta Test Accuracy: 0.929199982881546.
+
+Iteration 330:
+Meta Train Results:
+Meta Train Error: 0.3721166714094579.
+Meta Train Accuracy: 0.8624999821186066.
+Meta Test Results:
+Meta Test Error: 0.3118586101662368.
+Meta Test Accuracy: 0.9215999805927276.
+
+Iteration 331:
+Meta Train Results:
+Meta Train Error: 0.16661541489884257.
+Meta Train Accuracy: 0.9662499763071537.
+Meta Test Results:
+Meta Test Error: 0.2727911598980427.
+Meta Test Accuracy: 0.9351999855041504.
+
+Iteration 332:
+Meta Train Results:
+Meta Train Error: 0.14015830273274332.
+Meta Train Accuracy: 0.9724999889731407.
+Meta Test Results:
+Meta Test Error: 0.474801103817299.
+Meta Test Accuracy: 0.9415999817848205.
+
+Iteration 333:
+Meta Train Results:
+Meta Train Error: 0.32301655018818565.
+Meta Train Accuracy: 0.948749978095293.
+Meta Test Results:
+Meta Test Error: 0.6107355800271034.
+Meta Test Accuracy: 0.9155999863147736.
+
+Iteration 334:
+Meta Train Results:
+Meta Train Error: 0.12643566471524537.
+Meta Train Accuracy: 0.9737499877810478.
+Meta Test Results:
+Meta Test Error: 0.27310619662515817.
+Meta Test Accuracy: 0.9187999820709228.
+
+Iteration 335:
+Meta Train Results:
+Meta Train Error: 0.17243460740428418.
+Meta Train Accuracy: 0.9662499874830246.
+Meta Test Results:
+Meta Test Error: 0.2979009815119207.
+Meta Test Accuracy: 0.9323999798297882.
+
+Iteration 336:
+Meta Train Results:
+Meta Train Error: 0.18214789079502225.
+Meta Train Accuracy: 0.944999985396862.
+Meta Test Results:
+Meta Test Error: 0.34768061481416224.
+Meta Test Accuracy: 0.9379999828338623.
+
+Iteration 337:
+Meta Train Results:
+Meta Train Error: 0.12988766853231937.
+Meta Train Accuracy: 0.9862499907612801.
+Meta Test Results:
+Meta Test Error: 0.3242556277289987.
+Meta Test Accuracy: 0.9311999797821044.
+
+Iteration 338:
+Meta Train Results:
+Meta Train Error: 0.0912390371595393.
+Meta Train Accuracy: 0.9749999828636646.
+Meta Test Results:
+Meta Test Error: 0.20350001950748264.
+Meta Test Accuracy: 0.954799987077713.
+
+Iteration 339:
+Meta Train Results:
+Meta Train Error: 0.153884031369671.
+Meta Train Accuracy: 0.9599999785423279.
+Meta Test Results:
+Meta Test Error: 0.25465879010036585.
+Meta Test Accuracy: 0.9307999789714814.
+
+Iteration 340:
+Meta Train Results:
+Meta Train Error: 0.25905884872190654.
+Meta Train Accuracy: 0.9199999831616879.
+Meta Test Results:
+Meta Test Error: 0.22077997223474086.
+Meta Test Accuracy: 0.9499999809265137.
+
+Iteration 341:
+Meta Train Results:
+Meta Train Error: 0.16212406056001782.
+Meta Train Accuracy: 0.957499984651804.
+Meta Test Results:
+Meta Test Error: 0.2065112414583564.
+Meta Test Accuracy: 0.9483999824523925.
+
+Iteration 342:
+Meta Train Results:
+Meta Train Error: 0.1556330758612603.
+Meta Train Accuracy: 0.961249977350235.
+Meta Test Results:
+Meta Test Error: 0.8635716394148767.
+Meta Test Accuracy: 0.9127999806404113.
+
+Iteration 343:
+Meta Train Results:
+Meta Train Error: 0.2993945777998306.
+Meta Train Accuracy: 0.9587499871850014.
+Meta Test Results:
+Meta Test Error: 0.25932605776935813.
+Meta Test Accuracy: 0.9363999843597413.
+
+Iteration 344:
+Meta Train Results:
+Meta Train Error: 0.21305372670758516.
+Meta Train Accuracy: 0.9587499834597111.
+Meta Test Results:
+Meta Test Error: 0.3833014520443976.
+Meta Test Accuracy: 0.9059999865293503.
+
+Iteration 345:
+Meta Train Results:
+Meta Train Error: 0.21399736150124227.
+Meta Train Accuracy: 0.9512499757111073.
+Meta Test Results:
+Meta Test Error: 0.3419335366971791.
+Meta Test Accuracy: 0.9243999814987183.
+
+Iteration 346:
+Meta Train Results:
+Meta Train Error: 0.19520569581072778.
+Meta Train Accuracy: 0.9562499821186066.
+Meta Test Results:
+Meta Test Error: 0.13916550934314728.
+Meta Test Accuracy: 0.9719999825954437.
+
+Iteration 347:
+Meta Train Results:
+Meta Train Error: 0.1273278803564608.
+Meta Train Accuracy: 0.971249982714653.
+Meta Test Results:
+Meta Test Error: 0.35260797064751387.
+Meta Test Accuracy: 0.9099999868869781.
+
+Iteration 348:
+Meta Train Results:
+Meta Train Error: 0.11802491871640086.
+Meta Train Accuracy: 0.9737499877810478.
+Meta Test Results:
+Meta Test Error: 0.33581625362858175.
+Meta Test Accuracy: 0.9195999848842621.
+
+Iteration 349:
+Meta Train Results:
+Meta Train Error: 0.13669942229171284.
+Meta Train Accuracy: 0.9724999889731407.
+Meta Test Results:
+Meta Test Error: 0.24920417927205563.
+Meta Test Accuracy: 0.939999988079071.
+
+Iteration 350:
+Meta Train Results:
+Meta Train Error: 0.11369442576688016.
+Meta Train Accuracy: 0.9824999868869781.
+Meta Test Results:
+Meta Test Error: 0.20726432600058614.
+Meta Test Accuracy: 0.9391999840736389.
+
+Iteration 351:
+Meta Train Results:
+Meta Train Error: 0.09655705519253388.
+Meta Train Accuracy: 0.9837499931454659.
+Meta Test Results:
+Meta Test Error: 0.23101260117720812.
+Meta Test Accuracy: 0.9419999837875366.
+
+Iteration 352:
+Meta Train Results:
+Meta Train Error: 0.0830087858485058.
+Meta Train Accuracy: 0.9787499904632568.
+Meta Test Results:
+Meta Test Error: 0.24674945750273763.
+Meta Test Accuracy: 0.9283999812602997.
+
+Iteration 353:
+Meta Train Results:
+Meta Train Error: 0.08136204135371372.
+Meta Train Accuracy: 0.9862499870359898.
+Meta Test Results:
+Meta Test Error: 0.3714092733897269.
+Meta Test Accuracy: 0.9287999844551087.
+
+Iteration 354:
+Meta Train Results:
+Meta Train Error: 0.11080758657772094.
+Meta Train Accuracy: 0.9824999868869781.
+Meta Test Results:
+Meta Test Error: 0.24960756148211657.
+Meta Test Accuracy: 0.9419999885559082.
+
+Iteration 355:
+Meta Train Results:
+Meta Train Error: 0.1203905501315603.
+Meta Train Accuracy: 0.9749999903142452.
+Meta Test Results:
+Meta Test Error: 0.2580709137581289.
+Meta Test Accuracy: 0.929199982881546.
+
+Iteration 356:
+Meta Train Results:
+Meta Train Error: 0.10846858106378932.
+Meta Train Accuracy: 0.9849999882280827.
+Meta Test Results:
+Meta Test Error: 0.575888296123594.
+Meta Test Accuracy: 0.9283999830484391.
+
+Iteration 357:
+Meta Train Results:
+Meta Train Error: 0.21164725930429995.
+Meta Train Accuracy: 0.9574999883770943.
+Meta Test Results:
+Meta Test Error: 0.28570073820650577.
+Meta Test Accuracy: 0.9151999843120575.
+
+Iteration 358:
+Meta Train Results:
+Meta Train Error: 0.33877907067653723.
+Meta Train Accuracy: 0.9512499794363976.
+Meta Test Results:
+Meta Test Error: 0.24889249028638005.
+Meta Test Accuracy: 0.9303999829292298.
+
+Iteration 359:
+Meta Train Results:
+Meta Train Error: 0.14309957067780488.
+Meta Train Accuracy: 0.9699999876320362.
+Meta Test Results:
+Meta Test Error: 0.247330088224262.
+Meta Test Accuracy: 0.9335999846458435.
+
+Iteration 360:
+Meta Train Results:
+Meta Train Error: 0.18792930245399475.
+Meta Train Accuracy: 0.9499999806284904.
+Meta Test Results:
+Meta Test Error: 0.256090785022825.
+Meta Test Accuracy: 0.9323999798297882.
+
+Iteration 361:
+Meta Train Results:
+Meta Train Error: 0.11830286346412322.
+Meta Train Accuracy: 0.9649999924004078.
+Meta Test Results:
+Meta Test Error: 0.47259603372309356.
+Meta Test Accuracy: 0.9183999848365784.
+
+Iteration 362:
+Meta Train Results:
+Meta Train Error: 0.13495695305755362.
+Meta Train Accuracy: 0.9699999913573265.
+Meta Test Results:
+Meta Test Error: 0.2662636387161911.
+Meta Test Accuracy: 0.9231999862194061.
+
+Iteration 363:
+Meta Train Results:
+Meta Train Error: 0.2492172212805599.
+Meta Train Accuracy: 0.9362499751150608.
+Meta Test Results:
+Meta Test Error: 0.2647383464872837.
+Meta Test Accuracy: 0.9315999877452851.
+
+Iteration 364:
+Meta Train Results:
+Meta Train Error: 0.1408206364721991.
+Meta Train Accuracy: 0.9674999862909317.
+Meta Test Results:
+Meta Test Error: 0.4695850109588355.
+Meta Test Accuracy: 0.9079999816417694.
+
+Iteration 365:
+Meta Train Results:
+Meta Train Error: 0.08654210634995252.
+Meta Train Accuracy: 0.9824999906122684.
+Meta Test Results:
+Meta Test Error: 0.25191124046221375.
+Meta Test Accuracy: 0.9379999887943268.
+
+Iteration 366:
+Meta Train Results:
+Meta Train Error: 0.12892695236951113.
+Meta Train Accuracy: 0.9787499867379665.
+Meta Test Results:
+Meta Test Error: 0.2592195261269808.
+Meta Test Accuracy: 0.9295999825000762.
+
+Iteration 367:
+Meta Train Results:
+Meta Train Error: 0.28844948927871883.
+Meta Train Accuracy: 0.9524999856948853.
+Meta Test Results:
+Meta Test Error: 0.4931175928376615.
+Meta Test Accuracy: 0.9403999829292298.
+
+Iteration 368:
+Meta Train Results:
+Meta Train Error: 0.1447068406305334.
+Meta Train Accuracy: 0.9712499901652336.
+Meta Test Results:
+Meta Test Error: 0.2933617404475808.
+Meta Test Accuracy: 0.9335999906063079.
+
+Iteration 369:
+Meta Train Results:
+Meta Train Error: 0.16681487363530323.
+Meta Train Accuracy: 0.9649999774992466.
+Meta Test Results:
+Meta Test Error: 0.2604085987107828.
+Meta Test Accuracy: 0.9455999851226806.
+
+Iteration 370:
+Meta Train Results:
+Meta Train Error: 0.2488924567005597.
+Meta Train Accuracy: 0.9362499825656414.
+Meta Test Results:
+Meta Test Error: 0.3454155585542321.
+Meta Test Accuracy: 0.9139999759197235.
+
+Iteration 371:
+Meta Train Results:
+Meta Train Error: 0.1339443339384161.
+Meta Train Accuracy: 0.9749999828636646.
+Meta Test Results:
+Meta Test Error: 0.3711833244934678.
+Meta Test Accuracy: 0.9343999862670899.
+
+Iteration 372:
+Meta Train Results:
+Meta Train Error: 0.10161022763895744.
+Meta Train Accuracy: 0.9799999818205833.
+Meta Test Results:
+Meta Test Error: 0.2540031007863581.
+Meta Test Accuracy: 0.9259999811649322.
+
+Iteration 373:
+Meta Train Results:
+Meta Train Error: 0.15213482614490204.
+Meta Train Accuracy: 0.9724999815225601.
+Meta Test Results:
+Meta Test Error: 0.31439531745389104.
+Meta Test Accuracy: 0.9491999876499176.
+
+Iteration 374:
+Meta Train Results:
+Meta Train Error: 0.2926266293216031.
+Meta Train Accuracy: 0.9637499824166298.
+Meta Test Results:
+Meta Test Error: 0.33702312285080555.
+Meta Test Accuracy: 0.9127999830245972.
+
+Iteration 375:
+Meta Train Results:
+Meta Train Error: 0.12053347230539657.
+Meta Train Accuracy: 0.9712499901652336.
+Meta Test Results:
+Meta Test Error: 0.25348309985129164.
+Meta Test Accuracy: 0.9411999893188476.
+
+Iteration 376:
+Meta Train Results:
+Meta Train Error: 0.10561636864440516.
+Meta Train Accuracy: 0.9824999868869781.
+Meta Test Results:
+Meta Test Error: 0.3036360346805304.
+Meta Test Accuracy: 0.9179999828338623.
+
+Iteration 377:
+Meta Train Results:
+Meta Train Error: 0.3601243020966649.
+Meta Train Accuracy: 0.9437499791383743.
+Meta Test Results:
+Meta Test Error: 0.40451763762161136.
+Meta Test Accuracy: 0.9075999772548675.
+
+Iteration 378:
+Meta Train Results:
+Meta Train Error: 0.27265310822986066.
+Meta Train Accuracy: 0.9562499783933163.
+Meta Test Results:
+Meta Test Error: 0.16885342405876144.
+Meta Test Accuracy: 0.9455999839305878.
+
+Iteration 379:
+Meta Train Results:
+Meta Train Error: 0.28004848171258345.
+Meta Train Accuracy: 0.9637499898672104.
+Meta Test Results:
+Meta Test Error: 0.2083311606757343.
+Meta Test Accuracy: 0.9399999833106994.
+
+Iteration 380:
+Meta Train Results:
+Meta Train Error: 0.1335542359156534.
+Meta Train Accuracy: 0.9774999879300594.
+Meta Test Results:
+Meta Test Error: 0.1933936662040651.
+Meta Test Accuracy: 0.942399981021881.
+
+Iteration 381:
+Meta Train Results:
+Meta Train Error: 0.16539593032211997.
+Meta Train Accuracy: 0.9749999865889549.
+Meta Test Results:
+Meta Test Error: 0.2608721898961812.
+Meta Test Accuracy: 0.9295999854803085.
+
+Iteration 382:
+Meta Train Results:
+Meta Train Error: 0.2141752471216023.
+Meta Train Accuracy: 0.9424999803304672.
+Meta Test Results:
+Meta Test Error: 0.19564412872772663.
+Meta Test Accuracy: 0.9403999841213226.
+
+Iteration 383:
+Meta Train Results:
+Meta Train Error: 0.5218208888545632.
+Meta Train Accuracy: 0.9462499879300594.
+Meta Test Results:
+Meta Test Error: 0.3026015018532053.
+Meta Test Accuracy: 0.9187999820709228.
+
+Iteration 384:
+Meta Train Results:
+Meta Train Error: 0.12629936845041811.
+Meta Train Accuracy: 0.9824999831616879.
+Meta Test Results:
+Meta Test Error: 0.40855344105511904.
+Meta Test Accuracy: 0.9395999813079834.
+
+Iteration 385:
+Meta Train Results:
+Meta Train Error: 0.09513503540074453.
+Meta Train Accuracy: 0.9862499870359898.
+Meta Test Results:
+Meta Test Error: 0.3852135343453847.
+Meta Test Accuracy: 0.9299999845027923.
+
+Iteration 386:
+Meta Train Results:
+Meta Train Error: 0.11844501655650674.
+Meta Train Accuracy: 0.9787499867379665.
+Meta Test Results:
+Meta Test Error: 0.30591639535501597.
+Meta Test Accuracy: 0.9107999801635742.
+
+Iteration 387:
+Meta Train Results:
+Meta Train Error: 0.10497231234330684.
+Meta Train Accuracy: 0.9924999885261059.
+Meta Test Results:
+Meta Test Error: 0.2841566310776398.
+Meta Test Accuracy: 0.9303999841213226.
+
+Iteration 388:
+Meta Train Results:
+Meta Train Error: 0.16591757955029607.
+Meta Train Accuracy: 0.9499999843537807.
+Meta Test Results:
+Meta Test Error: 0.191834853538312.
+Meta Test Accuracy: 0.9419999849796296.
+
+Iteration 389:
+Meta Train Results:
+Meta Train Error: 0.22828975564334542.
+Meta Train Accuracy: 0.9624999836087227.
+Meta Test Results:
+Meta Test Error: 0.27120837685768495.
+Meta Test Accuracy: 0.9287999820709228.
+
+Iteration 390:
+Meta Train Results:
+Meta Train Error: 0.10707924893358722.
+Meta Train Accuracy: 0.9862499870359898.
+Meta Test Results:
+Meta Test Error: 0.2768124525714666.
+Meta Test Accuracy: 0.9455999839305878.
+
+Iteration 391:
+Meta Train Results:
+Meta Train Error: 0.17551713634748012.
+Meta Train Accuracy: 0.9549999870359898.
+Meta Test Results:
+Meta Test Error: 0.19034345377236606.
+Meta Test Accuracy: 0.9399999797344207.
+
+Iteration 392:
+Meta Train Results:
+Meta Train Error: 0.16694657452171668.
+Meta Train Accuracy: 0.9737499952316284.
+Meta Test Results:
+Meta Test Error: 0.29190712780691686.
+Meta Test Accuracy: 0.9287999832630157.
+
+Iteration 393:
+Meta Train Results:
+Meta Train Error: 0.13769046688685194.
+Meta Train Accuracy: 0.9674999825656414.
+Meta Test Results:
+Meta Test Error: 0.3497289376705885.
+Meta Test Accuracy: 0.9195999848842621.
+
+Iteration 394:
+Meta Train Results:
+Meta Train Error: 0.32400211758795194.
+Meta Train Accuracy: 0.9699999876320362.
+Meta Test Results:
+Meta Test Error: 0.233514736299403.
+Meta Test Accuracy: 0.9487999892234802.
+
+Iteration 395:
+Meta Train Results:
+Meta Train Error: 0.2257607253268361.
+Meta Train Accuracy: 0.934999980032444.
+Meta Test Results:
+Meta Test Error: 0.3511082700965926.
+Meta Test Accuracy: 0.9123999810218811.
+
+Iteration 396:
+Meta Train Results:
+Meta Train Error: 0.18802115402650088.
+Meta Train Accuracy: 0.966249980032444.
+Meta Test Results:
+Meta Test Error: 0.21629091939888895.
+Meta Test Accuracy: 0.9447999876737595.
+
+Iteration 397:
+Meta Train Results:
+Meta Train Error: 0.18960424629040062.
+Meta Train Accuracy: 0.9574999883770943.
+Meta Test Results:
+Meta Test Error: 0.2674281761422753.
+Meta Test Accuracy: 0.91879998087883.
+
+Iteration 398:
+Meta Train Results:
+Meta Train Error: 0.41930218107881956.
+Meta Train Accuracy: 0.9599999748170376.
+Meta Test Results:
+Meta Test Error: 0.23929557328578085.
+Meta Test Accuracy: 0.9307999801635742.
+
+Iteration 399:
+Meta Train Results:
+Meta Train Error: 0.27900719444733113.
+Meta Train Accuracy: 0.9449999816715717.
+Meta Test Results:
+Meta Test Error: 0.4903190330043435.
+Meta Test Accuracy: 0.9071999841928482.
+
+Iteration 400:
+Meta Train Results:
+Meta Train Error: 0.3918514729011804.
+Meta Train Accuracy: 0.9712499864399433.
+Meta Test Results:
+Meta Test Error: 0.17605123763438313.
+Meta Test Accuracy: 0.9531999838352203.
+
+Please consider to run pre-processing before quantization. Refer to example: https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+Please consider pre-processing before quantization. See https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+Please consider to run pre-processing before quantization. Refer to example: https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+Please consider pre-processing before quantization. See https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+Compression summary saved to /root/workspace/MAML-Edge/deploy_artifacts/MAML_CWRU_FFT_5w10s_source012_target3_labels0123456789/compression_summary.json.
+
+[return_code] 0

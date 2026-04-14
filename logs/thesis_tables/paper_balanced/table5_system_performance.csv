@@ -1,0 +1,4 @@
+channel,stage,request_count,latency_ms
+direct,preprocess,100,56.2379
+direct,inference,100,0.9052
+direct,end_to_end,100,57.2581

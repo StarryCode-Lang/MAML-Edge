@@ -1,0 +1,378 @@
+
+=== 2026-04-11T04:52:07+08:00 ===
+$ /root/miniconda3/envs/fault_env/bin/python train.py --mode train --algorithm cnn --dataset CWRU --preprocess FFT --ways 5 --shots 10 --query_shots 10 --train_domains 0\,1\,2 --test_domain 3 --fault_labels 0\,1\,2\,3\,4\,5\,6\,7\,8\,9 --runtime_backend onnxruntime --enable_compression true --prune_ratio 0.4 --plot false --log true --cuda true --calibration_size 64 --enable_qat_recovery false --onnx_opset 17 --epochs 40 --batch_size 64 --finetune_epochs 15 --finetune_lr 0.0003 --test_task_num 200 --compression_finetune_iters 80 --log_path /root/workspace/MAML-Edge/logs/paper_runs/balanced/seed/seed43/latest/logs/fft/cnn --seed 43 --checkpoint_path /root/workspace/MAML-Edge/checkpoints/paper_balanced/seed/seed43 --compression_output_path /root/workspace/MAML-Edge/deploy_artifacts/paper_balanced/seed/seed43 --deployment_label_sampling random_per_episode 
+/root/miniconda3/envs/fault_env/lib/python3.9/site-packages/sklearn/utils/fixes.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import parse_version  # type: ignore
+Experiment: CNN_CWRU_FFT_5w10s10q_source012_target3_labels0123456789
+Training CNN baseline with 1 GPU(s).
+Domain: 0, normalization: False, time_steps: 1024, overlap_ratio: 0.5.
+Loading Data: fault type: 0, total num: 243938, sample num: 475
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 1, total num: 121265, sample num: 235
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 2, total num: 122571, sample num: 238
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 3, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 4, total num: 121846, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 5, total num: 121846, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 6, total num: 121846, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 7, total num: 122136, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 8, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 9, total num: 122426, sample num: 238
+Data is shuffled using random seed: 42
+
+Domain: 1, normalization: False, time_steps: 1024, overlap_ratio: 0.5.
+Loading Data: fault type: 0, total num: 483903, sample num: 944
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 1, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 2, total num: 121410, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 3, total num: 122426, sample num: 238
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 4, total num: 121846, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 5, total num: 122136, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 6, total num: 122136, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 7, total num: 121556, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 8, total num: 121701, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 9, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Domain: 2, normalization: False, time_steps: 1024, overlap_ratio: 0.5.
+Loading Data: fault type: 0, total num: 485063, sample num: 946
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 1, total num: 122136, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 2, total num: 121556, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 3, total num: 121410, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 4, total num: 121846, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 5, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 6, total num: 121846, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 7, total num: 121846, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 8, total num: 122136, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 9, total num: 122281, sample num: 237
+Data is shuffled using random seed: 42
+
+Domain: 3, normalization: False, time_steps: 1024, overlap_ratio: 0.5.
+Loading Data: fault type: 0, total num: 485643, sample num: 947
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 1, total num: 122917, sample num: 239
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 2, total num: 121556, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 3, total num: 122571, sample num: 238
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 4, total num: 121701, sample num: 236
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 5, total num: 122136, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 6, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 7, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 8, total num: 122136, sample num: 237
+Data is shuffled using random seed: 42
+
+Loading Data: fault type: 9, total num: 121991, sample num: 237
+Data is shuffled using random seed: 42
+
+Epoch 1:
+Source Train Loss: 0.105588
+Source Train Accuracy: 0.977265
+Target Fine-tune Loss: 1.298104
+Target Fine-tune Accuracy: 0.607800
+
+Epoch 2:
+Source Train Loss: 0.000859
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.403996
+Target Fine-tune Accuracy: 0.608000
+
+Epoch 3:
+Source Train Loss: 0.000349
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.328879
+Target Fine-tune Accuracy: 0.623400
+
+Epoch 4:
+Source Train Loss: 0.000196
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.301622
+Target Fine-tune Accuracy: 0.632800
+
+Epoch 5:
+Source Train Loss: 0.000119
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.299797
+Target Fine-tune Accuracy: 0.618700
+
+Epoch 6:
+Source Train Loss: 0.000086
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.290516
+Target Fine-tune Accuracy: 0.615700
+
+Epoch 7:
+Source Train Loss: 0.000066
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.223244
+Target Fine-tune Accuracy: 0.626200
+
+Epoch 8:
+Source Train Loss: 0.000047
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.266892
+Target Fine-tune Accuracy: 0.607200
+
+Epoch 9:
+Source Train Loss: 0.000042
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.224524
+Target Fine-tune Accuracy: 0.612100
+
+Epoch 10:
+Source Train Loss: 0.000031
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.279035
+Target Fine-tune Accuracy: 0.607000
+
+Epoch 11:
+Source Train Loss: 0.000025
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.301987
+Target Fine-tune Accuracy: 0.600600
+
+Epoch 12:
+Source Train Loss: 0.000024
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.287761
+Target Fine-tune Accuracy: 0.620200
+
+Epoch 13:
+Source Train Loss: 0.000018
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.304252
+Target Fine-tune Accuracy: 0.598700
+
+Epoch 14:
+Source Train Loss: 0.000015
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.297608
+Target Fine-tune Accuracy: 0.602500
+
+Epoch 15:
+Source Train Loss: 0.000013
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.321735
+Target Fine-tune Accuracy: 0.601600
+
+Epoch 16:
+Source Train Loss: 0.000012
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.358324
+Target Fine-tune Accuracy: 0.602300
+
+Epoch 17:
+Source Train Loss: 0.000010
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.394407
+Target Fine-tune Accuracy: 0.595500
+
+Epoch 18:
+Source Train Loss: 0.000009
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.393935
+Target Fine-tune Accuracy: 0.595800
+
+Epoch 19:
+Source Train Loss: 0.000009
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.394028
+Target Fine-tune Accuracy: 0.589400
+
+Epoch 20:
+Source Train Loss: 0.000008
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.419591
+Target Fine-tune Accuracy: 0.589000
+
+Epoch 21:
+Source Train Loss: 0.000007
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.417927
+Target Fine-tune Accuracy: 0.596900
+
+Epoch 22:
+Source Train Loss: 0.000006
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.507307
+Target Fine-tune Accuracy: 0.576000
+
+Epoch 23:
+Source Train Loss: 0.000005
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.344180
+Target Fine-tune Accuracy: 0.591400
+
+Epoch 24:
+Source Train Loss: 0.000006
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.406215
+Target Fine-tune Accuracy: 0.591200
+
+Epoch 25:
+Source Train Loss: 0.000005
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.453434
+Target Fine-tune Accuracy: 0.586400
+
+Epoch 26:
+Source Train Loss: 0.000004
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.405463
+Target Fine-tune Accuracy: 0.583000
+
+Epoch 27:
+Source Train Loss: 0.000005
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.474363
+Target Fine-tune Accuracy: 0.588300
+
+Epoch 28:
+Source Train Loss: 0.000003
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.519398
+Target Fine-tune Accuracy: 0.578600
+
+Epoch 29:
+Source Train Loss: 0.000003
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.546623
+Target Fine-tune Accuracy: 0.574000
+
+Epoch 30:
+Source Train Loss: 0.000002
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.475889
+Target Fine-tune Accuracy: 0.579200
+
+Epoch 31:
+Source Train Loss: 0.000002
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.550329
+Target Fine-tune Accuracy: 0.567400
+
+Epoch 32:
+Source Train Loss: 0.000002
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.566859
+Target Fine-tune Accuracy: 0.567700
+
+Epoch 33:
+Source Train Loss: 0.000002
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.529486
+Target Fine-tune Accuracy: 0.569500
+
+Epoch 34:
+Source Train Loss: 0.000002
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.605869
+Target Fine-tune Accuracy: 0.565800
+
+Epoch 35:
+Source Train Loss: 0.000002
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.519790
+Target Fine-tune Accuracy: 0.574400
+
+Epoch 36:
+Source Train Loss: 0.000002
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.520592
+Target Fine-tune Accuracy: 0.573000
+
+Epoch 37:
+Source Train Loss: 0.000002
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.590045
+Target Fine-tune Accuracy: 0.571500
+
+Epoch 38:
+Source Train Loss: 0.000002
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.627624
+Target Fine-tune Accuracy: 0.560600
+
+Epoch 39:
+Source Train Loss: 0.000001
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.590315
+Target Fine-tune Accuracy: 0.563400
+
+Epoch 40:
+Source Train Loss: 0.000001
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 1.629009
+Target Fine-tune Accuracy: 0.561900
+
+Please consider to run pre-processing before quantization. Refer to example: https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+Please consider pre-processing before quantization. See https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+Please consider to run pre-processing before quantization. Refer to example: https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+Please consider pre-processing before quantization. See https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+Compression summary saved to /root/workspace/MAML-Edge/deploy_artifacts/paper_balanced/seed/seed43/CNN_CWRU_FFT_5w10s10q_source012_target3_labels0123456789/compression_summary.json.
+
+[return_code] 0

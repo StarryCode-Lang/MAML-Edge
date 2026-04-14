@@ -1,0 +1,4 @@
+model,shots,sample_count,metric_protocol,accuracy_mean_percent,accuracy_std_percent,accuracy_mean_std
+MAML,5,3,deployment_baseline_mean_std,99.21,0.76,99.21 +- 0.76
+MAML,10,3,deployment_baseline_mean_std,99.64,0.37,99.64 +- 0.37
+MAML,15,3,deployment_baseline_mean_std,98.84,1.57,98.84 +- 1.57

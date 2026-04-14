@@ -1,0 +1,133 @@
+
+=== 2026-04-11T08:08:27+08:00 ===
+$ /root/miniconda3/envs/fault_env/bin/python train.py --mode train --algorithm cnn --dataset CWRU --preprocess STFT --ways 5 --shots 15 --query_shots 15 --train_domains 0\,1\,2 --test_domain 3 --fault_labels 0\,1\,2\,3\,4\,5\,6\,7\,8\,9 --runtime_backend onnxruntime --enable_compression true --prune_ratio 0.4 --plot false --log true --cuda true --calibration_size 64 --enable_qat_recovery false --onnx_opset 17 --epochs 30 --batch_size 64 --finetune_epochs 15 --finetune_lr 0.0003 --test_task_num 200 --compression_finetune_iters 80 --log_path /root/workspace/MAML-Edge/logs/paper_runs/balanced/seed/seed43/latest/logs/stft/cnn --seed 43 --checkpoint_path /root/workspace/MAML-Edge/checkpoints/paper_balanced/seed/seed43 --compression_output_path /root/workspace/MAML-Edge/deploy_artifacts/paper_balanced/seed/seed43 --deployment_label_sampling random_per_episode 
+/root/miniconda3/envs/fault_env/lib/python3.9/site-packages/sklearn/utils/fixes.py:28: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import parse_version  # type: ignore
+Experiment: CNN_CWRU_STFT_5w15s15q_source012_target3_labels0123456789
+Training CNN baseline with 1 GPU(s).
+Epoch 1:
+Source Train Loss: 0.426944
+Source Train Accuracy: 0.947218
+Target Fine-tune Loss: 0.708780
+Target Fine-tune Accuracy: 0.827867
+
+Epoch 2:
+Source Train Loss: 0.028168
+Source Train Accuracy: 0.999772
+Target Fine-tune Loss: 0.642530
+Target Fine-tune Accuracy: 0.826733
+
+Epoch 3:
+Source Train Loss: 0.010531
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.666373
+Target Fine-tune Accuracy: 0.814200
+
+Epoch 4:
+Source Train Loss: 0.005437
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.638156
+Target Fine-tune Accuracy: 0.817867
+
+Epoch 5:
+Source Train Loss: 0.003427
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.611222
+Target Fine-tune Accuracy: 0.826133
+
+Epoch 6:
+Source Train Loss: 0.002439
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.564770
+Target Fine-tune Accuracy: 0.834467
+
+Epoch 7:
+Source Train Loss: 0.001608
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.624071
+Target Fine-tune Accuracy: 0.813733
+
+Epoch 8:
+Source Train Loss: 0.001291
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.642127
+Target Fine-tune Accuracy: 0.802333
+
+Epoch 9:
+Source Train Loss: 0.001452
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.642196
+Target Fine-tune Accuracy: 0.805733
+
+Epoch 10:
+Source Train Loss: 0.000706
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.616960
+Target Fine-tune Accuracy: 0.811800
+
+Epoch 11:
+Source Train Loss: 0.000620
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.622118
+Target Fine-tune Accuracy: 0.805400
+
+Epoch 12:
+Source Train Loss: 0.000514
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.621654
+Target Fine-tune Accuracy: 0.807933
+
+Epoch 13:
+Source Train Loss: 0.000421
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.581873
+Target Fine-tune Accuracy: 0.824200
+
+Epoch 14:
+Source Train Loss: 0.000359
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.594869
+Target Fine-tune Accuracy: 0.814933
+
+Epoch 15:
+Source Train Loss: 0.000302
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.620305
+Target Fine-tune Accuracy: 0.806667
+
+Epoch 16:
+Source Train Loss: 0.000273
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.622388
+Target Fine-tune Accuracy: 0.807533
+
+Epoch 17:
+Source Train Loss: 0.000240
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.632412
+Target Fine-tune Accuracy: 0.798533
+
+Epoch 18:
+Source Train Loss: 0.000220
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.613197
+Target Fine-tune Accuracy: 0.808000
+
+Epoch 19:
+Source Train Loss: 0.000188
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.606244
+Target Fine-tune Accuracy: 0.809667
+
+Epoch 20:
+Source Train Loss: 0.000170
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.630425
+Target Fine-tune Accuracy: 0.803000
+
+Epoch 21:
+Source Train Loss: 0.000153
+Source Train Accuracy: 1.000000
+Target Fine-tune Loss: 0.586610
+Target Fine-tune Accuracy: 0.816667
+

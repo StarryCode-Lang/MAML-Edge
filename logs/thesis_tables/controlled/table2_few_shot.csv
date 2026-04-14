@@ -1,0 +1,4 @@
+model,shots,accuracy,accuracy_percent,metric_protocol,experiment_title
+MAML,5,0.9915878023133544,99.16,deployment_baseline,MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789
+MAML,10,0.9926393270241851,99.26,deployment_baseline,MAML_CWRU_STFT_5w10s_source012_target3_labels0123456789
+MAML,15,0.9947423764458465,99.47,deployment_baseline,MAML_CWRU_STFT_5w15s_source012_target3_labels0123456789

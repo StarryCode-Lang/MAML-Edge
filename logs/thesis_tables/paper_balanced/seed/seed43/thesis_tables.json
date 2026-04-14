@@ -1,0 +1,367 @@
+{
+  "locked_profile": {
+    "dataset": "CWRU",
+    "preprocess": "STFT",
+    "ways": 5,
+    "train_domains": "0,1,2",
+    "test_domain": 3,
+    "runtime_backend": "onnxruntime",
+    "enable_compression": true,
+    "prune_ratio": 0.4,
+    "fault_labels": ""
+  },
+  "table0_preprocess_model_matrix": [
+    {
+      "preprocess": "FFT",
+      "model": "CNN",
+      "shots": 5,
+      "accuracy": 0.5303030303030303,
+      "accuracy_percent": 53.03,
+      "latency_ms": 1.2356,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "CNN_CWRU_FFT_5w5s5q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "FFT",
+      "model": "CNN",
+      "shots": 10,
+      "accuracy": 0.6144781144781145,
+      "accuracy_percent": 61.45,
+      "latency_ms": 1.2599,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "CNN_CWRU_FFT_5w10s10q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "FFT",
+      "model": "CNN",
+      "shots": 15,
+      "accuracy": 0.29292929292929293,
+      "accuracy_percent": 29.29,
+      "latency_ms": 0.9282,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "CNN_CWRU_FFT_5w15s15q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "FFT",
+      "model": "MAML",
+      "shots": 5,
+      "accuracy": 0.8181818181818182,
+      "accuracy_percent": 81.82,
+      "latency_ms": 1.183,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "MAML_CWRU_FFT_5w5s_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "FFT",
+      "model": "MAML",
+      "shots": 10,
+      "accuracy": 0.9983164983164983,
+      "accuracy_percent": 99.83,
+      "latency_ms": 1.2229,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "MAML_CWRU_FFT_5w10s_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "FFT",
+      "model": "MAML",
+      "shots": 15,
+      "accuracy": 0.6616161616161617,
+      "accuracy_percent": 66.16,
+      "latency_ms": 1.0958,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "MAML_CWRU_FFT_5w15s_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "FFT",
+      "model": "ProtoNet",
+      "shots": 5,
+      "accuracy": 0.9983164983164983,
+      "accuracy_percent": 99.83,
+      "latency_ms": 0.931,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "ProtoNet_CWRU_FFT_5w5s5q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "FFT",
+      "model": "ProtoNet",
+      "shots": 10,
+      "accuracy": 1.0,
+      "accuracy_percent": 100.0,
+      "latency_ms": 1.1955,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "ProtoNet_CWRU_FFT_5w10s10q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "FFT",
+      "model": "ProtoNet",
+      "shots": 15,
+      "accuracy": 1.0,
+      "accuracy_percent": 100.0,
+      "latency_ms": 1.1208,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "ProtoNet_CWRU_FFT_5w15s15q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "STFT",
+      "model": "CNN",
+      "shots": 5,
+      "accuracy": 0.7491582491582491,
+      "accuracy_percent": 74.92,
+      "latency_ms": 2.52,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "CNN_CWRU_STFT_5w5s5q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "STFT",
+      "model": "CNN",
+      "shots": 10,
+      "accuracy": 0.7373737373737373,
+      "accuracy_percent": 73.74,
+      "latency_ms": 2.7839,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "CNN_CWRU_STFT_5w10s10q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "STFT",
+      "model": "CNN",
+      "shots": 15,
+      "accuracy": 0.8501683501683501,
+      "accuracy_percent": 85.02,
+      "latency_ms": 3.0984,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "CNN_CWRU_STFT_5w15s15q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "STFT",
+      "model": "MAML",
+      "shots": 5,
+      "accuracy": 0.9848484848484849,
+      "accuracy_percent": 98.48,
+      "latency_ms": 2.9263,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "STFT",
+      "model": "MAML",
+      "shots": 10,
+      "accuracy": 0.9966329966329966,
+      "accuracy_percent": 99.66,
+      "latency_ms": 2.9247,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "MAML_CWRU_STFT_5w10s_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "STFT",
+      "model": "MAML",
+      "shots": 15,
+      "accuracy": 1.0,
+      "accuracy_percent": 100.0,
+      "latency_ms": 2.9543,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "MAML_CWRU_STFT_5w15s_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "STFT",
+      "model": "ProtoNet",
+      "shots": 5,
+      "accuracy": 0.9915824915824916,
+      "accuracy_percent": 99.16,
+      "latency_ms": 2.69,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "STFT",
+      "model": "ProtoNet",
+      "shots": 10,
+      "accuracy": 0.9932659932659933,
+      "accuracy_percent": 99.33,
+      "latency_ms": 2.6546,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "ProtoNet_CWRU_STFT_5w10s10q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "STFT",
+      "model": "ProtoNet",
+      "shots": 15,
+      "accuracy": 0.9915824915824916,
+      "accuracy_percent": 99.16,
+      "latency_ms": 2.6905,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "ProtoNet_CWRU_STFT_5w15s15q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "WT",
+      "model": "CNN",
+      "shots": 5,
+      "accuracy": 0.9511784511784511,
+      "accuracy_percent": 95.12,
+      "latency_ms": 2.5512,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "CNN_CWRU_WT_5w5s5q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "WT",
+      "model": "CNN",
+      "shots": 10,
+      "accuracy": 0.8787878787878788,
+      "accuracy_percent": 87.88,
+      "latency_ms": 2.7005,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "CNN_CWRU_WT_5w10s10q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "WT",
+      "model": "CNN",
+      "shots": 15,
+      "accuracy": 0.9326599326599326,
+      "accuracy_percent": 93.27,
+      "latency_ms": 2.9358,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "CNN_CWRU_WT_5w15s15q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "WT",
+      "model": "MAML",
+      "shots": 5,
+      "accuracy": 0.9932659932659933,
+      "accuracy_percent": 99.33,
+      "latency_ms": 2.7024,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "MAML_CWRU_WT_5w5s_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "WT",
+      "model": "MAML",
+      "shots": 10,
+      "accuracy": 0.9983164983164983,
+      "accuracy_percent": 99.83,
+      "latency_ms": 2.4183,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "MAML_CWRU_WT_5w10s_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "WT",
+      "model": "MAML",
+      "shots": 15,
+      "accuracy": 0.9983164983164983,
+      "accuracy_percent": 99.83,
+      "latency_ms": 2.6298,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "MAML_CWRU_WT_5w15s_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "WT",
+      "model": "ProtoNet",
+      "shots": 5,
+      "accuracy": 0.9966329966329966,
+      "accuracy_percent": 99.66,
+      "latency_ms": 2.7041,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "ProtoNet_CWRU_WT_5w5s5q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "WT",
+      "model": "ProtoNet",
+      "shots": 10,
+      "accuracy": 0.9983164983164983,
+      "accuracy_percent": 99.83,
+      "latency_ms": 2.6784,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "ProtoNet_CWRU_WT_5w10s10q_source012_target3_labels0123456789"
+    },
+    {
+      "preprocess": "WT",
+      "model": "ProtoNet",
+      "shots": 15,
+      "accuracy": 0.9983164983164983,
+      "accuracy_percent": 99.83,
+      "latency_ms": 2.6678,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "ProtoNet_CWRU_WT_5w15s15q_source012_target3_labels0123456789"
+    }
+  ],
+  "table1_model_performance": [
+    {
+      "model": "CNN",
+      "accuracy": 0.7491582491582491,
+      "accuracy_percent": 74.92,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "CNN_CWRU_STFT_5w5s5q_source012_target3_labels0123456789"
+    },
+    {
+      "model": "MAML",
+      "accuracy": 0.9848484848484849,
+      "accuracy_percent": 98.48,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789"
+    },
+    {
+      "model": "ProtoNet",
+      "accuracy": 0.9915824915824916,
+      "accuracy_percent": 99.16,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "ProtoNet_CWRU_STFT_5w5s5q_source012_target3_labels0123456789"
+    }
+  ],
+  "table2_few_shot": [
+    {
+      "model": "MAML",
+      "shots": 5,
+      "accuracy": 0.9848484848484849,
+      "accuracy_percent": 98.48,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "MAML_CWRU_STFT_5w5s_source012_target3_labels0123456789"
+    },
+    {
+      "model": "MAML",
+      "shots": 10,
+      "accuracy": 0.9966329966329966,
+      "accuracy_percent": 99.66,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "MAML_CWRU_STFT_5w10s_source012_target3_labels0123456789"
+    },
+    {
+      "model": "MAML",
+      "shots": 15,
+      "accuracy": 1.0,
+      "accuracy_percent": 100.0,
+      "metric_protocol": "deployment_baseline",
+      "experiment_title": "MAML_CWRU_STFT_5w15s_source012_target3_labels0123456789"
+    }
+  ],
+  "table3_compression": [
+    {
+      "model_variant": "Original MAML",
+      "accuracy": 0.9848484848484849,
+      "accuracy_percent": 98.48,
+      "latency_ms": 2.9263,
+      "parameter_count": 113738,
+      "model_size_mb": 0.436068,
+      "runtime_backend": "onnxruntime",
+      "metric_protocol": "deployment_baseline"
+    },
+    {
+      "model_variant": "Pruned",
+      "accuracy": 0.98989898989899,
+      "accuracy_percent": 98.99,
+      "latency_ms": 2.8617,
+      "parameter_count": 40860,
+      "model_size_mb": 0.158854,
+      "runtime_backend": "onnxruntime",
+      "metric_protocol": "deployment_float"
+    },
+    {
+      "model_variant": "Pruned + INT8",
+      "accuracy": 0.9882154882154882,
+      "accuracy_percent": 98.82,
+      "latency_ms": 3.455,
+      "parameter_count": 40860,
+      "model_size_mb": 0.056937,
+      "runtime_backend": "onnxruntime",
+      "metric_protocol": "deployment_int8"
+    }
+  ],
+  "table4_system_performance": []
+}

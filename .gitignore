@@ -17,8 +17,5 @@ env/
 data/
 system_layer/storage/runtime/
 
-# Runtime info
 checkpoints/
 deploy_artifacts/
-logs/
-images/

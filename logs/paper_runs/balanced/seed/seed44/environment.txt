@@ -1,0 +1,4 @@
+started_at=2026-04-11T19:37:13+08:00
+python_bin=/root/miniconda3/envs/fault_env/bin/python
+Python 3.9.25
+/root/miniconda3/envs/fault_env/bin/python

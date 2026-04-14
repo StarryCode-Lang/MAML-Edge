@@ -1,0 +1,4 @@
+model,sample_count,metric_protocol,accuracy_mean_percent,accuracy_std_percent,accuracy_mean_std
+CNN,3,deployment_baseline_mean_std,82.16,14.68,82.16 +- 14.68
+MAML,3,deployment_baseline_mean_std,99.21,0.76,99.21 +- 0.76
+ProtoNet,3,deployment_baseline_mean_std,99.72,0.49,99.72 +- 0.49

@@ -1,0 +1,11 @@
+profile,variant,metric_protocol,accuracy,accuracy_percent,latency_ms,parameter_count,model_size_mb,runtime_backend
+FFT + ProtoNet + 5-shot,baseline,deployment_baseline,1.0,100.0,1.3666,19008,0.073649,onnxruntime
+FFT + ProtoNet + 5-shot,int8_only,deployment_baseline_int8,1.0,100.0,0.8214,19008,0.0292,onnxruntime
+FFT + ProtoNet + 5-shot,prune_only,deployment_prune_only,1.0,100.0,0.914,6840,0.027724,onnxruntime
+FFT + ProtoNet + 5-shot,prune_recovery_float,deployment_float,1.0,100.0,0.9032,6840,0.027724,onnxruntime
+FFT + ProtoNet + 5-shot,prune_recovery_int8,deployment_int8,1.0,100.0,0.2813,6840,0.016719,onnxruntime
+STFT + MAML + 5-shot,baseline,deployment_baseline,0.9905362776025236,99.05,3.0336,113738,0.436068,onnxruntime
+STFT + MAML + 5-shot,int8_only,deployment_baseline_int8,0.9915878023133544,99.16,2.7794,113738,0.127833,onnxruntime
+STFT + MAML + 5-shot,prune_only,deployment_prune_only,0.982124079915878,98.21,2.9647,40860,0.158854,onnxruntime
+STFT + MAML + 5-shot,prune_recovery_float,deployment_float,0.9884332281808622,98.84,2.9631,40860,0.158854,onnxruntime
+STFT + MAML + 5-shot,prune_recovery_int8,deployment_int8,0.9884332281808622,98.84,3.3336,40860,0.056937,onnxruntime

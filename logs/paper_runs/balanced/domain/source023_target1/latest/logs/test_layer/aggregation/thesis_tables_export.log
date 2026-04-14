@@ -1,0 +1,6 @@
+
+=== 2026-04-13T16:13:13+08:00 ===
+$ /root/miniconda3/envs/fault_env/bin/python test_layer/thesis_tables.py --summary_glob deploy_artifacts/paper_balanced/domain/source023_target1/\*/compression_summary.json --output_dir /root/workspace/MAML-Edge/logs/thesis_tables/paper_balanced/domain/source023_target1 --allow_missing 
+/root/workspace/MAML-Edge/logs/thesis_tables/paper_balanced/domain/source023_target1
+
+[return_code] 0
