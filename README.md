@@ -2,13 +2,6 @@
 
 工业物联网下基于元学习的边缘设备少样本故障诊断系统。
 
-当前 `codex/thesis-upgrade` 分支已经收敛为一个**可复现、可对比、可写论文**的最终实验版本，目标是稳定输出：
-
-- 算法对比结果
-- 少样本能力结果
-- 压缩部署结果
-- 系统在线性能结果
-
 ## 项目结构
 
 - `data_layer`：CWRU / HST 数据读取、FFT / STFT / WT 预处理、few-shot 数据构造
@@ -69,8 +62,6 @@ data/
 
 ## 当前最终实验配置
 
-论文主实验固定为：
-
 - `Dataset = CWRU`
 - `Preprocess = STFT`
 - `Task = 5-way 5-shot`
@@ -79,12 +70,6 @@ data/
 - `Runtime backend = onnxruntime`
 - `Structured pruning = 0.4`
 - `INT8 = PTQ`
-
-不再展开：
-
-- 不再扫描不同剪枝率
-- 不再把 `TensorRT / OpenVINO` 作为主实验后端
-- 不再增加新的系统功能
 
 ## 当前主实验设计
 
@@ -234,9 +219,7 @@ deploy_artifacts/<experiment_title>/
 - 参数量与压缩比例
 - 各部署产物的文件大小
 
-## test_layer 怎么用
-
-`test_layer` 现在不是通用测试杂项，而是**运行结果分析与论文出表层**。
+## test_layer （运行结果分析与论文出表层）
 
 核心文件：
 
@@ -248,10 +231,10 @@ deploy_artifacts/<experiment_title>/
 
 约束边界：
 
-- `run_controlled_overnight.sh` 负责执行你原本会在终端里手动输入的训练与部署命令
+- `run_controlled_overnight.sh` 负责执行原本会在终端里手动输入的训练与部署命令
 - `test_layer` 中的 Python 文件只负责读取运行后的 `logs/`、`deploy_artifacts/`、`checkpoints/` 并做分析导出
 
-### 1. 一条命令跑完受控过夜实验
+### 1. 一条命令跑完受控实验
 
 ```bash
 bash test_layer/run_controlled_overnight.sh restart
@@ -465,28 +448,6 @@ http://127.0.0.1:8000/
 - `POST /adapt`
 - `POST /simulate/publish`
 - `WS /ws/realtime`
-
-## 论文表述边界
-
-### 已完成
-
-- 六层一体化结构
-- `CNN / MAML / ProtoNet` 训练与评估
-- 剪枝 + ONNX + INT8 部署
-- FastAPI + MQTT + WebSocket 在线系统
-- Vue + ECharts 浏览器控制台
-- 最小可用的 ProtoNet runtime prototype update
-- 固定 thesis 实验矩阵与四张论文表导出
-
-### 已支持或预留，但不作为主实验
-
-- `openvino`
-- `tensorrt`
-
-### 不应写成“完整实现”
-
-- 复杂 `STM32 / ESP32` 实机工程
-- 完整在线再训练系统
 
 ## 参考资料
 
