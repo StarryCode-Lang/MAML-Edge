@@ -149,28 +149,28 @@ createApp({
     },
     sectionShortcuts() {
       return [
-        { key: "modelSection", label: "Model" },
-        { key: "predictSection", label: "Predict" },
-        { key: "adaptSection", label: "Adapt" },
-        { key: "simulateSection", label: "Simulate" },
-        { key: "realtimeSection", label: "Realtime" },
-        { key: "statsSection", label: "Stats" },
-        { key: "historySection", label: "History" },
-        { key: "alertsSection", label: "Alerts" },
+        { key: "modelSection", label: "模型" },
+        { key: "predictSection", label: "预测" },
+        { key: "adaptSection", label: "适配" },
+        { key: "simulateSection", label: "仿真" },
+        { key: "realtimeSection", label: "实时" },
+        { key: "statsSection", label: "统计" },
+        { key: "historySection", label: "历史" },
+        { key: "alertsSection", label: "告警" },
       ];
     },
     densityOptions() {
       return [
-        { value: "compact", label: "Compact" },
-        { value: "balanced", label: "Balanced" },
-        { value: "relaxed", label: "Relaxed" },
+        { value: "compact", label: "紧凑" },
+        { value: "balanced", label: "均衡" },
+        { value: "relaxed", label: "宽松" },
       ];
     },
     focusOptions() {
       return [
-        { value: "all", label: "All" },
-        { value: "controls", label: "Controls" },
-        { value: "monitor", label: "Monitor" },
+        { value: "all", label: "全部" },
+        { value: "controls", label: "控制" },
+        { value: "monitor", label: "监控" },
       ];
     },
     serviceTone() {
@@ -184,18 +184,18 @@ createApp({
     },
     mqttSummary() {
       if (this.health.mqtt_enabled && !this.health.mqtt_error) {
-        return "consumer ready";
+        return "消费者就绪";
       }
       if (this.health.mqtt_error) {
-        return `consumer error: ${this.health.mqtt_error}`;
+        return `消费者错误: ${this.health.mqtt_error}`;
       }
-      return "consumer disabled";
+      return "消费者已禁用";
     },
     cwruTone() {
       return this.capabilities.supports_cwru_source ? "ok" : "warn";
     },
     cwruSummary() {
-      return this.capabilities.supports_cwru_source ? "full env ready" : "needs torch + data layer";
+      return this.capabilities.supports_cwru_source ? "完整环境就绪" : "需要torch+data layer";
     },
     wsTone() {
       if (this.wsStatus === "connected") {
@@ -213,15 +213,15 @@ createApp({
       const modelMode = this.modelInfo?.algorithm
         ? `${this.modelInfo.algorithm}/${this.modelInfo.deployment_type || "deploy"}`
         : "-";
-      const edgeMode = this.capabilities.supports_cwru_source ? "synthetic + CWRU" : "synthetic only";
+      const edgeMode = this.capabilities.supports_cwru_source ? "合成+CWRU" : "仅合成";
       const realtimeMode = this.health.mqtt_enabled
-        ? (this.wsStatus === "connected" ? "MQTT + WS live" : "MQTT ready")
-        : "HTTP only";
+        ? (this.wsStatus === "connected" ? "MQTT+WS实时" : "MQTT就绪")
+        : "仅HTTP";
       return [
-        { label: "Deploy", value: this.health.runtime_backend || "-" },
-        { label: "Model", value: modelMode },
-        { label: "Edge", value: edgeMode },
-        { label: "Realtime", value: realtimeMode },
+        { label: "部署", value: this.health.runtime_backend || "-" },
+        { label: "模型", value: modelMode },
+        { label: "边缘", value: edgeMode },
+        { label: "实时", value: realtimeMode },
       ];
     },
     wsBadgeClass() {
@@ -235,15 +235,15 @@ createApp({
     },
     liveBadgeText() {
       if (this.wsStatus === "connected") {
-        return "Live updates enabled";
+        return "实时更新已启用";
       }
       if (this.wsStatus === "reconnecting") {
-        return "Realtime reconnecting";
+        return "实时连接重试中";
       }
-      return "Realtime unavailable";
+      return "实时连接不可用";
     },
     summaryPathLabel() {
-      return basename(this.health.model_summary_path) || "Not configured";
+      return basename(this.health.model_summary_path) || "未配置";
     },
     adaptationSupported() {
       return Boolean(this.modelInfo?.adaptation_supported);
@@ -251,59 +251,59 @@ createApp({
     modelMetaCards() {
       const info = this.modelInfo || {};
       return [
-        { label: "Algorithm", value: info.algorithm || "-" },
-        { label: "Deployment", value: info.deployment_type || "-" },
-        { label: "Backend", value: info.deployment_backend || info.runtime_backend || "-" },
-        { label: "Providers", value: (info.providers || []).join(", ") || "-" },
-        { label: "Model Artifact", value: basename(info.model_path) },
-        { label: "Summary File", value: basename(info.summary_path) },
-        { label: "Adaptation", value: info.adaptation_supported ? "prototype update ready" : "not supported" },
-        { label: "Prototype Labels", value: (info.prototype_labels || []).join(", ") || "-" },
+        { label: "算法", value: info.algorithm || "-" },
+        { label: "部署类型", value: info.deployment_type || "-" },
+        { label: "后端", value: info.deployment_backend || info.runtime_backend || "-" },
+        { label: "提供者", value: (info.providers || []).join(", ") || "-" },
+        { label: "模型文件", value: basename(info.model_path) },
+        { label: "摘要文件", value: basename(info.summary_path) },
+        { label: "适配能力", value: info.adaptation_supported ? "原型更新就绪" : "不支持" },
+        { label: "原型标签", value: (info.prototype_labels || []).join(", ") || "-" },
       ];
     },
     predictSummaryCards() {
       const result = this.predictResult || {};
       return [
-        { label: "Predicted Label", value: result.predicted_label ?? "-" },
-        { label: "Confidence", value: formatNumber(result.confidence) },
-        { label: "Preprocess ms", value: formatNumber(result.preprocess_latency_ms) },
-        { label: "Inference ms", value: formatNumber(result.inference_latency_ms) },
-        { label: "End-to-End ms", value: formatNumber(result.end_to_end_latency_ms ?? result.latency_ms) },
-        { label: "Source", value: result.metadata?.source || "manual" },
+        { label: "预测标签", value: result.predicted_label ?? "-" },
+        { label: "置信度", value: formatNumber(result.confidence) },
+        { label: "预处理 ms", value: formatNumber(result.preprocess_latency_ms) },
+        { label: "推理 ms", value: formatNumber(result.inference_latency_ms) },
+        { label: "端到端 ms", value: formatNumber(result.end_to_end_latency_ms ?? result.latency_ms) },
+        { label: "来源", value: result.metadata?.source || "手动" },
       ];
     },
     simulationSummaryCards() {
       const result = this.simulationResult || {};
       return [
-        { label: "Mode", value: result.mode || "-" },
-        { label: "Source", value: this.simulateSource || "-" },
-        { label: "Count", value: result.count ?? "-" },
-        { label: "Direct Results", value: Array.isArray(result.results) ? result.results.length : 0 },
+        { label: "模式", value: result.mode || "-" },
+        { label: "数据源", value: this.simulateSource || "-" },
+        { label: "数量", value: result.count ?? "-" },
+        { label: "直接结果", value: Array.isArray(result.results) ? result.results.length : 0 },
         {
-          label: "MQTT Path",
-          value: result.mode === "mqtt" ? "published to broker" : result.mode ? "processed in service" : "-",
+          label: "MQTT路径",
+          value: result.mode === "mqtt" ? "已发布到代理" : result.mode ? "服务内处理" : "-",
         },
-        { label: "Device", value: "esp32-sim-01" },
+        { label: "设备", value: "esp32-sim-01" },
       ];
     },
     adaptSummaryCards() {
       const result = this.adaptResult?.adaptation || {};
       return [
-        { label: "Status", value: this.adaptResult?.status || "-" },
-        { label: "Updated Labels", value: (result.updated_labels || []).join(", ") || "-" },
-        { label: "New Labels", value: (result.new_labels_added || []).join(", ") || "-" },
-        { label: "Samples", value: result.sample_count ?? "-" },
-        { label: "Prototype Count", value: result.prototype_count ?? "-" },
-        { label: "Blend", value: result.blend_factor ?? this.adaptBlendFactor },
+        { label: "状态", value: this.adaptResult?.status || "-" },
+        { label: "已更新标签", value: (result.updated_labels || []).join(", ") || "-" },
+        { label: "新增标签", value: (result.new_labels_added || []).join(", ") || "-" },
+        { label: "样本数", value: result.sample_count ?? "-" },
+        { label: "原型数量", value: result.prototype_count ?? "-" },
+        { label: "混合因子", value: result.blend_factor ?? this.adaptBlendFactor },
       ];
     },
     benchmarkCards() {
       const benchmark = this.benchmark || {};
       return [
-        { label: "Accuracy Pass", value: benchmark.accuracy_pass ? "pass" : benchmark.accuracy_pass === false ? "fail" : "-" },
-        { label: "Latency Pass", value: benchmark.latency_pass ? "pass" : benchmark.latency_pass === false ? "fail" : "-" },
-        { label: "Accuracy", value: formatNumber(benchmark.accuracy) },
-        { label: "Avg Inference ms", value: formatNumber(benchmark.avg_latency_ms) },
+        { label: "精度通过", value: benchmark.accuracy_pass ? "通过" : benchmark.accuracy_pass === false ? "失败" : "-" },
+        { label: "时延通过", value: benchmark.latency_pass ? "通过" : benchmark.latency_pass === false ? "失败" : "-" },
+        { label: "精度", value: formatNumber(benchmark.accuracy) },
+        { label: "平均推理 ms", value: formatNumber(benchmark.avg_latency_ms) },
       ];
     },
     systemStatCards() {
@@ -311,14 +311,14 @@ createApp({
       const mqtt = this.systemStats?.channels?.mqtt || {};
       const adaptation = this.systemStats?.adaptation || {};
       return [
-        { label: "Direct Requests", value: direct.request_count ?? 0 },
-        { label: "Direct Avg E2E ms", value: formatNumber(direct.avg_end_to_end_latency_ms) },
-        { label: "MQTT Requests", value: mqtt.request_count ?? 0 },
-        { label: "MQTT Avg E2E ms", value: formatNumber(mqtt.avg_end_to_end_latency_ms) },
-        { label: "Adapt Ops", value: adaptation.request_count ?? 0 },
-        { label: "Adapt Samples", value: adaptation.sample_count ?? 0 },
-        { label: "Alerts Triggered", value: this.systemStats?.alerts_triggered ?? 0 },
-        { label: "Uptime s", value: formatNumber(this.systemStats?.uptime_seconds) },
+        { label: "直接请求", value: direct.request_count ?? 0 },
+        { label: "直接平均端到端 ms", value: formatNumber(direct.avg_end_to_end_latency_ms) },
+        { label: "MQTT请求", value: mqtt.request_count ?? 0 },
+        { label: "MQTT平均端到端 ms", value: formatNumber(mqtt.avg_end_to_end_latency_ms) },
+        { label: "适配操作", value: adaptation.request_count ?? 0 },
+        { label: "适配样本", value: adaptation.sample_count ?? 0 },
+        { label: "触发的告警", value: this.systemStats?.alerts_triggered ?? 0 },
+        { label: "运行时间 秒", value: formatNumber(this.systemStats?.uptime_seconds) },
       ];
     },
     historyRows() {
@@ -385,14 +385,14 @@ createApp({
     },
     adaptHint() {
       if (this.adaptationSupported) {
-        return "This deployment supports runtime prototype updates. Provide a small support signal and label to refresh prototype centroids.";
+        return "此部署支持运行时原型更新。提供一个小支持信号和标签以刷新原型质心。";
       }
-      return "The currently loaded deployment is a classifier path. Switch to a ProtoNet encoder bundle to enable runtime prototype updates.";
+      return "当前加载的部署是分类器路径。切换到ProtoNet编码器包以启用运行时原型更新。";
     },
     simulateHint() {
       return this.capabilities.supports_cwru_source
-        ? "Synthetic is fastest for demos. CWRU is available because the full training environment is present."
-        : "Synthetic works in the minimal edge-system environment. CWRU requires torch and the full training stack.";
+        ? "合成数据最适合演示。CWRU可用，因为完整训练环境已就绪。"
+        : "合成数据在最小edge-system环境中工作。CWRU需要torch和完整训练堆栈。";
     },
   },
   watch: {
@@ -501,10 +501,10 @@ createApp({
           this.simulateSource = "synthetic";
         }
         if (showSuccess) {
-          this.showNotice("Console data refreshed.", "success", 1800);
+          this.showNotice("控制台数据已刷新。", "success", 1800);
         }
       } catch (error) {
-        this.showNotice(`Refresh failed: ${error.message}`, "error", 0);
+        this.showNotice(`刷新失败: ${error.message}`, "error", 0);
       } finally {
         if (setBusy) {
           this.busy.refresh = false;
@@ -517,15 +517,15 @@ createApp({
         return;
       }
       target.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
-      this.showNotice(`Jumped to ${shortcut.label}.`, "info", 1200);
+      this.showNotice(`已跳转至 ${shortcut.label}。`, "info", 1200);
     },
     setDensityMode(mode) {
       this.densityMode = mode;
-      this.showNotice(`Density set to ${mode}.`, "info", 1200);
+      this.showNotice(`密度已设置为 ${mode}。`, "info", 1200);
     },
     setFocusMode(mode) {
       this.focusMode = mode;
-      this.showNotice(`Focus mode set to ${mode}.`, "info", 1200);
+      this.showNotice(`焦点模式已设置为 ${mode}。`, "info", 1200);
     },
     initScene() {
       const canvas = this.$refs.fxCanvas;
@@ -774,9 +774,9 @@ createApp({
       }
       this.hoverHud = {
         visible: true,
-        section: target.dataset.hudSection || "Console",
-        title: target.dataset.hudTitle || "Interactive element",
-        detail: target.dataset.hudDetail || "Move through the console to inspect live context.",
+        section: target.dataset.hudSection || "控制台",
+        title: target.dataset.hudTitle || "交互元素",
+        detail: target.dataset.hudDetail || "在控制台中移动以检查实时上下文。",
       };
     },
     clearPointerState() {
@@ -793,22 +793,22 @@ createApp({
       try {
         this.busy.modelInfo = true;
         this.modelInfo = await requestJson("/model/info");
-        this.showNotice("Model info refreshed.", "info");
+        this.showNotice("模型信息已刷新。", "info");
       } catch (error) {
-        this.showNotice(`Failed to load model info: ${error.message}`, "error", 0);
+        this.showNotice(`加载模型信息失败: ${error.message}`, "error", 0);
       } finally {
         this.busy.modelInfo = false;
       }
     },
     loadExampleSignal() {
       this.signalInput = "0.01,0.03,0.02,0.15,0.22,0.18,0.03,0.02";
-      this.showNotice("Example signal loaded into the editor.", "info", 1200);
+      this.showNotice("示例信号已加载到编辑器。", "info", 1200);
     },
     loadAdaptExample() {
       this.adaptSignalInput = this.signalInput || "0.01,0.03,0.02,0.15,0.22,0.18,0.03,0.02";
       this.adaptLabelInput = 0;
       this.adaptCopiesInput = 3;
-      this.showNotice("Prototype-adapt example support set loaded.", "info", 1200);
+      this.showNotice("原型适配示例支持集已加载。", "info", 1200);
     },
     parseSignalInput() {
       return this.signalInput
@@ -825,7 +825,7 @@ createApp({
     async applySelectedModel() {
       try {
         if (!this.selectedSummaryPath) {
-          this.showNotice("Select a deployment bundle before applying a model.", "warn");
+          this.showNotice("在应用模型前请选择部署包。", "warn");
           return;
         }
         this.busy.modelApply = true;
@@ -835,9 +835,9 @@ createApp({
         });
         this.modelInfo = result;
         await this.refreshAll({ setBusy: false });
-        this.showNotice(`Loaded ${result.experiment_title || "selected model"}.`, "success");
+        this.showNotice(`已加载 ${result.experiment_title || "所选模型"}。`, "success");
       } catch (error) {
-        this.showNotice(`Model switch failed: ${error.message}`, "error", 0);
+        this.showNotice(`模型切换失败: ${error.message}`, "error", 0);
       } finally {
         this.busy.modelApply = false;
       }
@@ -846,13 +846,13 @@ createApp({
       if (!this.selectedSummaryPath) {
         return;
       }
-      this.showNotice(`Staged ${basename(this.selectedSummaryPath)} for model apply.`, "info", 1400);
+      this.showNotice(`已暂存 ${basename(this.selectedSummaryPath)} 用于模型应用。`, "info", 1400);
     },
     async runPredict() {
       try {
         const signal = this.parseSignalInput();
         if (!signal.length) {
-          this.showNotice("Provide at least one numeric raw signal value before running prediction.", "warn");
+          this.showNotice("运行预测前请提供至少一个数值原始信号值。", "warn");
           return;
         }
         this.busy.predict = true;
@@ -871,9 +871,9 @@ createApp({
 
         this.predictResult = result;
         await this.refreshAll({ setBusy: false });
-        this.showNotice("Direct prediction finished.", "success");
+        this.showNotice("直接预测完成。", "success");
       } catch (error) {
-        this.showNotice(`Prediction failed: ${error.message}`, "error", 0);
+        this.showNotice(`预测失败: ${error.message}`, "error", 0);
       } finally {
         this.busy.predict = false;
       }
@@ -881,12 +881,12 @@ createApp({
     async runAdapt() {
       try {
         if (!this.adaptationSupported) {
-          this.showNotice("The active deployment does not support runtime prototype updates.", "warn");
+          this.showNotice("当前部署不支持运行时原型更新。", "warn");
           return;
         }
         const signal = this.parseSupportSignalInput();
         if (!signal.length) {
-          this.showNotice("Provide a numeric support signal before running runtime adaptation.", "warn");
+          this.showNotice("运行运行时适配前请提供数值支持信号。", "warn");
           return;
         }
         const sampleCount = Math.max(1, Number(this.adaptCopiesInput || 1));
@@ -906,30 +906,30 @@ createApp({
         this.adaptResult = result;
         this.modelInfo = result.model_info || this.modelInfo;
         await this.refreshAll({ setBusy: false });
-        this.showNotice("Runtime prototype update completed.", "success");
+        this.showNotice("运行时原型更新完成。", "success");
       } catch (error) {
-        this.showNotice(`Adaptation failed: ${error.message}`, "error", 0);
+        this.showNotice(`适配失败: ${error.message}`, "error", 0);
       } finally {
         this.busy.adapt = false;
       }
     },
     handleSimulationSourceChange() {
       if (this.simulateSource === "cwru" && !this.capabilities.supports_cwru_source) {
-        this.showNotice("CWRU simulation needs the full training environment. Synthetic is the recommended demo path here.", "warn");
+        this.showNotice("CWRU仿真需要完整训练环境。合成数据是此处推荐的演示路径。", "warn");
         this.simulateSource = "synthetic";
         return;
       }
-      this.showNotice(`Simulation source set to ${this.simulateSource}.`, "info", 1200);
+      this.showNotice(`仿真数据源已设置为 ${this.simulateSource}。`, "info", 1200);
     },
     handleSimulationModeChange() {
       const message = this.simulateMode === "mqtt"
-        ? "Simulation mode set to MQTT publish."
-        : "Simulation mode set to direct process.";
+        ? "仿真模式已设置为MQTT发布。"
+        : "仿真模式已设置为直接处理。";
       this.showNotice(message, "info", 1200);
     },
     announceSimulationConfig() {
       this.showNotice(
-        `Simulation configured for ${this.simulateCount} runs at ${this.simulateInterval}s interval.`,
+        `仿真已配置为 ${this.simulateCount} 次运行，间隔 ${this.simulateInterval}秒。`,
         "info",
         1200,
       );
@@ -937,11 +937,11 @@ createApp({
     async runSimulation() {
       try {
         if (this.simulateSource === "cwru" && !this.capabilities.supports_cwru_source) {
-          this.showNotice("CWRU simulation is unavailable in the minimal environment. Switch to Synthetic or use the full training stack.", "warn");
+          this.showNotice("CWRU仿真在最小环境中不可用。切换到合成数据或使用完整训练堆栈。", "warn");
           return;
         }
         if (this.simulateMode === "mqtt" && this.health && !this.health.mqtt_enabled) {
-          this.showNotice("MQTT consumer is disabled. Use Direct process for the demo or enable MQTT in system settings.", "warn");
+          this.showNotice("MQTT消费者已禁用。使用直接处理进行演示或启用系统设置中的MQTT。", "warn");
           return;
         }
         this.busy.simulate = true;
@@ -961,9 +961,9 @@ createApp({
           await new Promise((resolve) => window.setTimeout(resolve, 900));
         }
         await this.refreshAll({ setBusy: false });
-        this.showNotice(`Simulation finished in ${this.simulateMode} mode.`, "success");
+        this.showNotice(`仿真在${this.simulateMode}模式下完成。`, "success");
       } catch (error) {
-        this.showNotice(`Simulation failed: ${error.message}`, "error", 0);
+        this.showNotice(`仿真失败: ${error.message}`, "error", 0);
       } finally {
         this.busy.simulate = false;
       }
@@ -976,12 +976,12 @@ createApp({
         this.alerts = [];
         this.predictResult = null;
         this.adaptResult = null;
-        this.simulationResult = "Runtime storage cleared.";
+        this.simulationResult = "运行时存储已清除。";
         this.liveFeedRecords = [];
         await this.refreshAll({ setBusy: false });
-        this.showNotice("History and alert storage cleared.", "success");
+        this.showNotice("历史和告警存储已清除。", "success");
       } catch (error) {
-        this.showNotice(`Failed to clear storage: ${error.message}`, "error", 0);
+        this.showNotice(`清除存储失败: ${error.message}`, "error", 0);
       } finally {
         this.busy.reset = false;
       }
@@ -999,14 +999,14 @@ createApp({
           document.execCommand("copy");
           document.body.removeChild(textarea);
         }
-        this.showNotice("Console snapshot copied to clipboard.", "success", 1600);
+        this.showNotice("控制台快照已复制到剪贴板。", "success", 1600);
       } catch (error) {
-        this.showNotice(`Copy failed: ${error.message}`, "error", 0);
+        this.showNotice(`复制失败: ${error.message}`, "error", 0);
       }
     },
     downloadConsoleSnapshot() {
       downloadJsonFile(this.snapshotFilename, this.consoleSnapshot);
-      this.showNotice("Console snapshot download started.", "success", 1600);
+      this.showNotice("控制台快照下载已开始。", "success", 1600);
     },
     connectWebSocket() {
       const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -1062,7 +1062,7 @@ createApp({
         legend: {
           top: 0,
           textStyle: { color: "#6e6d68" },
-          data: ["End-to-End ms", "Inference ms", "Confidence"],
+          data: ["端到端 ms", "推理 ms", "置信度"],
         },
         xAxis: {
           type: "category",
@@ -1074,14 +1074,14 @@ createApp({
         yAxis: [
           {
             type: "value",
-            name: "Latency ms",
+            name: "时延 ms",
             nameTextStyle: { color: "#6e6d68" },
             axisLabel: { color: "#6e6d68" },
             splitLine: { lineStyle: { color: "rgba(23, 25, 29, 0.08)" } },
           },
           {
             type: "value",
-            name: "Confidence",
+            name: "置信度",
             min: 0,
             max: 1,
             nameTextStyle: { color: "#6e6d68" },
@@ -1091,7 +1091,7 @@ createApp({
         ],
         series: [
           {
-            name: "End-to-End ms",
+            name: "端到端 ms",
             type: "line",
             smooth: true,
             symbolSize: 7,
@@ -1100,7 +1100,7 @@ createApp({
             lineStyle: { width: 3 },
           },
           {
-            name: "Inference ms",
+            name: "推理 ms",
             type: "line",
             smooth: true,
             symbolSize: 6,
@@ -1108,7 +1108,7 @@ createApp({
             lineStyle: { width: 2.5 },
           },
           {
-            name: "Confidence",
+            name: "置信度",
             type: "line",
             yAxisIndex: 1,
             smooth: true,

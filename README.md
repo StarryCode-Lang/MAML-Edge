@@ -399,13 +399,13 @@ python test_layer/thesis_tables.py \
 
 ## system_layer 联调
 
-推荐显式指定模型：
+推荐显式指定模型，启动前设置环境变量：
 
 ```bash
-MAML_EDGE_MODEL_SUMMARY_PATH=deploy_artifacts/<experiment_title>/compression_summary.json
+export MAML_EDGE_MODEL_SUMMARY_PATH=deploy_artifacts/<experiment_title>/compression_summary.json
 ```
 
-启动后端：
+然后启动后端：
 
 ```bash
 python -m uvicorn system_layer.backend.main:app --host 0.0.0.0 --port 8000
