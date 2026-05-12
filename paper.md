@@ -518,11 +518,10 @@ STFT+MAML条件下的单次实验结果显示：5-shot为99.16%，10-shot为99.2
 
 综合三个维度，当前主实验与多seed结果表明，WT预处理下的 ProtoNet 和 MAML 多个配置均表现出较高准确率与较小波动，其中 WT+ProtoNet+10-shot 是代表性较优组合之一。单次实验中多个组合可达100.00%，不宜以此替代多seed统计结论；若部署侧实时性要求更高，FFT的低时延特性提供了工程权衡空间。
 
-图5-2和图5-3分别从 shot 变化趋势和主实验矩阵热力分布两个角度对上述规律作可视化展示。
+图5-1和图5-2分别从主实验总览与主实验矩阵热力分布两个角度对上述规律作可视化展示。前者同时给出不同预处理、模型与 shot 组合下的准确率与部署层时延，后者进一步将多 seed 条件下的均值、标准差与平均时延压缩到统一矩阵视图中，便于从整体格局过渡到局部细节。
 
-（图 5-1 主实验柱状图）
-![fig5_2_shot_trend](D:/Desktop/MAML-Edge/Chart/fig5_2_shot_trend.png)
-![fig5_3_main_experiment_heatmap](D:/Desktop/MAML-Edge/Chart/fig5_3_main_experiment_heatmap.png)
+![fig5_1_main_experiment_overview](D:/Desktop/MAML-Edge/Chart_ch5_redesign/fig5_1_main_experiment_overview.png)
+![fig5_2_main_experiment_matrix_heatmap](D:/Desktop/MAML-Edge/Chart_ch5_redesign/fig5_2_main_experiment_matrix_heatmap.png)
 
 ### 5.3 多随机种子稳定性分析
 
@@ -550,9 +549,9 @@ STFT+5-shot 条件下，ProtoNet 均值准确率 99.72%，标准差 0.49%；MAML
 
 三类方法之间的稳定性差异极为显著，且具有清晰可解释的机制根源。ProtoNet 结果高度集中，源于原型计算路径的确定性，推理阶段无随机梯度更新，对超参数随机状态不敏感。CNN 标准差远高于前两者，因目标域微调对随机初始化极为敏感，少量样本下初始化差异被显著放大。MAML 的内循环适配机制使其鲁棒性介于两者之间。
 
-图 5-4 的误差棒图直观呈现了三类方法的分布范围，与均值排序完全吻合，说明性能差距是系统性差异而非偶然。
+图5-3从两个层面呈现这一结论：左侧给出 STFT+5-shot 条件下三类模型在不同 seed 下的离散分布及均值±标准差，右侧并列展示准确率标准差与部署层时延标准差。可以看到，模型间性能差距并非偶然，而是稳定性与波动特征同时存在系统差异。
 
-![fig5_4_model_stability_errorbar](D:/Desktop/MAML-Edge/Chart/fig5_4_model_stability_errorbar.png)
+![fig5_3_model_stability_detail](D:/Desktop/MAML-Edge/Chart_ch5_redesign/fig5_3_model_stability_detail.png)
 
 **shot 设置稳定性**
 
@@ -560,9 +559,9 @@ STFT+MAML 条件下，5-shot 为 99.21%±0.76，10-shot 为 99.64%±0.37，15-sh
 
 从适配机制看，10 个支持样本可以为 MAML 内循环提供较稳定的梯度估计；当支持样本增加到 15 个时，样本间质量差异对适配结果的影响开始显现，而新增样本带来的信息增益相对有限。在当前实验设置下（STFT+MAML，3 个随机种子），shot 数量超过 10 后，稳定性提升并不明显。这说明在少样本适配中，支持样本的代表性可能与样本数量同样重要；但这一判断仍受实验配置限制，需要在更多模型、预处理方式和数据集上继续验证。
 
-图 5-5 呈现了三个 shot 设置下均值和标准差的趋势。
+图5-4在左侧展示三个 shot 设置下的 seed 级轨迹与均值波动带，在右侧并列对比准确率均值、准确率标准差与平均时延，使 10-shot 的相对优势不再只体现在单一折线上，而是体现在精度、稳定性与部署代价的综合平衡上。
 
-![fig5_5_few_shot_stability](D:/Desktop/MAML-Edge/Chart/fig5_5_few_shot_stability.png)
+![fig5_4_shot_stability_detail](D:/Desktop/MAML-Edge/Chart_ch5_redesign/fig5_4_shot_stability_detail.png)
 
 多随机种子结果与 5.2 节固定配置下观察到的趋势基本一致，说明模型性能排序和 10-shot 设置的相对优势在补充实验中仍然成立。相关结果的综合讨论见 5.6 节。
 
@@ -580,11 +579,9 @@ STFT+MAML 条件下，5-shot 为 99.21%±0.76，10-shot 为 99.64%±0.37，15-sh
 
 123→0 的较低表现与 CWRU 数据集工况特性相关。域 0 对应 0 HP 空载高速工况，轴承径向力小，振动响应幅值和故障频率激励强度与有负载工况存在结构性差异。当以域 1、2、3 这三组有负载工况作为训练集时，模型学习到的是有负载条件下的故障振动模式，迁移至零负载的域 0 时，振动信号的整体分布特性发生较大偏移，使得已学习的特征在目标域出现更大的判别不确定性。其他划分的训练集中均包含与测试域相邻负载的工况数据，域间鸿沟较小。
 
-图5-7 给出了四组划分的难度排序，与工况分布差异方向吻合，说明域偏移对跨域诊断性能有实质影响，且尚未被现有方法完全消除。
+图5-5左侧给出了四组留出目标域下全部模型、预处理与 shot 组合结果的分布范围，右侧则按平均准确率给出目标域难度排序。该图不仅保留了平均水平信息，也保留了不同划分下的结果离散度，因此更适合支撑跨域波动与任务难度边界的联合分析。
 
-下图将跨域泛化结果与目标工况难度排序合并展示，便于对比不同留出划分下的性能波动。
-
-![fig5_6_domain_robustness_and_difficulty](D:/Desktop/MAML-Edge/Chart/fig5_6_domain_robustness_and_difficulty.png)
+![fig5_5_cross_domain_robustness](D:/Desktop/MAML-Edge/Chart_ch5_redesign/fig5_5_cross_domain_robustness.png)
 
 **跨域泛化能力的边界**
 
@@ -615,9 +612,9 @@ STFT+MAML 条件下，5-shot 为 99.21%±0.76，10-shot 为 99.64%±0.37，15-sh
 
 两个配置均取得稳定压缩效果。STFT+MAML+5-shot 经 40% 结构化剪枝后参数量减少约 64.1%；全流程压缩后模型文件大小由 0.436 MB 降至 0.057 MB，约为原始的 13.1%。FFT+ProtoNet+5-shot 参数量减少约 64.0%；全流程后模型文件大小为 0.017 MB，约为原始的 22.7%。参数压缩比与 40% 剪枝率设置相符。
 
-图5-8从准确率与模型大小的二维关系中展示了不同压缩阶段的权衡结果。
+图5-6将压缩阶段的体积—精度关系与时延—精度关系融合在同一张双面板图中，聚焦于更具代表性的 STFT+MAML+5-shot 压缩路径。左侧展示不同阶段在模型大小—准确率平面中的移动轨迹，右侧展示同一路径在部署层时延—准确率平面中的对应变化，从而将压缩收益、精度回退与推理代价放在统一视角下观察。
 
-![fig5_8_accuracy_vs_model_size](D:/Desktop/MAML-Edge/Chart/fig5_8_accuracy_vs_model_size.png)
+![fig5_combined_compression_size_latency](D:/Desktop/MAML-Edge/Chart_ch5_redesign/fig5_combined_compression_size_latency.png)
 
 **精度损失与恢复训练的作用**
 
@@ -629,10 +626,7 @@ FFT+ProtoNet+5-shot 在所有阶段准确率均保持 100.00%，说明该配置�
 
 INT8 量化的时延收益呈现非对称结果。FFT+ProtoNet+5-shot 的 prune_recovery_int8 阶段时延为 0.281 ms，较 prune_recovery_float 下降约 69%，收益显著。而 STFT+MAML+5-shot 的 int8_only 时延仅降低约 8.4%，prune_recovery_int8 阶段时延反升至 3.334 ms，高于 baseline。这一非对称结果揭示了 INT8 量化在 CPU 执行提供者上运行时的固有特性：量化操作引入了 float→int8 量化和 int8→float 反量化的额外算子调度开销；当模型规模较小或矩阵运算是主要瓶颈时，量化的计算节省可以抵消调度开销，但对于二维输入的较大编码器，调度代价可能超过计算收益。
 
-图5-9进一步从准确率与时延的联合视角展示两组代表性配置在不同压缩阶段下的移动轨迹。
-
-![fig5_9_accuracy_vs_latency](D:/Desktop/MAML-Edge/Chart/fig5_9_accuracy_vs_latency.png)
-（图 5-10 压缩阶段对比图）
+图5-6右侧进一步从准确率与时延的联合视角呈现同一压缩路径下各阶段的移动关系。可以看到，INT8 only 在该配置下同时取得了最高准确率和最低部署层时延，而 prune_recovery_int8 虽进一步减小模型体积，但其时延收益并未继续同步提升。这说明量化和剪枝恢复带来的收益并不完全同向，部署选择仍需结合具体运行指标综合判断。
 
 **综合权衡**
 
