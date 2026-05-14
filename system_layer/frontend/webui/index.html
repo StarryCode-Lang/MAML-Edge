@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MAML-Edge Console</title>
+  <title>MAML-Edge 控制台</title>
   <link rel="stylesheet" href="/webui/styles.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
@@ -49,11 +49,11 @@
         data-hud-title="Integrated system overview"
         data-hud-detail="Read the active pipeline state before jumping into deploy, predict, simulate, or monitor operations."
       >
-        <p class="eyebrow">MAML-Edge Vue Console</p>
-        <h1>Operate the MAML-Edge pipeline from one console.</h1>
+        <p class="eyebrow">MAML-Edge Vue 控制台</p>
+        <h1>在一个控制台中操作 MAML-Edge 流水线</h1>
         <p class="lead">
-          Load a model, run prediction, trigger simulation, inspect storage and benchmark state,
-          and watch live diagnosis updates without terminal switching.
+          加载模型、运行预测、触发仿真、检查存储和基准状态，
+          无需切换终端即可查看实时诊断更新。
         </p>
         <div class="pipeline-strip">
           <article class="pipeline-pill" v-for="pill in pipelinePills" :key="pill.label">
@@ -69,8 +69,8 @@
           data-hud-title="Service heartbeat"
           data-hud-detail="Confirms the FastAPI control surface is running and ready to accept requests."
         >
-          <span class="tile-label">Service</span>
-          <strong :class="statusClass(serviceTone)">{{ health.status || 'Unknown' }}</strong>
+          <span class="tile-label">服务</span>
+          <strong :class="statusClass(serviceTone)">{{ health.status || '未知' }}</strong>
         </article>
         <article
           class="status-tile hud-target"
@@ -78,7 +78,7 @@
           data-hud-title="Inference backend"
           data-hud-detail="Shows which deployment runtime is currently serving predictions."
         >
-          <span class="tile-label">Backend</span>
+          <span class="tile-label">后端</span>
           <strong>{{ health.runtime_backend || '-' }}</strong>
         </article>
         <article
@@ -87,7 +87,7 @@
           data-hud-title="Loaded experiment"
           data-hud-detail="Tracks the active deployment artifact bound to the live system."
         >
-          <span class="tile-label">Active Experiment</span>
+          <span class="tile-label">当前实验</span>
           <strong :title="health.experiment_title || '-'">{{ health.experiment_title || '-' }}</strong>
         </article>
       </div>
@@ -109,8 +109,8 @@
         data-hud-title="Summary artifact"
         data-hud-detail="The deployment summary file currently driving model loading and benchmark lookup."
       >
-        <span class="tile-label">Summary Path</span>
-        <strong :title="health.model_summary_path || 'Not configured'">{{ summaryPathLabel }}</strong>
+        <span class="tile-label">摘要路径</span>
+        <strong :title="health.model_summary_path || '未配置'">{{ summaryPathLabel }}</strong>
       </article>
       <article
         class="overview-card hud-target"
@@ -127,7 +127,7 @@
         data-hud-title="CWRU simulation support"
         data-hud-detail="Reveals whether the full training environment is available for dataset-backed simulation."
       >
-        <span class="tile-label">CWRU Sim</span>
+        <span class="tile-label">CWRU仿真</span>
         <strong :class="statusClass(cwruTone)">{{ cwruSummary }}</strong>
       </article>
       <article
@@ -148,7 +148,7 @@
         data-hud-title="Section shortcuts"
         data-hud-detail="Jump directly to major work areas without scrolling through the whole console."
       >
-        <span class="command-label">Jump To</span>
+        <span class="command-label">跳转到</span>
         <div class="command-row">
           <button
             v-for="shortcut in sectionShortcuts"
@@ -166,7 +166,7 @@
         data-hud-title="Interface density"
         data-hud-detail="Switch between compact, balanced, and relaxed spacing without changing any data."
       >
-        <span class="command-label">Density</span>
+        <span class="command-label">密度</span>
         <div class="command-row">
           <button
             v-for="mode in densityOptions"
@@ -185,7 +185,7 @@
         data-hud-title="Attention routing"
         data-hud-detail="Bias the layout toward controls or monitoring depending on the demo moment."
       >
-        <span class="command-label">Focus</span>
+        <span class="command-label">焦点</span>
         <div class="command-row">
           <button
             v-for="mode in focusOptions"
@@ -211,16 +211,16 @@
         >
           <div class="panel-head">
             <div>
-              <p class="panel-kicker">Deploy Layer</p>
-              <h2>Model Switcher</h2>
+              <p class="panel-kicker">部署层</p>
+              <h2>模型切换器</h2>
             </div>
             <button class="ghost small" @click="refreshAll({ showSuccess: true })" :disabled="busy.refresh">
-              {{ busy.refresh ? 'Refreshing...' : 'Refresh' }}
+              {{ busy.refresh ? '刷新中...' : '刷新' }}
             </button>
           </div>
-          <label class="field-label" for="summarySelect">Available deployment bundles</label>
+          <label class="field-label" for="summarySelect">可用部署包</label>
           <select id="summarySelect" v-model="selectedSummaryPath" @change="handleSummarySelection">
-            <option value="" disabled>Select a deployment bundle</option>
+            <option value="" disabled>选择部署包</option>
             <option
               v-for="item in summaries"
               :key="item.summary_path"
@@ -231,10 +231,10 @@
           </select>
           <div class="button-row">
             <button @click="applySelectedModel" :disabled="!selectedSummaryPath || busy.modelApply">
-              {{ busy.modelApply ? 'Applying...' : 'Apply Model' }}
+              {{ busy.modelApply ? '应用中...' : '应用模型' }}
             </button>
             <button class="ghost" @click="refreshModelInfo" :disabled="busy.modelInfo">
-              {{ busy.modelInfo ? 'Loading...' : 'Reload Info' }}
+              {{ busy.modelInfo ? '加载中...' : '重载信息' }}
             </button>
           </div>
           <div class="mini-grid">
@@ -244,8 +244,8 @@
             </article>
           </div>
           <details class="details-box">
-            <summary>Raw model info</summary>
-            <pre>{{ pretty(modelInfo || 'Loading model info...') }}</pre>
+            <summary>原始模型信息</summary>
+            <pre>{{ pretty(modelInfo || '正在加载模型信息...') }}</pre>
           </details>
         </section>
 
@@ -258,27 +258,27 @@
         >
           <div class="panel-head">
             <div>
-              <p class="panel-kicker">System Layer</p>
-              <h2>Direct Predict</h2>
+              <p class="panel-kicker">系统层</p>
+              <h2>直接预测</h2>
             </div>
           </div>
-          <label class="field-label" for="signalInput">Raw signal</label>
+          <label class="field-label" for="signalInput">原始信号</label>
           <textarea id="signalInput" v-model="signalInput" rows="7"></textarea>
           <div class="field-grid">
             <label>
-              <span class="field-label">Device ID</span>
+              <span class="field-label">设备ID</span>
               <input v-model="deviceIdInput" placeholder="web-manual-01" />
             </label>
             <label>
-              <span class="field-label">Temperature</span>
+              <span class="field-label">温度</span>
               <input v-model.number="temperatureInput" placeholder="36.5" type="number" step="0.1" />
             </label>
           </div>
           <div class="button-row">
             <button @click="runPredict" :disabled="busy.predict">
-              {{ busy.predict ? 'Predicting...' : 'Run Predict' }}
+              {{ busy.predict ? '预测中...' : '运行预测' }}
             </button>
-            <button class="ghost" @click="loadExampleSignal">Load Example</button>
+            <button class="ghost" @click="loadExampleSignal">加载示例</button>
           </div>
           <div class="mini-grid">
             <article class="mini-card" v-for="card in predictSummaryCards" :key="card.label">
@@ -287,8 +287,8 @@
             </article>
           </div>
           <details class="details-box">
-            <summary>Raw predict result</summary>
-            <pre>{{ pretty(predictResult || 'Awaiting request...') }}</pre>
+            <summary>原始预测结果</summary>
+            <pre>{{ pretty(predictResult || '等待请求...') }}</pre>
           </details>
         </section>
 
@@ -301,36 +301,36 @@
         >
           <div class="panel-head">
             <div>
-              <p class="panel-kicker">System Layer</p>
-              <h2>Prototype Adapt</h2>
+              <p class="panel-kicker">系统层</p>
+              <h2>原型适配</h2>
             </div>
           </div>
           <p class="hint">{{ adaptHint }}</p>
-          <label class="field-label" for="adaptSignalInput">Support signal</label>
+          <label class="field-label" for="adaptSignalInput">支持信号</label>
           <textarea id="adaptSignalInput" v-model="adaptSignalInput" rows="6"></textarea>
           <div class="field-grid">
             <label>
-              <span class="field-label">Label</span>
+              <span class="field-label">标签</span>
               <input v-model.number="adaptLabelInput" type="number" min="0" />
             </label>
             <label>
-              <span class="field-label">Copies</span>
+              <span class="field-label">份数</span>
               <input v-model.number="adaptCopiesInput" type="number" min="1" />
             </label>
             <label>
-              <span class="field-label">Blend Factor</span>
+              <span class="field-label">混合因子</span>
               <input v-model.number="adaptBlendFactor" type="number" min="0" max="1" step="0.1" />
             </label>
             <label>
-              <span class="field-label">Device Prefix</span>
+              <span class="field-label">设备前缀</span>
               <input v-model="adaptDevicePrefix" placeholder="support-web" />
             </label>
           </div>
           <div class="button-row">
             <button @click="runAdapt" :disabled="busy.adapt || !adaptationSupported">
-              {{ busy.adapt ? 'Updating...' : 'Run Adapt' }}
+              {{ busy.adapt ? '更新中...' : '运行适配' }}
             </button>
-            <button class="ghost" @click="loadAdaptExample">Load Example</button>
+            <button class="ghost" @click="loadAdaptExample">加载示例</button>
           </div>
           <div class="mini-grid">
             <article class="mini-card" v-for="card in adaptSummaryCards" :key="card.label">
@@ -339,8 +339,8 @@
             </article>
           </div>
           <details class="details-box">
-            <summary>Raw adapt result</summary>
-            <pre>{{ pretty(adaptResult || 'No runtime adaptation yet.') }}</pre>
+            <summary>原始适配结果</summary>
+            <pre>{{ pretty(adaptResult || '暂无运行时适配') }}</pre>
           </details>
         </section>
 
@@ -353,43 +353,43 @@
         >
           <div class="panel-head">
             <div>
-              <p class="panel-kicker">Edge Layer</p>
-              <h2>Simulation Controls</h2>
+              <p class="panel-kicker">边缘层</p>
+              <h2>仿真控制</h2>
             </div>
           </div>
           <div class="field-grid">
             <label>
-              <span class="field-label">Mode</span>
+              <span class="field-label">模式</span>
               <select v-model="simulateMode" @change="handleSimulationModeChange">
-                <option value="direct">Direct process</option>
-                <option value="mqtt">Publish via MQTT</option>
+                <option value="direct">直接处理</option>
+                <option value="mqtt">通过MQTT发布</option>
               </select>
             </label>
             <label>
-              <span class="field-label">Source</span>
+              <span class="field-label">数据源</span>
               <select v-model="simulateSource" @change="handleSimulationSourceChange">
-                <option value="synthetic">Synthetic</option>
+                <option value="synthetic">合成数据</option>
                 <option value="cwru" :disabled="!capabilities.supports_cwru_source">
-                  {{ capabilities.supports_cwru_source ? 'CWRU' : 'CWRU (full env only)' }}
+                  {{ capabilities.supports_cwru_source ? 'CWRU' : 'CWRU (需要完整环境)' }}
                 </option>
               </select>
             </label>
             <label>
-              <span class="field-label">Count</span>
+              <span class="field-label">数量</span>
               <input v-model.number="simulateCount" type="number" min="1" @change="announceSimulationConfig" />
             </label>
             <label>
-              <span class="field-label">Interval (s)</span>
+              <span class="field-label">间隔 (秒)</span>
               <input v-model.number="simulateInterval" type="number" min="0" step="0.1" @change="announceSimulationConfig" />
             </label>
           </div>
           <p class="hint">{{ simulateHint }}</p>
           <div class="button-row">
             <button @click="runSimulation" :disabled="busy.simulate">
-              {{ busy.simulate ? 'Running...' : 'Run Simulation' }}
+              {{ busy.simulate ? '运行中...' : '运行仿真' }}
             </button>
             <button class="ghost" @click="resetStorage" :disabled="busy.reset">
-              {{ busy.reset ? 'Clearing...' : 'Clear History/Alerts' }}
+              {{ busy.reset ? '清空中...' : '清除历史/告警' }}
             </button>
           </div>
           <div class="mini-grid">
@@ -399,8 +399,8 @@
             </article>
           </div>
           <details class="details-box">
-            <summary>Simulation response</summary>
-            <pre>{{ pretty(simulationResult || 'No simulation yet.') }}</pre>
+            <summary>仿真响应</summary>
+            <pre>{{ pretty(simulationResult || '暂无仿真记录') }}</pre>
           </details>
         </section>
       </aside>
@@ -415,8 +415,8 @@
         >
           <div class="panel-head">
             <div>
-              <p class="panel-kicker">Realtime System Flow</p>
-              <h2>Latency + Confidence Monitor</h2>
+              <p class="panel-kicker">实时系统流程</p>
+              <h2>时延 + 置信度监控</h2>
             </div>
             <span :class="['badge', wsBadgeClass]">{{ liveBadgeText }}</span>
           </div>
@@ -427,8 +427,8 @@
               <span>{{ item.detail }}</span>
             </div>
             <div v-if="!liveFeed.length" class="feed-item">
-              <strong>No realtime messages yet</strong>
-              <span>Run Direct Predict or start a simulation to populate the live feed.</span>
+              <strong>暂无实时消息</strong>
+              <span>运行直接预测或启动仿真以填充实时信息流。</span>
             </div>
           </div>
         </section>
@@ -443,8 +443,8 @@
           >
             <div class="panel-head">
               <div>
-                <p class="panel-kicker">System Metrics</p>
-                <h2>Runtime Stats</h2>
+                <p class="panel-kicker">系统指标</p>
+                <h2>运行时统计</h2>
               </div>
             </div>
             <div class="mini-grid">
@@ -454,12 +454,12 @@
               </article>
             </div>
             <div class="button-row">
-              <button class="ghost" @click="copyConsoleSnapshot">Copy Snapshot</button>
-              <button class="ghost" @click="downloadConsoleSnapshot">Download Snapshot</button>
+              <button class="ghost" @click="copyConsoleSnapshot">复制快照</button>
+              <button class="ghost" @click="downloadConsoleSnapshot">下载快照</button>
             </div>
             <details class="details-box">
-              <summary>Raw system stats payload</summary>
-              <pre>{{ pretty(systemStats || 'Loading system stats...') }}</pre>
+              <summary>原始系统统计数据</summary>
+              <pre>{{ pretty(systemStats || '正在加载系统统计...') }}</pre>
             </details>
           </section>
 
@@ -472,8 +472,8 @@
           >
             <div class="panel-head">
               <div>
-                <p class="panel-kicker">Test Layer</p>
-                <h2>Benchmark Snapshot</h2>
+                <p class="panel-kicker">测试层</p>
+                <h2>基准快照</h2>
               </div>
             </div>
             <div class="mini-grid">
@@ -483,8 +483,8 @@
               </article>
             </div>
             <details class="details-box">
-              <summary>Raw benchmark payload</summary>
-              <pre>{{ pretty(benchmark || 'Loading benchmark...') }}</pre>
+              <summary>原始基准数据</summary>
+              <pre>{{ pretty(benchmark || '正在加载基准...') }}</pre>
             </details>
           </section>
 
@@ -497,19 +497,19 @@
           >
             <div class="panel-head">
               <div>
-                <p class="panel-kicker">System Layer</p>
-                <h2>Alerts</h2>
+                <p class="panel-kicker">系统层</p>
+                <h2>告警</h2>
               </div>
             </div>
             <div class="table-wrap compact">
               <table>
                 <thead>
                   <tr>
-                    <th>Time</th>
-                    <th>Device</th>
-                    <th>Label</th>
-                    <th>Conf</th>
-                    <th>Source</th>
+                    <th>时间</th>
+                    <th>设备</th>
+                    <th>标签</th>
+                    <th>置信度</th>
+                    <th>来源</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -538,21 +538,21 @@
         >
           <div class="panel-head">
             <div>
-              <p class="panel-kicker">System Layer</p>
-              <h2>History</h2>
+              <p class="panel-kicker">系统层</p>
+              <h2>历史记录</h2>
             </div>
           </div>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Time</th>
-                  <th>Device</th>
-                  <th>Label</th>
-                  <th>Confidence</th>
-                  <th>End-to-End ms</th>
-                  <th>Inference ms</th>
-                  <th>Source</th>
+                  <th>时间</th>
+                  <th>设备</th>
+                  <th>标签</th>
+                  <th>置信度</th>
+                  <th>端到端 ms</th>
+                  <th>推理 ms</th>
+                  <th>来源</th>
                 </tr>
               </thead>
               <tbody>
@@ -566,7 +566,7 @@
                   <td>{{ record.source }}</td>
                 </tr>
                 <tr v-if="!historyRows.length" class="empty-row">
-                  <td colspan="7">No diagnosis history yet. Run Direct Predict or start a simulation to populate this table.</td>
+                  <td colspan="7">暂无诊断历史。运行直接预测或启动仿真以填充此表。</td>
                 </tr>
               </tbody>
             </table>
