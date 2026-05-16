@@ -24,7 +24,7 @@ SOURCE_FILES = [
     "test_layer/result_aggregator.py",
 ]
 
-OUTPUT_STEM = "fig5_3_main_experiment_heatmap"
+OUTPUT_STEM = "fig5_2_main_experiment_matrix_heatmap"
 
 
 def load_matrix_rows():
